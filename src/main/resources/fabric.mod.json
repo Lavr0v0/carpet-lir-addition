@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "carpetlir",
+  "version": "${version}",
+  "name": "Carpet LIR Addition",
+  "description": "A Fabric Carpet extension mod focused on renewable-item survival rules.",
+  "authors": [
+    "lavro"
+  ],
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "org.lavro.carpetlir.CarpetLIRAddition"
+    ]
+  },
+  "mixins": [
+    "carpet-lir-addition.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.15.0",
+    "minecraft": "~1.20.1",
+    "fabric-api": "*",
+    "carpet": "*"
+  }
+}
