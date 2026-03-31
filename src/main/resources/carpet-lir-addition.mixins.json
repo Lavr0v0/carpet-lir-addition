@@ -1,0 +1,9 @@
+{
+  "required": true,
+  "package": "org.lavro.carpetlir.mixins",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
