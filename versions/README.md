@@ -23,9 +23,9 @@ That makes it easier to:
 - `1.21.11`
   Maintained and build-ready in this branch.
 - `1.21.1`
-  Staged backport target. Metadata is ready, but source compatibility work is still pending.
+  Build-ready backport target in this branch.
 - `1.20.1`
-  Staged legacy backport target. Metadata is ready, but source compatibility work is still pending.
+  Build-ready legacy backport target in this branch.
 - `26.1`
   Staged future migration target. This needs a Mojang-mappings migration and Java 25 before it can build in a dedicated branch or next-phase layout.
 
@@ -49,10 +49,12 @@ Build the maintained target:
 ./gradlew build
 ```
 
-Attempt a specific target:
+Build a specific ready target:
 
 ```bash
 ./gradlew build -PtargetKey=mc_1_21_11
+./gradlew build -PtargetKey=mc_1_21_1
+./gradlew build -PtargetKey=mc_1_20_1
 ```
 
 If a target is staged but not build-ready, the build will stop early with a message pointing to that target's notes.

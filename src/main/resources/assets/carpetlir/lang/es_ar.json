@@ -16,13 +16,13 @@
   "carpet.rule.renewableHoneycombCrafting.name": "renewableHoneycombCrafting",
   "carpet.rule.renewableHoneycombCrafting.desc": "Activa la receta que convierte un bloque de panal otra vez en cuatro panales.",
   "carpet.rule.boneMealGrassifyDirt.name": "boneMealGrassifyDirt",
-  "carpet.rule.boneMealGrassifyDirt.desc": "Permite que la harina de hueso convierta tierra en bloque de césped cuando el césped puede sobrevivir allí, con partículas happy_villager y sonido de uso de harina de hueso.",
+  "carpet.rule.boneMealGrassifyDirt.desc": "Permite que el hueso molido convierta tierra en bloque de pasto cuando el pasto puede sobrevivir allí.",
   "carpet.rule.obsidianHardnessReinforcedDeepslate.name": "obsidianHardnessReinforcedDeepslate",
   "carpet.rule.obsidianHardnessReinforcedDeepslate.desc": "Hace que la pizarra profunda reforzada se rompa a una velocidad de minería similar a la obsidiana.",
   "carpet.rule.silkTouchableReinforcedDeepslate.name": "silkTouchableReinforcedDeepslate",
   "carpet.rule.silkTouchableReinforcedDeepslate.desc": "Permite que la pizarra profunda reforzada se obtenga a sí misma con Toque de Seda.",
   "carpet.rule.wardensDropReinforcedDeepslate.name": "wardensDropReinforcedDeepslate",
-  "carpet.rule.wardensDropReinforcedDeepslate.desc": "Hace que los wardens suelten de 1 a 4 pizarras profundas reforzadas al morir.",
+  "carpet.rule.wardensDropReinforcedDeepslate.desc": "Hace que el Warden suelte de 1 a 4 bloques de pizarra profunda reforzada al morir.",
   "carpet.rule.pistonHarvestableAmethysts.name": "pistonHarvestableAmethysts",
-  "carpet.rule.pistonHarvestableAmethysts.desc": "La amatista en brote se rompe y se suelta a sí misma cuando un pistón intenta empujarla."
+  "carpet.rule.pistonHarvestableAmethysts.desc": "El brotador de amatista se rompe y se suelta a sí mismo cuando un pistón intenta empujarlo."
 }

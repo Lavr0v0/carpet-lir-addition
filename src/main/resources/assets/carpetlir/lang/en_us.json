@@ -16,7 +16,7 @@
   "carpet.rule.renewableHoneycombCrafting.name": "renewableHoneycombCrafting",
   "carpet.rule.renewableHoneycombCrafting.desc": "Enables the recipe that turns one honeycomb block back into four honeycombs.",
   "carpet.rule.boneMealGrassifyDirt.name": "boneMealGrassifyDirt",
-  "carpet.rule.boneMealGrassifyDirt.desc": "Allows bone meal used on dirt to convert it into a grass block when grass can survive there, with happy_villager particles and the bone meal use sound.",
+  "carpet.rule.boneMealGrassifyDirt.desc": "Allows bone meal used on dirt to convert it into a grass block when grass can survive there.",
   "carpet.rule.obsidianHardnessReinforcedDeepslate.name": "obsidianHardnessReinforcedDeepslate",
   "carpet.rule.obsidianHardnessReinforcedDeepslate.desc": "Makes reinforced deepslate break at an obsidian-like mining speed instead of its normal slower break time.",
   "carpet.rule.silkTouchableReinforcedDeepslate.name": "silkTouchableReinforcedDeepslate",

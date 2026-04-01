@@ -10,11 +10,10 @@ The design goal is to stay close to vanilla Minecraft logic: simple block intera
 ### Target stack
 
 - Release version `1.0.0`
-- Minecraft `1.21.11`
-- Fabric Loader `0.18.5`
-- Fabric API `0.141.3+1.21.11`
-- Fabric Carpet `1.21.11-1.4.194+v260107`
-- Java `21`
+- Default Minecraft target `1.21.11`
+- Build-ready secondary targets `1.21.1` and `1.20.1`
+- Fabric Loader / Fabric API / Fabric Carpet versions are selected from the active version profile
+- Java version is also selected from the active version profile
 
 ### Build
 
@@ -32,9 +31,9 @@ This repository now uses a version-profile layout instead of hardcoding all depe
 - `versions/1.21.11`
   Maintained and build-ready in the current branch.
 - `versions/1.21.1`
-  Staged backport metadata.
+  Build-ready backport target in the current branch. Recipes are converted to the `1.21.1` format during the build.
 - `versions/1.20.1`
-  Staged legacy backport metadata.
+  Build-ready legacy backport target in the current branch. Recipes are converted to the legacy `data/.../recipes/` path and `1.20.1` result format during the build.
 - `versions/26.1`
   Staged future migration metadata.
 
@@ -44,6 +43,8 @@ Useful commands:
 ./gradlew listVersionProfiles
 ./gradlew printActiveVersionProfile
 ./gradlew build -PtargetKey=mc_1_21_11
+./gradlew build -PtargetKey=mc_1_21_1
+./gradlew build -PtargetKey=mc_1_20_1
 ```
 
 ### Features
@@ -56,7 +57,7 @@ Useful commands:
 | `renewableLeavesCrafting` | `false` | Enables shaped recipes that craft `4` matching leaves from sticks plus the matching log. |
 | `renewableRawOresCrafting` | `false` | Enables shaped recipes for `raw_iron`, `raw_copper`, and `raw_gold` from cobblestone plus the corresponding ingot. |
 | `renewableHoneycombCrafting` | `false` | Enables the reverse recipe `1 honeycomb_block -> 4 honeycomb`. |
-| `boneMealGrassifyDirt` | `false` | Lets bone meal convert dirt into grass blocks when grass can survive there, with `happy_villager` particles and bone meal use sound. |
+| `boneMealGrassifyDirt` | `false` | Lets bone meal convert dirt into grass blocks when grass can survive there. |
 | `obsidianHardnessReinforcedDeepslate` | `false` | Makes reinforced deepslate break at an obsidian-like mining speed. |
 | `silkTouchableReinforcedDeepslate` | `false` | Lets reinforced deepslate drop itself when mined with Silk Touch. |
 | `wardensDropReinforcedDeepslate` | `false` | Makes wardens drop `1-4` reinforced deepslate on death. |
@@ -119,7 +120,7 @@ Enable rules with `/carpet <rule> true`, for example:
   Negative path: disable the rule and confirm the reverse recipe stops matching.
   Edge note: the vanilla storage recipe remains unchanged.
 - `boneMealGrassifyDirt`
-  Happy path: bone meal on dirt converts it to grass and plays the added feedback.
+  Happy path: bone meal on dirt converts it to grass.
   Negative path: disable the rule and confirm bone meal no longer converts dirt.
   Edge note: grass survival checks are still respected.
 - `obsidianHardnessReinforcedDeepslate`
@@ -165,11 +166,10 @@ Carpet LIR Addition 是一个基于 Fabric Carpet 的扩展模组，目标是给
 ### 目标环境
 
 - 发布版本 `1.0.0`
-- Minecraft `1.21.11`
-- Fabric Loader `0.18.5`
-- Fabric API `0.141.3+1.21.11`
-- Fabric Carpet `1.21.11-1.4.194+v260107`
-- Java `21`
+- 默认目标版本 `1.21.11`
+- 现已可构建的次级目标 `1.21.1` 与 `1.20.1`
+- Fabric Loader / Fabric API / Fabric Carpet 版本由当前激活的版本档案决定
+- Java 版本也由当前激活的版本档案决定
 
 ### 构建
 
@@ -187,9 +187,9 @@ Carpet LIR Addition 是一个基于 Fabric Carpet 的扩展模组，目标是给
 - `versions/1.21.11`
   当前维护中的正式构建目标。
 - `versions/1.21.1`
-  已整理元数据的回移植目标。
+  当前分支内已可构建的回移植目标，配方会在构建时自动转换为 `1.21.1` 兼容格式。
 - `versions/1.20.1`
-  已整理元数据的旧版本回移植目标。
+  当前分支内已可构建的旧版本回移植目标，配方会在构建时自动转换为旧版 `data/.../recipes/` 路径和 `1.20.1` 兼容结果格式。
 - `versions/26.1`
   已整理元数据的未来迁移目标。
 
@@ -199,6 +199,8 @@ Carpet LIR Addition 是一个基于 Fabric Carpet 的扩展模组，目标是给
 ./gradlew listVersionProfiles
 ./gradlew printActiveVersionProfile
 ./gradlew build -PtargetKey=mc_1_21_11
+./gradlew build -PtargetKey=mc_1_21_1
+./gradlew build -PtargetKey=mc_1_20_1
 ```
 
 ### 功能列表
@@ -209,12 +211,12 @@ Carpet LIR Addition 是一个基于 Fabric Carpet 的扩展模组，目标是给
 | `renewableTuff` | `false` | 启用 `gravel -> tuff` 的普通熔炉配方。 |
 | `renewableLapisOre` | `false` | 启用 `8 calcite + 1 amethyst_shard -> 1 lapis_ore` 的固定工作台配方。 |
 | `renewableLeavesCrafting` | `false` | 启用“木棍 + 对应原木 -> 4 个对应树叶”的工作台配方。 |
-| `renewableRawOresCrafting` | `false` | 启用生铁、生铜、生金三条“圆石 + 锭 -> 原矿”的工作台配方。 |
+| `renewableRawOresCrafting` | `false` | 启用粗铁、粗铜、粗金三条“圆石 + 锭 -> 原矿”的工作台配方。 |
 | `renewableHoneycombCrafting` | `false` | 启用 `1 honeycomb_block -> 4 honeycomb` 的逆配方。 |
-| `boneMealGrassifyDirt` | `false` | 允许骨粉把泥土转成草方块，并附带 `happy_villager` 粒子和骨粉使用音效。 |
+| `boneMealGrassifyDirt` | `false` | 允许骨粉把泥土转成草方块。 |
 | `obsidianHardnessReinforcedDeepslate` | `false` | 让强化深板岩的挖掘速度接近黑曜石。 |
 | `silkTouchableReinforcedDeepslate` | `false` | 允许强化深板岩被精准采集后掉落自身。 |
-| `wardensDropReinforcedDeepslate` | `false` | 允许坚守者死亡时掉落 `1-4` 个强化深板岩。 |
+| `wardensDropReinforcedDeepslate` | `false` | 允许监守者死亡时掉落 `1-4` 个强化深板岩。 |
 | `pistonHarvestableAmethysts` | `false` | 允许活塞推动紫水晶母岩时将其破坏并掉落自身。 |
 
 ### 配方汇总
@@ -266,7 +268,7 @@ Carpet LIR Addition 是一个基于 Fabric Carpet 的扩展模组，目标是给
   反向验证：关闭规则后，树叶配方不匹配。
   边界说明：当前主要覆盖常见主世界树种。
 - `renewableRawOresCrafting`
-  正向验证：圆石加铁/铜/金锭，应分别产出生铁、生铜、生金。
+  正向验证：圆石加铁/铜/金锭，应分别产出粗铁、粗铜、粗金。
   反向验证：关闭规则后，三条配方都不匹配。
   边界说明：如果你要找的是铁砧砸方块变原矿，请看 MiniTweaks 的 `/carpet renewableRawOres`。
 - `renewableHoneycombCrafting`
@@ -274,7 +276,7 @@ Carpet LIR Addition 是一个基于 Fabric Carpet 的扩展模组，目标是给
   反向验证：关闭规则后，逆配方不匹配。
   边界说明：原版 4 蜜脾合成蜜脾块不受影响。
 - `boneMealGrassifyDirt`
-  正向验证：对可正常存活草方块的位置使用骨粉点泥土，应转成草方块并播放新增反馈。
+  正向验证：对可正常存活草方块的位置使用骨粉点泥土，应转成草方块。
   反向验证：关闭规则后，骨粉不再把泥土变成草方块。
   边界说明：仍然遵守草方块存活条件。
 - `obsidianHardnessReinforcedDeepslate`
@@ -286,7 +288,7 @@ Carpet LIR Addition 是一个基于 Fabric Carpet 的扩展模组，目标是给
   反向验证：关闭规则后，不再走这条额外掉落路径。
   边界说明：不改非精准采集行为。
 - `wardensDropReinforcedDeepslate`
-  正向验证：击杀坚守者，应掉落 `1-4` 个强化深板岩。
+  正向验证：击杀监守者，应掉落 `1-4` 个强化深板岩。
   反向验证：关闭规则后，额外掉落消失。
   边界说明：掉落数量不受抢夺加成影响。
 - `pistonHarvestableAmethysts`

@@ -16,13 +16,13 @@
   "carpet.rule.renewableHoneycombCrafting.name": "renewableHoneycombCrafting",
   "carpet.rule.renewableHoneycombCrafting.desc": "Active la recette qui retransforme un bloc de rayon de miel en quatre rayons de miel.",
   "carpet.rule.boneMealGrassifyDirt.name": "boneMealGrassifyDirt",
-  "carpet.rule.boneMealGrassifyDirt.desc": "Permet à la poudre d'os de transformer la terre en bloc d'herbe lorsque l'herbe peut y survivre, avec des particules happy_villager et le son d'utilisation de la poudre d'os.",
+  "carpet.rule.boneMealGrassifyDirt.desc": "Permet à la poudre d'os de transformer la terre en bloc d'herbe lorsque l'herbe peut y survivre.",
   "carpet.rule.obsidianHardnessReinforcedDeepslate.name": "obsidianHardnessReinforcedDeepslate",
-  "carpet.rule.obsidianHardnessReinforcedDeepslate.desc": "Fait casser l'ardoise renforcée à une vitesse de minage proche de l'obsidienne.",
+  "carpet.rule.obsidianHardnessReinforcedDeepslate.desc": "Fait casser l'ardoise des abîmes renforcée à une vitesse de minage proche de l'obsidienne.",
   "carpet.rule.silkTouchableReinforcedDeepslate.name": "silkTouchableReinforcedDeepslate",
-  "carpet.rule.silkTouchableReinforcedDeepslate.desc": "Permet à l'ardoise renforcée de se drop elle-même avec Toucher de soie.",
+  "carpet.rule.silkTouchableReinforcedDeepslate.desc": "Permet à l'ardoise des abîmes renforcée de se drop elle-même avec Toucher de soie.",
   "carpet.rule.wardensDropReinforcedDeepslate.name": "wardensDropReinforcedDeepslate",
-  "carpet.rule.wardensDropReinforcedDeepslate.desc": "Fait drop aux wardens de 1 à 4 ardoises renforcées à leur mort.",
+  "carpet.rule.wardensDropReinforcedDeepslate.desc": "Fait drop au Warden de 1 à 4 ardoises des abîmes renforcées à sa mort.",
   "carpet.rule.pistonHarvestableAmethysts.name": "pistonHarvestableAmethysts",
-  "carpet.rule.pistonHarvestableAmethysts.desc": "L'améthyste bourgeonnante se casse et se drop elle-même lorsqu'un piston tente de la pousser."
+  "carpet.rule.pistonHarvestableAmethysts.desc": "La druse d'améthyste se casse et se drop elle-même lorsqu'un piston tente de la pousser."
 }

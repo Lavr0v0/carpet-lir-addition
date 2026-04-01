@@ -26,3 +26,7 @@
 - Added bundled Carpet rule translations for `en_us`, `es_ar`, `fr_fr`, `pt_br`, `zh_cn`, and `zh_tw`, and migrated them to Carpet's current translation key format.
 - Reworked the README into a complete bilingual English/Chinese reference and refreshed locale coverage for the current rule set.
 - Reworked the build metadata into a version-profile layout so the repository can track `1.20.1`, `1.21.1`, `1.21.11`, and `26.1` targets in a maintainable way.
+- Promoted the `1.21.1` and `1.20.1` profiles from staged metadata to build-ready backport targets using version-specific source overlays.
+- Added build-time recipe compatibility conversion so `1.21.1` and `1.20.1` emit the correct recipe schema from the same source JSONs.
+- Aligned several translated rule descriptions with the official Minecraft item and block names for each bundled locale.
+- Simplified the `boneMealGrassifyDirt` rule text so it no longer exposes particle and sound implementation details in user-facing descriptions.

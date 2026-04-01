@@ -1,3 +1,5 @@
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
 import java.util.Locale
 import java.util.Properties
 
@@ -62,6 +64,7 @@ def profileOptional = { String key, String fallback = null ->
 def profileId = profileRequired('profile_id')
 def profileStatus = profileRequired('status')
 def buildReady = Boolean.parseBoolean(profileOptional('build_ready', 'false'))
+def allowStagedBuild = Boolean.parseBoolean(providers.gradleProperty('allowStagedBuild').orElse('false').get())
 def minecraftVersion = profileRequired('minecraft_version')
 def selectorKey = profileRequired('selector_key')
 def javaVersion = Integer.parseInt(profileRequired('java_version'))
@@ -72,13 +75,43 @@ def fabricApiVersion = profileOptional('fabric_api_version')
 def carpetVersion = profileOptional('carpet_core_version')
 def minecraftDependency = profileOptional('minecraft_dependency', "~${minecraftVersion}")
 def loaderDependency = profileOptional('loader_dependency', loaderVersion == null ? '*' : ">=${loaderVersion}")
+def legacyRecipeProfiles = ['1.20.1', '1.21.1'] as Set
+def cookingRecipeTypes = ['minecraft:smelting', 'minecraft:blasting', 'minecraft:smoking', 'minecraft:campfire_cooking'] as Set
+
+def transformRecipeForProfile = { Map recipe, String targetProfile ->
+    if (recipe.containsKey('ingredient') && recipe.ingredient instanceof String) {
+        recipe.ingredient = [item: recipe.ingredient]
+    }
+    if (recipe.containsKey('ingredients') && recipe.ingredients instanceof List) {
+        recipe.ingredients = recipe.ingredients.collect { ingredient ->
+            ingredient instanceof String ? [item: ingredient] : ingredient
+        }
+    }
+    if (recipe.containsKey('key') && recipe.key instanceof Map) {
+        recipe.key = recipe.key.collectEntries { symbol, ingredient ->
+            [symbol, ingredient instanceof String ? [item: ingredient] : ingredient]
+        }
+    }
+    if (targetProfile == '1.20.1' && recipe.containsKey('result') && recipe.result instanceof Map && recipe.result.id instanceof String) {
+        if (cookingRecipeTypes.contains(recipe.type)) {
+            recipe.result = recipe.result.id
+        } else {
+            def convertedResult = [item: recipe.result.id]
+            if (recipe.result.containsKey('count')) {
+                convertedResult.count = recipe.result.count
+            }
+            recipe.result = convertedResult
+        }
+    }
+    recipe
+}
 
 def buildRequested = gradle.startParameter.taskNames.isEmpty() || gradle.startParameter.taskNames.any { taskName ->
     def normalized = taskName.toLowerCase(Locale.ROOT)
     !['listversionprofiles', 'printactiveversionprofile', 'help', 'tasks', 'properties'].contains(normalized)
 }
 
-if (!buildReady && buildRequested) {
+if (!buildReady && buildRequested && !allowStagedBuild) {
     throw new GradleException(
             "Target profile '${profileId}' is staged but not build-ready in this branch. " +
                     "See versions/${profileId}/README.md for the migration plan."
@@ -100,7 +133,7 @@ repositories {
 }
 
 dependencies {
-    if (!buildReady) {
+    if (!buildReady && !allowStagedBuild) {
         return
     }
 
@@ -124,8 +157,18 @@ dependencies {
     modImplementation "carpet:fabric-carpet:${carpetVersion}"
 }
 
-loom {
-    splitEnvironmentSourceSets()
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/main/java', "src/versioned/${profileId}/java"]
+            if (profileId != '1.20.1') {
+                srcDirs += ['src/versioned/shared-modern/java']
+            }
+        }
+        resources {
+            srcDirs = ['src/main/resources', "src/versioned/${profileId}/resources"]
+        }
+    }
 }
 
 processResources {
@@ -141,6 +184,42 @@ processResources {
                 loader_dependency: loaderDependency,
                 target_profile: profileId
         )
+    }
+
+    if (legacyRecipeProfiles.contains(profileId)) {
+        doLast {
+            def outputDir = layout.buildDirectory.dir('resources/main').get().asFile
+            def modernRecipeDir = new File(outputDir, 'data/carpetlir/recipe')
+            if (!modernRecipeDir.exists()) {
+                return
+            }
+
+            def jsonSlurper = new JsonSlurper()
+            def targetDir = profileId == '1.20.1' ? new File(outputDir, 'data/carpetlir/recipes') : modernRecipeDir
+            targetDir.mkdirs()
+
+            modernRecipeDir.listFiles()
+                    ?.findAll { it.isFile() && it.name.toLowerCase(Locale.ROOT).endsWith('.json') }
+                    ?.each { recipeFile ->
+                        if (recipeFile.name == 'pale_oak_leaves_from_pale_oak_log_and_sticks.json') {
+                            recipeFile.delete()
+                            return
+                        }
+
+                        def recipe = jsonSlurper.parse(recipeFile) as Map
+                        def transformedRecipe = transformRecipeForProfile(recipe, profileId)
+                        def targetFile = new File(targetDir, recipeFile.name)
+                        targetFile.text = JsonOutput.prettyPrint(JsonOutput.toJson(transformedRecipe)) + System.lineSeparator()
+
+                        if (profileId == '1.20.1') {
+                            recipeFile.delete()
+                        }
+                    }
+
+            if (profileId == '1.20.1' && (modernRecipeDir.listFiles()?.length ?: 0) == 0) {
+                modernRecipeDir.delete()
+            }
+        }
     }
 }
 
@@ -176,6 +255,7 @@ tasks.register('printActiveVersionProfile') {
         println "Selector key          : ${selectorKey}"
         println "Status                : ${profileStatus}"
         println "Build ready           : ${buildReady}"
+        println "Allow staged build    : ${allowStagedBuild}"
         println "Minecraft             : ${minecraftVersion}"
         println "Java                  : ${javaVersion}"
         println "Mappings              : ${mappingsMode}${yarnMappings ? " (${yarnMappings})" : ''}"

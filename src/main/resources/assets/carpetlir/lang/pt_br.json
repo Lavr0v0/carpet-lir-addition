@@ -16,13 +16,13 @@
   "carpet.rule.renewableHoneycombCrafting.name": "renewableHoneycombCrafting",
   "carpet.rule.renewableHoneycombCrafting.desc": "Ativa a receita que transforma um bloco de favo de mel de volta em quatro favos de mel.",
   "carpet.rule.boneMealGrassifyDirt.name": "boneMealGrassifyDirt",
-  "carpet.rule.boneMealGrassifyDirt.desc": "Permite que farinha de osso transforme terra em bloco de grama quando a grama pode sobreviver ali, com partículas happy_villager e som de uso de farinha de osso.",
+  "carpet.rule.boneMealGrassifyDirt.desc": "Permite que farinha de osso transforme terra em Bloco de Grama quando a grama pode sobreviver ali.",
   "carpet.rule.obsidianHardnessReinforcedDeepslate.name": "obsidianHardnessReinforcedDeepslate",
-  "carpet.rule.obsidianHardnessReinforcedDeepslate.desc": "Faz a ardósia profunda reforçada quebrar com velocidade de mineração parecida com a obsidiana.",
+  "carpet.rule.obsidianHardnessReinforcedDeepslate.desc": "Faz a Ardosiabissal Reforçada quebrar com velocidade de mineração parecida com a Obsidiana.",
   "carpet.rule.silkTouchableReinforcedDeepslate.name": "silkTouchableReinforcedDeepslate",
-  "carpet.rule.silkTouchableReinforcedDeepslate.desc": "Permite que a ardósia profunda reforçada se obtenha a si mesma com Toque Suave.",
+  "carpet.rule.silkTouchableReinforcedDeepslate.desc": "Permite que a Ardosiabissal Reforçada solte a si mesma com Toque Suave.",
   "carpet.rule.wardensDropReinforcedDeepslate.name": "wardensDropReinforcedDeepslate",
-  "carpet.rule.wardensDropReinforcedDeepslate.desc": "Faz os wardens droparem de 1 a 4 ardósias profundas reforçadas ao morrer.",
+  "carpet.rule.wardensDropReinforcedDeepslate.desc": "Faz o Defensor dropar de 1 a 4 blocos de Ardosiabissal Reforçada ao morrer.",
   "carpet.rule.pistonHarvestableAmethysts.name": "pistonHarvestableAmethysts",
-  "carpet.rule.pistonHarvestableAmethysts.desc": "A ametista brotante quebra e dropa a si mesma quando um pistão tenta empurrá-la."
+  "carpet.rule.pistonHarvestableAmethysts.desc": "A Drusa de Ametista quebra e dropa a si mesma quando um pistão tenta empurrá-la."
 }
