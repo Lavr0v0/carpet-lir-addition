@@ -7,8 +7,57 @@ public class LIRSettings {
     }
 
     @Rule(
-            desc = "Debug sample rule. When enabled, joining players receive a short confirmation message.",
-            category = {"LIR", "FEATURE"}
+            categories = {"LIR", "FEATURE", "RENEWABLE"}
     )
-    public static boolean renewableDebugSample = false;
+    public static boolean renewableCalcite = false;
+
+    @Rule(
+            categories = {"LIR", "FEATURE", "RENEWABLE"}
+    )
+    public static boolean renewableTuff = false;
+
+    @Rule(
+            categories = {"LIR", "FEATURE", "RENEWABLE"}
+    )
+    public static boolean renewableLapisOre = false;
+
+    @Rule(
+            categories = {"LIR", "FEATURE", "RENEWABLE"}
+    )
+    public static boolean renewableLeavesCrafting = false;
+
+    @Rule(
+            categories = {"LIR", "FEATURE", "RENEWABLE"}
+    )
+    public static boolean renewableRawOresCrafting = false;
+
+    @Rule(
+            categories = {"LIR", "FEATURE", "RENEWABLE"}
+    )
+    public static boolean renewableHoneycombCrafting = false;
+
+    @Rule(
+            categories = {"LIR", "FEATURE", "RENEWABLE"}
+    )
+    public static boolean boneMealGrassifyDirt = false;
+
+    @Rule(
+            categories = {"LIR", "FEATURE", "RENEWABLE"}
+    )
+    public static boolean obsidianHardnessReinforcedDeepslate = false;
+
+    @Rule(
+            categories = {"LIR", "FEATURE", "RENEWABLE"}
+    )
+    public static boolean silkTouchableReinforcedDeepslate = false;
+
+    @Rule(
+            categories = {"LIR", "FEATURE", "RENEWABLE"}
+    )
+    public static boolean wardensDropReinforcedDeepslate = false;
+
+    @Rule(
+            categories = {"LIR", "FEATURE", "RENEWABLE"}
+    )
+    public static boolean pistonHarvestableAmethysts = false;
 }

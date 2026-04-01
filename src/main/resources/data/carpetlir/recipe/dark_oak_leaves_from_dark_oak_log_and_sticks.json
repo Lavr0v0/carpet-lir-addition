@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    " S ",
+    "SWS",
+    " S "
+  ],
+  "key": {
+    "S": "minecraft:stick",
+    "W": "minecraft:dark_oak_log"
+  },
+  "result": {
+    "id": "minecraft:dark_oak_leaves",
+    "count": 4
+  }
+}

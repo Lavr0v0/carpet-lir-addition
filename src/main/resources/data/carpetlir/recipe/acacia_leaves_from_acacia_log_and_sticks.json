@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    " S ",
+    "SWS",
+    " S "
+  ],
+  "key": {
+    "S": "minecraft:stick",
+    "W": "minecraft:acacia_log"
+  },
+  "result": {
+    "id": "minecraft:acacia_leaves",
+    "count": 4
+  }
+}

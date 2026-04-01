@@ -1,5 +1,0 @@
-[project]
-root = "."
-
-[commands]
-build = "gradle build"

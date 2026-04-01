@@ -1,27 +1,127 @@
+import java.util.Locale
+import java.util.Properties
+
 plugins {
-    id 'fabric-loom' version '1.11-SNAPSHOT'
+    id 'fabric-loom' version '1.14-SNAPSHOT'
     id 'maven-publish'
+}
+
+def defaultTargetProfile = providers.gradleProperty('default_target_profile').orElse('1.21.11').get()
+def defaultTargetKey = providers.gradleProperty('default_target_key').orElse('mc_1_21_11').get()
+def selector = providers.gradleProperty('targetKey')
+        .orElse(providers.gradleProperty('targetProfile'))
+        .orElse(defaultTargetKey)
+        .get()
+
+def loadProfileFromDirectory = { File dir ->
+    def propsFile = new File(dir, 'profile.properties')
+    if (!propsFile.exists()) {
+        return null
+    }
+    def props = new Properties()
+    propsFile.withInputStream { props.load(it) }
+    return [directory: dir, file: propsFile, properties: props]
+}
+
+def selectedProfile = loadProfileFromDirectory(file("versions/${selector}"))
+if (selectedProfile == null) {
+    selectedProfile = file('versions')
+            .listFiles()
+            .findAll { it.isDirectory() }
+            .collect { loadProfileFromDirectory(it) }
+            .find { loaded ->
+                loaded != null && (
+                        loaded.properties.getProperty('profile_id') == selector ||
+                                loaded.properties.getProperty('selector_key') == selector
+                )
+            }
+}
+
+if (selectedProfile == null) {
+    throw new GradleException(
+            "Unknown target selector '${selector}'. Use ./gradlew listVersionProfiles or check versions/README.md."
+    )
+}
+
+def profileFile = selectedProfile.file
+def versionProfile = selectedProfile.properties
+
+def profileRequired = { String key ->
+    def value = versionProfile.getProperty(key)
+    if (value == null || value.trim().isEmpty()) {
+        throw new GradleException("Missing required key '${key}' in ${profileFile}.")
+    }
+    return value.trim()
+}
+
+def profileOptional = { String key, String fallback = null ->
+    def value = versionProfile.getProperty(key)
+    return (value == null || value.trim().isEmpty()) ? fallback : value.trim()
+}
+
+def profileId = profileRequired('profile_id')
+def profileStatus = profileRequired('status')
+def buildReady = Boolean.parseBoolean(profileOptional('build_ready', 'false'))
+def minecraftVersion = profileRequired('minecraft_version')
+def selectorKey = profileRequired('selector_key')
+def javaVersion = Integer.parseInt(profileRequired('java_version'))
+def mappingsMode = profileRequired('mappings_mode')
+def yarnMappings = profileOptional('yarn_mappings')
+def loaderVersion = profileOptional('loader_version')
+def fabricApiVersion = profileOptional('fabric_api_version')
+def carpetVersion = profileOptional('carpet_core_version')
+def minecraftDependency = profileOptional('minecraft_dependency', "~${minecraftVersion}")
+def loaderDependency = profileOptional('loader_dependency', loaderVersion == null ? '*' : ">=${loaderVersion}")
+
+def buildRequested = gradle.startParameter.taskNames.isEmpty() || gradle.startParameter.taskNames.any { taskName ->
+    def normalized = taskName.toLowerCase(Locale.ROOT)
+    !['listversionprofiles', 'printactiveversionprofile', 'help', 'tasks', 'properties'].contains(normalized)
+}
+
+if (!buildReady && buildRequested) {
+    throw new GradleException(
+            "Target profile '${profileId}' is staged but not build-ready in this branch. " +
+                    "See versions/${profileId}/README.md for the migration plan."
+    )
 }
 
 version = project.mod_version
 group = project.maven_group
 
 base {
-    archivesName = project.archives_base_name
+    archivesName = "${project.archives_base_name}-mc${minecraftVersion}"
 }
 
 repositories {
     maven { url = 'https://maven.fabricmc.net/' }
     maven { url = 'https://masa.dy.fi/maven' }
+    maven { url = 'https://jitpack.io' }
     mavenCentral()
 }
 
 dependencies {
-    minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-    modImplementation "carpet:fabric-carpet:${project.carpet_core_version}"
+    if (!buildReady) {
+        return
+    }
+
+    minecraft "com.mojang:minecraft:${minecraftVersion}"
+
+    if (mappingsMode == 'yarn') {
+        if (!yarnMappings) {
+            throw new GradleException("Target profile '${profileId}' uses yarn mappings but yarn_mappings is missing.")
+        }
+        mappings "net.fabricmc:yarn:${yarnMappings}:v2"
+    } else {
+        throw new GradleException("Mappings mode '${mappingsMode}' is not supported by this branch's build script.")
+    }
+
+    if (!loaderVersion || !fabricApiVersion || !carpetVersion) {
+        throw new GradleException("Target profile '${profileId}' is build-ready but dependency coordinates are incomplete.")
+    }
+
+    modImplementation "net.fabricmc:fabric-loader:${loaderVersion}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${fabricApiVersion}"
+    modImplementation "carpet:fabric-carpet:${carpetVersion}"
 }
 
 loom {
@@ -30,32 +130,83 @@ loom {
 
 processResources {
     inputs.property 'version', project.version
+    inputs.property 'minecraft_dependency', minecraftDependency
+    inputs.property 'loader_dependency', loaderDependency
+    inputs.property 'target_profile', profileId
 
     filesMatching('fabric.mod.json') {
-        expand(version: project.version)
+        expand(
+                version: project.version,
+                minecraft_dependency: minecraftDependency,
+                loader_dependency: loaderDependency,
+                target_profile: profileId
+        )
     }
 }
 
 tasks.withType(JavaCompile).configureEach {
-    it.options.release = 17
+    it.options.release = javaVersion
 }
 
 java {
     withSourcesJar()
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.toVersion(javaVersion)
+    targetCompatibility = JavaVersion.toVersion(javaVersion)
 }
 
 jar {
     from('LICENSE') {
-        rename { "${it}_${project.archivesBaseName}" }
+        rename { "${it}_${base.archivesName.get()}" }
+    }
+    manifest {
+        attributes(
+                'Implementation-Title': 'Carpet LIR Addition',
+                'Implementation-Version': project.version,
+                'Minecraft-Target': minecraftVersion,
+                'Version-Profile': profileId
+        )
+    }
+}
+
+tasks.register('printActiveVersionProfile') {
+    group = 'help'
+    description = 'Prints the currently selected version profile.'
+    doLast {
+        println "Active target profile : ${profileId}"
+        println "Selector key          : ${selectorKey}"
+        println "Status                : ${profileStatus}"
+        println "Build ready           : ${buildReady}"
+        println "Minecraft             : ${minecraftVersion}"
+        println "Java                  : ${javaVersion}"
+        println "Mappings              : ${mappingsMode}${yarnMappings ? " (${yarnMappings})" : ''}"
+        println "Profile file          : ${profileFile}"
+    }
+}
+
+tasks.register('listVersionProfiles') {
+    group = 'help'
+    description = 'Lists all stored version profiles and their status.'
+    doLast {
+        file('versions')
+                .listFiles()
+                .findAll { it.isDirectory() }
+                .sort { a, b -> a.name <=> b.name }
+                .each { dir ->
+                    def props = new Properties()
+                    def propsFile = new File(dir, 'profile.properties')
+                    if (!propsFile.exists()) {
+                        return
+                    }
+                    propsFile.withInputStream { props.load(it) }
+                    println "${props.getProperty('profile_id')} | ${props.getProperty('selector_key')} | ${props.getProperty('status')} | build_ready=${props.getProperty('build_ready')}"
+                }
     }
 }
 
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            artifactId = project.archives_base_name
+            artifactId = base.archivesName.get()
             from components.java
         }
     }
