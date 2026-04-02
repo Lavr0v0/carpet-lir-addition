@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1] - 2026-04-01
+
+### Changed
+- Promoted the widened multi-version release matrix from `1.20` through `1.21.11` as the `1.0.1` release line.
+- Kept the feature set unchanged while broadening the set of build-ready intermediate Minecraft targets and grouped range artifacts.
+- Cleared the remaining source-level deprecated API warning in `FluidBlockMixin`.
+
 ## [1.0.0] - 2026-04-01
 
 ### Added

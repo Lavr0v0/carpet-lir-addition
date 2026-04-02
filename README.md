@@ -9,7 +9,7 @@ The design goal is to stay close to vanilla Minecraft logic: simple block intera
 
 ### Target stack
 
-- Release version `1.0.0`
+- Release version `1.0.1`
 - Default Minecraft target `1.21.11`
 - Build-ready grouped release lines from `1.20` through `1.21.11`
 - Fabric Loader / Fabric API / Fabric Carpet versions are selected from the active version profile
@@ -22,7 +22,7 @@ The design goal is to stay close to vanilla Minecraft logic: simple block intera
 ```
 
 Build output:
-- `build/libs/carpet-lir-addition-mc1.21.11-1.0.0.jar`
+- `build/libs/carpet-lir-addition-mc1.21.11-1.0.1.jar`
 
 ### Version profiles
 
@@ -195,7 +195,7 @@ Carpet LIR Addition 是一个基于 Fabric Carpet 的扩展模组，目标是给
 
 ### 目标环境
 
-- 发布版本 `1.0.0`
+- 发布版本 `1.0.1`
 - 默认目标版本 `1.21.11`
 - 现已可构建的发布范围覆盖 `1.20` 到 `1.21.11`
 - Fabric Loader / Fabric API / Fabric Carpet 版本由当前激活的版本档案决定
@@ -208,7 +208,7 @@ Carpet LIR Addition 是一个基于 Fabric Carpet 的扩展模组，目标是给
 ```
 
 产物位置：
-- `build/libs/carpet-lir-addition-mc1.21.11-1.0.0.jar`
+- `build/libs/carpet-lir-addition-mc1.21.11-1.0.1.jar`
 
 ### 多版本档案
 

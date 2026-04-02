@@ -2,7 +2,7 @@
 
 Status: maintained
 
-This is the active build target of the repository and the first stable `1.0.0` release line.
+This is the active build target of the repository and the current stable `1.0.1` release line.
 
 ## Notes
 
@@ -14,4 +14,4 @@ This is the active build target of the repository and the first stable `1.0.0` r
 
 Builds from this profile produce artifacts named like:
 
-- `carpet-lir-addition-mc1.21.11-1.0.0.jar`
+- `carpet-lir-addition-mc1.21.11-1.0.1.jar`
