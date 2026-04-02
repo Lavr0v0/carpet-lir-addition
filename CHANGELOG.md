@@ -30,3 +30,4 @@
 - Added build-time recipe compatibility conversion so `1.21.1` and `1.20.1` emit the correct recipe schema from the same source JSONs.
 - Aligned several translated rule descriptions with the official Minecraft item and block names for each bundled locale.
 - Simplified the `boneMealGrassifyDirt` rule text so it no longer exposes particle and sound implementation details in user-facing descriptions.
+- Added grouped range build profiles for `1.20-1.20.1` and `1.21-1.21.1`, reusing the matching backport source overlays and version predicates.

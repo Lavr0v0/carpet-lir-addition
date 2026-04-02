@@ -22,8 +22,12 @@ That makes it easier to:
 
 - `1.21.11`
   Maintained and build-ready in this branch.
+- `1.21-1.21.1`
+  Build-ready grouped range profile in this branch.
 - `1.21.1`
   Build-ready backport target in this branch.
+- `1.20-1.20.1`
+  Build-ready grouped range profile in this branch.
 - `1.20.1`
   Build-ready legacy backport target in this branch.
 - `26.1`
@@ -53,7 +57,9 @@ Build a specific ready target:
 
 ```bash
 ./gradlew build -PtargetKey=mc_1_21_11
+./gradlew build -PtargetKey=mc_1_21_to_1_21_1
 ./gradlew build -PtargetKey=mc_1_21_1
+./gradlew build -PtargetKey=mc_1_20_to_1_20_1
 ./gradlew build -PtargetKey=mc_1_20_1
 ```
 

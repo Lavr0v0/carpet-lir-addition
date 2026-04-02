@@ -30,8 +30,12 @@ This repository now uses a version-profile layout instead of hardcoding all depe
 
 - `versions/1.21.11`
   Maintained and build-ready in the current branch.
+- `versions/1.21-1.21.1`
+  Build-ready grouped range profile in the current branch.
 - `versions/1.21.1`
   Build-ready backport target in the current branch. Recipes are converted to the `1.21.1` format during the build.
+- `versions/1.20-1.20.1`
+  Build-ready grouped range profile in the current branch.
 - `versions/1.20.1`
   Build-ready legacy backport target in the current branch. Recipes are converted to the legacy `data/.../recipes/` path and `1.20.1` result format during the build.
 - `versions/26.1`
@@ -43,7 +47,9 @@ Useful commands:
 ./gradlew listVersionProfiles
 ./gradlew printActiveVersionProfile
 ./gradlew build -PtargetKey=mc_1_21_11
+./gradlew build -PtargetKey=mc_1_21_to_1_21_1
 ./gradlew build -PtargetKey=mc_1_21_1
+./gradlew build -PtargetKey=mc_1_20_to_1_20_1
 ./gradlew build -PtargetKey=mc_1_20_1
 ```
 
@@ -186,8 +192,12 @@ Carpet LIR Addition 是一个基于 Fabric Carpet 的扩展模组，目标是给
 
 - `versions/1.21.11`
   当前维护中的正式构建目标。
+- `versions/1.21-1.21.1`
+  当前分支内已可构建的范围档案。
 - `versions/1.21.1`
   当前分支内已可构建的回移植目标，配方会在构建时自动转换为 `1.21.1` 兼容格式。
+- `versions/1.20-1.20.1`
+  当前分支内已可构建的范围档案。
 - `versions/1.20.1`
   当前分支内已可构建的旧版本回移植目标，配方会在构建时自动转换为旧版 `data/.../recipes/` 路径和 `1.20.1` 兼容结果格式。
 - `versions/26.1`
@@ -199,7 +209,9 @@ Carpet LIR Addition 是一个基于 Fabric Carpet 的扩展模组，目标是给
 ./gradlew listVersionProfiles
 ./gradlew printActiveVersionProfile
 ./gradlew build -PtargetKey=mc_1_21_11
+./gradlew build -PtargetKey=mc_1_21_to_1_21_1
 ./gradlew build -PtargetKey=mc_1_21_1
+./gradlew build -PtargetKey=mc_1_20_to_1_20_1
 ./gradlew build -PtargetKey=mc_1_20_1
 ```
 

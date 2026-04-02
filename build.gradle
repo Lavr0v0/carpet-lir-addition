@@ -75,24 +75,26 @@ def fabricApiVersion = profileOptional('fabric_api_version')
 def carpetVersion = profileOptional('carpet_core_version')
 def minecraftDependency = profileOptional('minecraft_dependency', "~${minecraftVersion}")
 def loaderDependency = profileOptional('loader_dependency', loaderVersion == null ? '*' : ">=${loaderVersion}")
-def legacyRecipeProfiles = ['1.20.1', '1.21.1'] as Set
+def archiveMinecraftLabel = profileOptional('archive_minecraft_label', minecraftVersion)
+def recipeFormat = profileOptional('recipe_format', 'modern')
+def sourceOverlay = profileOptional('source_overlay', profileId)
 def cookingRecipeTypes = ['minecraft:smelting', 'minecraft:blasting', 'minecraft:smoking', 'minecraft:campfire_cooking'] as Set
 
-def transformRecipeForProfile = { Map recipe, String targetProfile ->
-    if (recipe.containsKey('ingredient') && recipe.ingredient instanceof String) {
+def transformRecipeForFormat = { Map recipe, String targetFormat ->
+    if (targetFormat in ['1.21.1', '1.20.1'] && recipe.containsKey('ingredient') && recipe.ingredient instanceof String) {
         recipe.ingredient = [item: recipe.ingredient]
     }
-    if (recipe.containsKey('ingredients') && recipe.ingredients instanceof List) {
+    if (targetFormat in ['1.21.1', '1.20.1'] && recipe.containsKey('ingredients') && recipe.ingredients instanceof List) {
         recipe.ingredients = recipe.ingredients.collect { ingredient ->
             ingredient instanceof String ? [item: ingredient] : ingredient
         }
     }
-    if (recipe.containsKey('key') && recipe.key instanceof Map) {
+    if (targetFormat in ['1.21.1', '1.20.1'] && recipe.containsKey('key') && recipe.key instanceof Map) {
         recipe.key = recipe.key.collectEntries { symbol, ingredient ->
             [symbol, ingredient instanceof String ? [item: ingredient] : ingredient]
         }
     }
-    if (targetProfile == '1.20.1' && recipe.containsKey('result') && recipe.result instanceof Map && recipe.result.id instanceof String) {
+    if (targetFormat == '1.20.1' && recipe.containsKey('result') && recipe.result instanceof Map && recipe.result.id instanceof String) {
         if (cookingRecipeTypes.contains(recipe.type)) {
             recipe.result = recipe.result.id
         } else {
@@ -122,7 +124,7 @@ version = project.mod_version
 group = project.maven_group
 
 base {
-    archivesName = "${project.archives_base_name}-mc${minecraftVersion}"
+    archivesName = "${project.archives_base_name}-mc${archiveMinecraftLabel}"
 }
 
 repositories {
@@ -160,13 +162,13 @@ dependencies {
 sourceSets {
     main {
         java {
-            srcDirs = ['src/main/java', "src/versioned/${profileId}/java"]
-            if (profileId != '1.20.1') {
+            srcDirs = ['src/main/java', "src/versioned/${sourceOverlay}/java"]
+            if (sourceOverlay != '1.20.1') {
                 srcDirs += ['src/versioned/shared-modern/java']
             }
         }
         resources {
-            srcDirs = ['src/main/resources', "src/versioned/${profileId}/resources"]
+            srcDirs = ['src/main/resources', "src/versioned/${sourceOverlay}/resources"]
         }
     }
 }
@@ -186,7 +188,7 @@ processResources {
         )
     }
 
-    if (legacyRecipeProfiles.contains(profileId)) {
+    if (recipeFormat != 'modern') {
         doLast {
             def outputDir = layout.buildDirectory.dir('resources/main').get().asFile
             def modernRecipeDir = new File(outputDir, 'data/carpetlir/recipe')
@@ -195,7 +197,7 @@ processResources {
             }
 
             def jsonSlurper = new JsonSlurper()
-            def targetDir = profileId == '1.20.1' ? new File(outputDir, 'data/carpetlir/recipes') : modernRecipeDir
+            def targetDir = recipeFormat == '1.20.1' ? new File(outputDir, 'data/carpetlir/recipes') : modernRecipeDir
             targetDir.mkdirs()
 
             modernRecipeDir.listFiles()
@@ -207,16 +209,16 @@ processResources {
                         }
 
                         def recipe = jsonSlurper.parse(recipeFile) as Map
-                        def transformedRecipe = transformRecipeForProfile(recipe, profileId)
+                        def transformedRecipe = transformRecipeForFormat(recipe, recipeFormat)
                         def targetFile = new File(targetDir, recipeFile.name)
                         targetFile.text = JsonOutput.prettyPrint(JsonOutput.toJson(transformedRecipe)) + System.lineSeparator()
 
-                        if (profileId == '1.20.1') {
+                        if (recipeFormat == '1.20.1') {
                             recipeFile.delete()
                         }
                     }
 
-            if (profileId == '1.20.1' && (modernRecipeDir.listFiles()?.length ?: 0) == 0) {
+            if (recipeFormat == '1.20.1' && (modernRecipeDir.listFiles()?.length ?: 0) == 0) {
                 modernRecipeDir.delete()
             }
         }
