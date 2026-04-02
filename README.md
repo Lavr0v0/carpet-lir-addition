@@ -11,7 +11,7 @@ The design goal is to stay close to vanilla Minecraft logic: simple block intera
 
 - Release version `1.0.0`
 - Default Minecraft target `1.21.11`
-- Build-ready secondary targets `1.21.1` and `1.20.1`
+- Build-ready grouped release lines from `1.20` through `1.21.11`
 - Fabric Loader / Fabric API / Fabric Carpet versions are selected from the active version profile
 - Java version is also selected from the active version profile
 
@@ -30,10 +30,26 @@ This repository now uses a version-profile layout instead of hardcoding all depe
 
 - `versions/1.21.11`
   Maintained and build-ready in the current branch.
+- `versions/1.21.9-1.21.10`
+  Build-ready grouped range profile in the current branch.
+- `versions/1.21.6-1.21.8`
+  Build-ready grouped range profile in the current branch.
+- `versions/1.21.5`
+  Build-ready standalone intermediate profile in the current branch.
+- `versions/1.21.4`
+  Build-ready standalone intermediate profile in the current branch.
+- `versions/1.21.2-1.21.3`
+  Build-ready grouped range profile in the current branch.
 - `versions/1.21-1.21.1`
   Build-ready grouped range profile in the current branch.
 - `versions/1.21.1`
   Build-ready backport target in the current branch. Recipes are converted to the `1.21.1` format during the build.
+- `versions/1.20.5-1.20.6`
+  Build-ready grouped range profile in the current branch.
+- `versions/1.20.3-1.20.4`
+  Build-ready grouped range profile in the current branch.
+- `versions/1.20.2`
+  Build-ready standalone intermediate profile in the current branch.
 - `versions/1.20-1.20.1`
   Build-ready grouped range profile in the current branch.
 - `versions/1.20.1`
@@ -47,8 +63,16 @@ Useful commands:
 ./gradlew listVersionProfiles
 ./gradlew printActiveVersionProfile
 ./gradlew build -PtargetKey=mc_1_21_11
+./gradlew build -PtargetKey=mc_1_21_9_to_1_21_10
+./gradlew build -PtargetKey=mc_1_21_6_to_1_21_8
+./gradlew build -PtargetKey=mc_1_21_5
+./gradlew build -PtargetKey=mc_1_21_4
+./gradlew build -PtargetKey=mc_1_21_2_to_1_21_3
 ./gradlew build -PtargetKey=mc_1_21_to_1_21_1
 ./gradlew build -PtargetKey=mc_1_21_1
+./gradlew build -PtargetKey=mc_1_20_5_to_1_20_6
+./gradlew build -PtargetKey=mc_1_20_3_to_1_20_4
+./gradlew build -PtargetKey=mc_1_20_2
 ./gradlew build -PtargetKey=mc_1_20_to_1_20_1
 ./gradlew build -PtargetKey=mc_1_20_1
 ```
@@ -173,7 +197,7 @@ Carpet LIR Addition 是一个基于 Fabric Carpet 的扩展模组，目标是给
 
 - 发布版本 `1.0.0`
 - 默认目标版本 `1.21.11`
-- 现已可构建的次级目标 `1.21.1` 与 `1.20.1`
+- 现已可构建的发布范围覆盖 `1.20` 到 `1.21.11`
 - Fabric Loader / Fabric API / Fabric Carpet 版本由当前激活的版本档案决定
 - Java 版本也由当前激活的版本档案决定
 
@@ -192,10 +216,26 @@ Carpet LIR Addition 是一个基于 Fabric Carpet 的扩展模组，目标是给
 
 - `versions/1.21.11`
   当前维护中的正式构建目标。
+- `versions/1.21.9-1.21.10`
+  当前分支内已可构建的范围档案。
+- `versions/1.21.6-1.21.8`
+  当前分支内已可构建的范围档案。
+- `versions/1.21.5`
+  当前分支内已可构建的独立中间版本档案。
+- `versions/1.21.4`
+  当前分支内已可构建的独立中间版本档案。
+- `versions/1.21.2-1.21.3`
+  当前分支内已可构建的范围档案。
 - `versions/1.21-1.21.1`
   当前分支内已可构建的范围档案。
 - `versions/1.21.1`
   当前分支内已可构建的回移植目标，配方会在构建时自动转换为 `1.21.1` 兼容格式。
+- `versions/1.20.5-1.20.6`
+  当前分支内已可构建的范围档案。
+- `versions/1.20.3-1.20.4`
+  当前分支内已可构建的范围档案。
+- `versions/1.20.2`
+  当前分支内已可构建的独立中间版本档案。
 - `versions/1.20-1.20.1`
   当前分支内已可构建的范围档案。
 - `versions/1.20.1`
@@ -209,8 +249,16 @@ Carpet LIR Addition 是一个基于 Fabric Carpet 的扩展模组，目标是给
 ./gradlew listVersionProfiles
 ./gradlew printActiveVersionProfile
 ./gradlew build -PtargetKey=mc_1_21_11
+./gradlew build -PtargetKey=mc_1_21_9_to_1_21_10
+./gradlew build -PtargetKey=mc_1_21_6_to_1_21_8
+./gradlew build -PtargetKey=mc_1_21_5
+./gradlew build -PtargetKey=mc_1_21_4
+./gradlew build -PtargetKey=mc_1_21_2_to_1_21_3
 ./gradlew build -PtargetKey=mc_1_21_to_1_21_1
 ./gradlew build -PtargetKey=mc_1_21_1
+./gradlew build -PtargetKey=mc_1_20_5_to_1_20_6
+./gradlew build -PtargetKey=mc_1_20_3_to_1_20_4
+./gradlew build -PtargetKey=mc_1_20_2
 ./gradlew build -PtargetKey=mc_1_20_to_1_20_1
 ./gradlew build -PtargetKey=mc_1_20_1
 ```

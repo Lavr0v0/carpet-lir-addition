@@ -78,6 +78,12 @@ def loaderDependency = profileOptional('loader_dependency', loaderVersion == nul
 def archiveMinecraftLabel = profileOptional('archive_minecraft_label', minecraftVersion)
 def recipeFormat = profileOptional('recipe_format', 'modern')
 def sourceOverlay = profileOptional('source_overlay', profileId)
+def sourceOverlays = profileOptional('source_overlays', sourceOverlay)
+        .split(',')
+        .collect { it.trim() }
+        .findAll { !it.isEmpty() }
+def includeSharedModern = Boolean.parseBoolean(profileOptional('include_shared_modern', sourceOverlay != '1.20.1' ? 'true' : 'false'))
+def lintDeprecation = Boolean.parseBoolean(providers.gradleProperty('lintDeprecation').orElse('false').get())
 def cookingRecipeTypes = ['minecraft:smelting', 'minecraft:blasting', 'minecraft:smoking', 'minecraft:campfire_cooking'] as Set
 
 def transformRecipeForFormat = { Map recipe, String targetFormat ->
@@ -162,13 +168,13 @@ dependencies {
 sourceSets {
     main {
         java {
-            srcDirs = ['src/main/java', "src/versioned/${sourceOverlay}/java"]
-            if (sourceOverlay != '1.20.1') {
+            srcDirs = ['src/main/java'] + sourceOverlays.collect { "src/versioned/${it}/java" }
+            if (includeSharedModern) {
                 srcDirs += ['src/versioned/shared-modern/java']
             }
         }
         resources {
-            srcDirs = ['src/main/resources', "src/versioned/${sourceOverlay}/resources"]
+            srcDirs = ['src/main/resources'] + sourceOverlays.collect { "src/versioned/${it}/resources" }
         }
     }
 }
@@ -227,6 +233,9 @@ processResources {
 
 tasks.withType(JavaCompile).configureEach {
     it.options.release = javaVersion
+    if (lintDeprecation) {
+        it.options.compilerArgs += ['-Xlint:deprecation']
+    }
 }
 
 java {

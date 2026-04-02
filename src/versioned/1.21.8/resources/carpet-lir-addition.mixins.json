@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "package": "org.lavro.carpetlir.mixins",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "AbstractBlockStateMixin",
+    "BlockMixin",
+    "FluidBlockMixin",
+    "PistonBlockMixin",
+    "PreparedRecipesMixin",
+    "RecipeManagerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

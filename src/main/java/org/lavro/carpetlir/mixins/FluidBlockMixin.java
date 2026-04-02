@@ -3,7 +3,7 @@ package org.lavro.carpetlir.mixins;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.FluidBlock;
 import net.minecraft.fluid.FlowableFluid;
-import net.minecraft.registry.tag.FluidTags;
+import net.minecraft.fluid.Fluids;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.lavro.carpetlir.features.renewable.CalciteGeneratorFeature;
@@ -26,7 +26,7 @@ public abstract class FluidBlockMixin {
      */
     @Inject(method = "receiveNeighborFluids", at = @At("HEAD"), cancellable = true)
     private void carpetlir$handleCalciteBranch(World world, BlockPos pos, BlockState state, CallbackInfoReturnable<Boolean> cir) {
-        if (!this.fluid.isIn(FluidTags.LAVA)) {
+        if (!this.fluid.matchesType(Fluids.LAVA)) {
             return;
         }
 

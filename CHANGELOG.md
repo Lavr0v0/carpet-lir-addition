@@ -31,3 +31,6 @@
 - Aligned several translated rule descriptions with the official Minecraft item and block names for each bundled locale.
 - Simplified the `boneMealGrassifyDirt` rule text so it no longer exposes particle and sound implementation details in user-facing descriptions.
 - Added grouped range build profiles for `1.20-1.20.1` and `1.21-1.21.1`, reusing the matching backport source overlays and version predicates.
+- Added build-ready intermediate version profiles covering `1.20.2`, `1.20.3-1.20.4`, `1.20.5-1.20.6`, `1.21.2-1.21.3`, `1.21.4`, `1.21.5`, `1.21.6-1.21.8`, and `1.21.9-1.21.10`.
+- Split the modern source line into small version overlays only where Mojang API changes actually diverged, keeping the overall multi-version layout narrow and maintainable.
+- Fixed the remaining `FluidBlockMixin` deprecated API warning by replacing the lava tag check with `matchesType(Fluids.LAVA)`.
