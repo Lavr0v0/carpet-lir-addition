@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "CCC",
+    "CAC",
+    "CCC"
+  ],
+  "key": {
+    "A": "minecraft:amethyst_shard",
+    "C": "minecraft:calcite"
+  },
+  "result": {
+    "id": "minecraft:lapis_ore",
+    "count": 1
+  }
+}

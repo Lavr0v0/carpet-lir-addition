@@ -2,4 +2,4 @@
 root = "."
 
 [commands]
-build = "gradle build"
+build = ".\\gradlew.bat build"

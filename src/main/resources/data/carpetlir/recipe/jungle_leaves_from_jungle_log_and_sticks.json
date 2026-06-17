@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    " S ",
+    "SWS",
+    " S "
+  ],
+  "key": {
+    "S": "minecraft:stick",
+    "W": "minecraft:jungle_log"
+  },
+  "result": {
+    "id": "minecraft:jungle_leaves",
+    "count": 4
+  }
+}

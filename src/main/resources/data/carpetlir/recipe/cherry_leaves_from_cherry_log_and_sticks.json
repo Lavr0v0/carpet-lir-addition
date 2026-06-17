@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    " S ",
+    "SWS",
+    " S "
+  ],
+  "key": {
+    "S": "minecraft:stick",
+    "W": "minecraft:cherry_log"
+  },
+  "result": {
+    "id": "minecraft:cherry_leaves",
+    "count": 4
+  }
+}

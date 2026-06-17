@@ -2,43 +2,40 @@
 
 Carpet LIR Addition is a Fabric Carpet extension mod focused on renewable-item style survival features.
 
-## Current status
+The development target is Minecraft Java Edition 26.2 on Fabric, with Java 25 and Carpet 26.2.
 
-This repository is initialized as a Carpet extension skeleton and currently includes one sample rule proving rule-driven behavior wiring works.
+## Installation
 
-## Installation (dev)
+Put the matching release jar into a Fabric server/client `mods` folder together with Fabric API and Fabric Carpet.
 
-1. Clone this repository.
-2. Ensure JDK 17 is available.
-3. Run:
-   ```bash
-   gradle build
-   ```
-4. Put the produced jar into a Fabric server/client `mods` folder with Fabric Carpet.
+For local development:
 
-## Rule list
+```powershell
+.\gradlew.bat build
+```
 
-| Rule | Default | Category | Description |
+## Rules
+
+All rules are registered through Carpet's normal `/carpet` command. Defaults are conservative and remain `false`.
+
+| Rule | Default | Categories | Effect |
 | --- | --- | --- | --- |
-| `renewableDebugSample` | `false` | `LIR`, `FEATURE` | When enabled, players receive a short chat confirmation when they join. |
+| `renewableCalcite` | `false` | `LIR`, `FEATURE`, `RENEWABLE` | Lava flowing over bone blocks can generate calcite when an adjacent amethyst block is detected in the same positions used by vanilla basalt generation. |
+| `renewableTuff` | `false` | `LIR`, `FEATURE`, `RENEWABLE` | Enables the furnace recipe that smelts gravel into tuff. |
+| `renewableLapisOre` | `false` | `LIR`, `FEATURE`, `RENEWABLE` | Enables the calcite and amethyst shard crafting recipe for lapis ore. |
+| `renewableLeavesCrafting` | `false` | `LIR`, `FEATURE`, `RENEWABLE` | Enables shaped recipes that turn sticks plus matching logs into corresponding leaves. |
+| `renewableRawOresCrafting` | `false` | `LIR`, `FEATURE`, `RENEWABLE` | Enables cobblestone plus ingot recipes for raw iron, raw copper, and raw gold. |
+| `renewableHoneycombCrafting` | `false` | `LIR`, `FEATURE`, `RENEWABLE` | Enables converting one honeycomb block back into four honeycombs. |
+| `boneMealGrassifyDirt` | `false` | `LIR`, `FEATURE`, `RENEWABLE` | Allows bone meal used on dirt to convert it into a grass block when grass can survive there. |
+| `obsidianHardnessReinforcedDeepslate` | `false` | `LIR`, `FEATURE`, `RENEWABLE` | Makes reinforced deepslate break at an obsidian-like mining speed. |
+| `silkTouchableReinforcedDeepslate` | `false` | `LIR`, `FEATURE`, `RENEWABLE` | Allows reinforced deepslate to drop itself when mined with Silk Touch. |
+| `wardensDropReinforcedDeepslate` | `false` | `LIR`, `FEATURE`, `RENEWABLE` | Makes wardens drop 1 to 4 reinforced deepslate when they die. |
+| `pistonHarvestableAmethysts` | `false` | `LIR`, `FEATURE`, `RENEWABLE` | Budding amethyst breaks and drops itself when a piston tries to push it. |
 
-## Validation steps
+## Validation
 
-### Happy path
-1. Start a world/server with this mod and Carpet.
-2. Enable the rule: `/carpet renewableDebugSample true`.
-3. Rejoin the world.
-4. You should see `[LIR] renewableDebugSample is enabled.` in chat.
+Happy path: enable the matching rule with `/carpet <rule> true`, then perform the documented action such as crafting, lava generation, bone-mealing dirt, mining reinforced deepslate, killing a warden, or piston-pushing budding amethyst.
 
-### Negative path
-1. Set `/carpet renewableDebugSample false`.
-2. Rejoin the world.
-3. No LIR debug join message should appear.
+Negative path: leave the rule at `false` and verify vanilla behavior is unchanged.
 
-### Edge note
-- The message only appears on join events after the rule is enabled; existing players already online are not retroactively notified.
-
-## Known limitations
-
-- No real renewable-item mechanics are implemented yet.
-- Mixin list is intentionally empty in this stage.
+Edge note: recipe rules are filtered during recipe lookup; clients may need a recipe book refresh or rejoin for visible recipe-book state to catch up.
