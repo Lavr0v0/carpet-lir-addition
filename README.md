@@ -1,41 +1,56 @@
 # Carpet LIR Addition
 
-Carpet LIR Addition is a Fabric Carpet extension mod focused on renewable-item style survival features.
+Carpet LIR Addition is a server-authoritative Fabric Carpet extension focused on renewable-item survival mechanics. It adds no custom screens or client rendering, and every behavior is guarded by a Carpet rule that defaults to `false`.
 
-The development target is Minecraft Java Edition 26.2 on Fabric, with Java 25 and Carpet 26.2.
+The current target is Minecraft Java Edition 26.2 with Java 25, Fabric Loader 0.19.3, Fabric API 0.152.1+26.2, and Carpet 26.2.
 
 ## Installation
 
-Put the matching release jar into a Fabric server/client `mods` folder together with Fabric API and Fabric Carpet.
-
-For local development:
-
-```powershell
-.\gradlew.bat build
-```
+Put the Carpet LIR Addition jar in the `mods` folder together with compatible versions of Fabric Loader, Fabric API, and Fabric Carpet. The same jar may be installed on a client joining the server, but all gameplay behavior is decided by the server.
 
 ## Rules
 
-All rules are registered through Carpet's normal `/carpet` command. Defaults are conservative and remain `false`.
+Rules are managed through Carpet's normal `/carpet` command. For example:
 
-| Rule | Default | Categories | Effect |
-| --- | --- | --- | --- |
-| `renewableCalcite` | `false` | `LIR`, `FEATURE`, `RENEWABLE` | Lava flowing over bone blocks can generate calcite when an adjacent amethyst block is detected in the same positions used by vanilla basalt generation. |
-| `renewableTuff` | `false` | `LIR`, `FEATURE`, `RENEWABLE` | Enables the furnace recipe that smelts gravel into tuff. |
-| `renewableLapisOre` | `false` | `LIR`, `FEATURE`, `RENEWABLE` | Enables the calcite and amethyst shard crafting recipe for lapis ore. |
-| `renewableLeavesCrafting` | `false` | `LIR`, `FEATURE`, `RENEWABLE` | Enables shaped recipes that turn sticks plus matching logs into corresponding leaves. |
-| `renewableRawOresCrafting` | `false` | `LIR`, `FEATURE`, `RENEWABLE` | Enables cobblestone plus ingot recipes for raw iron, raw copper, and raw gold. |
-| `renewableHoneycombCrafting` | `false` | `LIR`, `FEATURE`, `RENEWABLE` | Enables converting one honeycomb block back into four honeycombs. |
-| `boneMealGrassifyDirt` | `false` | `LIR`, `FEATURE`, `RENEWABLE` | Allows bone meal used on dirt to convert it into a grass block when grass can survive there. |
-| `obsidianHardnessReinforcedDeepslate` | `false` | `LIR`, `FEATURE`, `RENEWABLE` | Makes reinforced deepslate break at an obsidian-like mining speed. |
-| `silkTouchableReinforcedDeepslate` | `false` | `LIR`, `FEATURE`, `RENEWABLE` | Allows reinforced deepslate to drop itself when mined with Silk Touch. |
-| `wardensDropReinforcedDeepslate` | `false` | `LIR`, `FEATURE`, `RENEWABLE` | Makes wardens drop 1 to 4 reinforced deepslate when they die. |
-| `pistonHarvestableAmethysts` | `false` | `LIR`, `FEATURE`, `RENEWABLE` | Budding amethyst breaks and drops itself when a piston tries to push it. |
+```text
+/carpet renewableCalcite true
+```
 
-## Validation
+| Rule | Effect |
+| --- | --- |
+| `renewableCalcite` | Lava above a bone block generates calcite when an amethyst block is beside or above it. Non-matching lava interactions remain vanilla. |
+| `renewableTuff` | Enables smelting one gravel into one tuff. |
+| `renewableLapisOre` | Enables crafting eight calcite around one amethyst shard into one lapis ore. |
+| `renewableLeavesCrafting` | Enables recipes for four sticks plus a matching log to produce four leaves for all nine supported tree types. |
+| `renewableRawOresCrafting` | Enables eight cobblestone plus an ingot to produce the matching raw iron, copper, or gold. |
+| `renewableHoneycombCrafting` | Enables converting one honeycomb block back into four honeycombs. |
+| `boneMealGrassifyDirt` | Bone meal converts dirt into grass only where grass can actually survive, with vanilla feedback and item consumption. |
+| `obsidianHardnessReinforcedDeepslate` | Gives reinforced deepslate obsidian's actual hardness and mining progress. |
+| `silkTouchableReinforcedDeepslate` | Makes reinforced deepslate drop itself when mined with Silk Touch. |
+| `wardensDropReinforcedDeepslate` | Wardens drop 1–4 reinforced deepslate on death when `mob_drops` is enabled. |
+| `pistonHarvestableAmethysts` | Adds a budding-amethyst item drop when a piston destroys budding amethyst. |
 
-Happy path: enable the matching rule with `/carpet <rule> true`, then perform the documented action such as crafting, lava generation, bone-mealing dirt, mining reinforced deepslate, killing a warden, or piston-pushing budding amethyst.
+All rules use the `LIR`, `FEATURE`, and `RENEWABLE` categories and default to `false`.
 
-Negative path: leave the rule at `false` and verify vanilla behavior is unchanged.
+## Development and verification
 
-Edge note: recipe rules are filtered during recipe lookup; clients may need a recipe book refresh or rejoin for visible recipe-book state to catch up.
+The Gradle wrapper resolves a Java 25 toolchain automatically. The first build therefore needs network access, but it does not depend on a repository-local or machine-specific JDK path.
+
+```powershell
+# Fast logic and resource checks
+.\gradlew.bat test
+
+# Start a real Fabric test server and exercise gameplay behavior
+.\gradlew.bat runGameTest
+
+# Compile, test, remap, and package the release jars
+.\gradlew.bat build
+```
+
+The automated suite checks recipe-to-rule coverage, translation parity, live recipe toggling, calcite generation, dirt conversion, reinforced-deepslate hardness, Warden drops and `mob_drops`, and real piston activation. See [docs/VALIDATION.md](docs/VALIDATION.md) for manual happy, negative, and edge-case checks for every rule.
+
+## Known limitations
+
+- Rule changes affect server recipe matching immediately. A connected client's recipe-book display may remain stale until its recipes are resynchronized, commonly by reconnecting; crafting and furnace validation still use the current server rule.
+- Recipe JSONs are always present in the data pack and are gated during server recipe lookup. Data-pack inspection alone does not indicate whether a recipe is currently enabled.
+- Mixin targets are validated against Minecraft 26.2. A different Minecraft minor version requires a fresh build and GameTest pass rather than only relaxing dependency metadata.

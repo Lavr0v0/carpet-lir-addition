@@ -1,5 +1,25 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- Added unit tests for recipe-to-rule coverage and translation integrity.
+- Added server-side Fabric GameTests for calcite, bone meal, recipes, reinforced deepslate hardness, Warden drops, game-rule handling, and piston harvesting.
+- Added automatic Java 25 toolchain resolution for portable development builds.
+
+### Changed
+- Restricted calcite generation to the custom matching branch and left all non-matching lava behavior to vanilla.
+- Matched grass-block survival checks and native feedback when bone meal converts dirt.
+- Centralized all 15 recipe-to-rule mappings and bounded Fabric API and Carpet dependency metadata to tested minimum versions.
+- Scoped budding-amethyst loot replacement directly to the piston destruction call site.
+- Read the extension version from Fabric metadata instead of returning an unexpanded placeholder.
+
+### Fixed
+- Made Warden bonus drops respect `mob_drops` instead of the unrelated `block_drops` game rule.
+- Cleared disabled cached recipe hints before vanilla fallback, preventing a stale cache from suppressing another valid recipe.
+- Prevented custom calcite handling from duplicating and intercepting vanilla water, cobblestone, stone, and basalt branches while its rule is disabled.
+- Prevented bone meal from creating grass under full water or opaque blocks where it immediately decays.
+
 ## [1.0.3] - 2026-06-17
 
 ### Changed
