@@ -3,9 +3,7 @@ package org.lavro.carpetlir.mixins;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootParams;
-import net.minecraft.world.level.material.PushReaction;
 import org.lavro.carpetlir.features.renewable.ReinforcedDeepslateFeature;
-import org.lavro.carpetlir.features.renewable.PistonHarvestableAmethystFeature;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -36,18 +34,6 @@ public abstract class AbstractBlockStateMixin {
         BlockBehaviour.BlockStateBase state = (BlockBehaviour.BlockStateBase) (Object) this;
         if (ReinforcedDeepslateFeature.shouldUseObsidianHardness(state)) {
             cir.setReturnValue(ReinforcedDeepslateFeature.getObsidianMiningDelta(player, world, pos));
-        }
-    }
-
-    /**
-     * Restricts piston harvesting to budding amethyst by overriding only its piston behavior,
-     * leaving normal mining, loot, and all other blocks unchanged.
-     */
-    @Inject(method = "getPistonPushReaction", at = @At("HEAD"), cancellable = true)
-    private void carpetlir$markBuddingAmethystDestroyable(CallbackInfoReturnable<PushReaction> cir) {
-        BlockBehaviour.BlockStateBase state = (BlockBehaviour.BlockStateBase) (Object) this;
-        if (PistonHarvestableAmethystFeature.shouldBreakWhenPushed(state)) {
-            cir.setReturnValue(PushReaction.DESTROY);
         }
     }
 

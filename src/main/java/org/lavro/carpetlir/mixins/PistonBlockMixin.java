@@ -1,36 +1,41 @@
 package org.lavro.carpetlir.mixins;
 
-import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.piston.PistonBaseBlock;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.Level;
-import org.lavro.carpetlir.LIRSettings;
-import org.lavro.carpetlir.helpers.PistonHarvestContext;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.piston.PistonBaseBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import org.lavro.carpetlir.features.renewable.PistonHarvestableAmethystFeature;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
 
 @Mixin(PistonBaseBlock.class)
 public abstract class PistonBlockMixin {
     /**
-     * Wraps PistonBaseBlock.triggerEvent because that method owns the destroy-and-drop sequence.
-     * The scoped helper uses finally cleanup, so an exception cannot leak piston context into
-     * later block drops on the same server thread.
+     * Replaces loot only at the piston destruction call site. Budding amethyst already uses
+     * vanilla's DESTROY push reaction in 26.2, so the rule only needs to add its self-drop.
      */
-    @WrapMethod(method = "triggerEvent")
-    private boolean carpetlir$withHarvestContext(
+    @WrapOperation(
+            method = "moveBlocks",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/level/block/piston/PistonBaseBlock;dropResources(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/LevelAccessor;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/entity/BlockEntity;)V"
+            )
+    )
+    private void carpetlir$dropBuddingAmethystFromPiston(
             BlockState state,
-            Level world,
+            LevelAccessor world,
             BlockPos pos,
-            int type,
-            int data,
-            Operation<Boolean> original
+            BlockEntity blockEntity,
+            Operation<Void> original
     ) {
-        if (world.isClientSide() || !LIRSettings.pistonHarvestableAmethysts) {
-            return original.call(state, world, pos, type, data);
+        if (PistonHarvestableAmethystFeature.shouldDropSelf(state)) {
+            PistonHarvestableAmethystFeature.dropSelf(world, pos);
+            return;
         }
 
-        return PistonHarvestContext.run(() -> original.call(state, world, pos, type, data));
+        original.call(state, world, pos, blockEntity);
     }
 }
-
