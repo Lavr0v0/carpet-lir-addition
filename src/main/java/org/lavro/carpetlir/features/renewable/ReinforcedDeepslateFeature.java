@@ -2,7 +2,6 @@ package org.lavro.carpetlir.features.renewable;
 
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -20,6 +19,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.gamerules.GameRules;
 import org.lavro.carpetlir.LIRSettings;
 
 import java.util.List;
@@ -71,8 +71,12 @@ public final class ReinforcedDeepslateFeature {
         }
 
         ServerLevel world = (ServerLevel) entity.level();
+        if (!world.getGameRules().get(GameRules.MOB_DROPS)) {
+            return;
+        }
+
         int count = 1 + entity.getRandom().nextInt(4);
-        Block.popResource(world, entity.blockPosition(), new ItemStack(Blocks.REINFORCED_DEEPSLATE, count));
+        entity.spawnAtLocation(world, new ItemStack(Blocks.REINFORCED_DEEPSLATE, count));
     }
 }
 
