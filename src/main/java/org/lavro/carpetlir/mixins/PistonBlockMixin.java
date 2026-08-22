@@ -1,5 +1,7 @@
 package org.lavro.carpetlir.mixins;
 
+import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.piston.PistonBaseBlock;
 import net.minecraft.core.BlockPos;
@@ -7,28 +9,28 @@ import net.minecraft.world.level.Level;
 import org.lavro.carpetlir.LIRSettings;
 import org.lavro.carpetlir.helpers.PistonHarvestContext;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(PistonBaseBlock.class)
 public abstract class PistonBlockMixin {
     /**
-     * Tracks only piston block-event execution so the custom budding-amethyst drop is limited
-     * to mechanical breaks and never leaks into ordinary mining or explosion loot paths.
+     * Wraps PistonBaseBlock.triggerEvent because that method owns the destroy-and-drop sequence.
+     * The scoped helper uses finally cleanup, so an exception cannot leak piston context into
+     * later block drops on the same server thread.
      */
-    @Inject(method = "triggerEvent", at = @At("HEAD"))
-    private void carpetlir$enterHarvestContext(BlockState state, Level world, BlockPos pos, int type, int data, CallbackInfoReturnable<Boolean> cir) {
-        if (!world.isClientSide() && LIRSettings.pistonHarvestableAmethysts) {
-            PistonHarvestContext.enter();
+    @WrapMethod(method = "triggerEvent")
+    private boolean carpetlir$withHarvestContext(
+            BlockState state,
+            Level world,
+            BlockPos pos,
+            int type,
+            int data,
+            Operation<Boolean> original
+    ) {
+        if (world.isClientSide() || !LIRSettings.pistonHarvestableAmethysts) {
+            return original.call(state, world, pos, type, data);
         }
-    }
 
-    @Inject(method = "triggerEvent", at = @At("RETURN"))
-    private void carpetlir$exitHarvestContext(BlockState state, Level world, BlockPos pos, int type, int data, CallbackInfoReturnable<Boolean> cir) {
-        if (!world.isClientSide() && LIRSettings.pistonHarvestableAmethysts) {
-            PistonHarvestContext.exit();
-        }
+        return PistonHarvestContext.run(() -> original.call(state, world, pos, type, data));
     }
 }
 

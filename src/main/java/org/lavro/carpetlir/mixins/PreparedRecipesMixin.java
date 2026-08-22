@@ -16,6 +16,10 @@ import java.util.stream.Stream;
 
 @Mixin(RecipeMap.class)
 public abstract class PreparedRecipesMixin {
+    /**
+     * Filters the final matching stream instead of mutating Minecraft's loaded recipe registry.
+     * This allows Carpet rules to change at runtime while leaving unrelated recipes untouched.
+     */
     @Inject(method = "getRecipesFor", at = @At("RETURN"), cancellable = true)
     private <I extends RecipeInput, T extends Recipe<I>> void carpetlir$filterDisabledRecipeStream(RecipeType<T> type, I input, Level world, CallbackInfoReturnable<Stream<RecipeHolder<T>>> cir) {
         cir.setReturnValue(cir.getReturnValue().filter(RecipeToggleFeature::isEnabled));
