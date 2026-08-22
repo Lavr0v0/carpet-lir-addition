@@ -6,6 +6,16 @@ plugins {
 version = project.mod_version
 group = project.maven_group
 
+def resourceProperties = [
+        version: version.toString(),
+        minecraft_dependency: "~${minecraft_version}",
+        loader_dependency: ">=${loader_version}",
+        fabric_api_dependency: ">=${fabric_version}",
+        carpet_dependency: ">=${carpet_core_version}",
+        target_profile: minecraft_version.toString()
+]
+def licenseArchiveName = archives_base_name.toString()
+
 base {
     archivesName = project.archives_base_name
 }
@@ -39,21 +49,10 @@ fabricApi {
 }
 
 processResources {
-    inputs.property 'version', project.version
-    inputs.property 'minecraft_dependency', "~${project.minecraft_version}"
-    inputs.property 'loader_dependency', ">=${project.loader_version}"
-    inputs.property 'fabric_api_dependency', ">=${project.fabric_version}"
-    inputs.property 'carpet_dependency', ">=${project.carpet_core_version}"
+    inputs.properties resourceProperties
 
     filesMatching('fabric.mod.json') {
-        expand(
-                version: project.version,
-                minecraft_dependency: "~${project.minecraft_version}",
-                loader_dependency: ">=${project.loader_version}",
-                fabric_api_dependency: ">=${project.fabric_version}",
-                carpet_dependency: ">=${project.carpet_core_version}",
-                target_profile: project.minecraft_version
-        )
+        expand resourceProperties
     }
 }
 
@@ -78,7 +77,7 @@ test {
 
 jar {
     from('LICENSE') {
-        rename { "${it}_${project.archives_base_name}" }
+        rename { "${it}_${licenseArchiveName}" }
     }
 }
 
