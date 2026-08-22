@@ -21,7 +21,7 @@
   "depends": {
     "fabricloader": "${loader_dependency}",
     "minecraft": "${minecraft_dependency}",
-    "fabric-api": "*",
-    "carpet": "*"
+    "fabric-api": "${fabric_api_dependency}",
+    "carpet": "${carpet_dependency}"
   }
 }
