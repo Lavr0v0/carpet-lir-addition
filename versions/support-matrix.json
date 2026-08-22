@@ -1,0 +1,463 @@
+{
+  "schemaVersion": 1,
+  "scope": {
+    "minimumTarget": "1.14.4",
+    "maximumTarget": "26.2",
+    "description": "Stable Fabric Carpet targets only. Snapshot, pre-release, release-candidate, beta, and pre-Fabric 1.12/1.13 lines are intentionally excluded."
+  },
+  "capabilityTiers": [
+    {
+      "id": "tier-1.14",
+      "minimumTarget": "1.14.4",
+      "availableRules": [
+        "boneMealGrassifyDirt",
+        "renewableLeavesCrafting"
+      ],
+      "leafRecipeVariants": [
+        "oak",
+        "spruce",
+        "birch",
+        "jungle",
+        "acacia",
+        "dark_oak"
+      ]
+    },
+    {
+      "id": "tier-1.15",
+      "minimumTarget": "1.15",
+      "availableRules": [
+        "boneMealGrassifyDirt",
+        "renewableLeavesCrafting",
+        "renewableHoneycombCrafting"
+      ],
+      "leafRecipeVariants": [
+        "oak",
+        "spruce",
+        "birch",
+        "jungle",
+        "acacia",
+        "dark_oak"
+      ]
+    },
+    {
+      "id": "tier-1.17",
+      "minimumTarget": "1.17",
+      "availableRules": [
+        "boneMealGrassifyDirt",
+        "renewableLeavesCrafting",
+        "renewableHoneycombCrafting",
+        "renewableCalcite",
+        "renewableTuff",
+        "renewableLapisOre",
+        "renewableRawOresCrafting",
+        "pistonHarvestableAmethysts"
+      ],
+      "leafRecipeVariants": [
+        "oak",
+        "spruce",
+        "birch",
+        "jungle",
+        "acacia",
+        "dark_oak"
+      ]
+    },
+    {
+      "id": "tier-1.19",
+      "minimumTarget": "1.19",
+      "availableRules": [
+        "boneMealGrassifyDirt",
+        "renewableLeavesCrafting",
+        "renewableHoneycombCrafting",
+        "renewableCalcite",
+        "renewableTuff",
+        "renewableLapisOre",
+        "renewableRawOresCrafting",
+        "pistonHarvestableAmethysts",
+        "obsidianHardnessReinforcedDeepslate",
+        "silkTouchableReinforcedDeepslate",
+        "wardensDropReinforcedDeepslate"
+      ],
+      "leafRecipeVariants": [
+        "oak",
+        "spruce",
+        "birch",
+        "jungle",
+        "acacia",
+        "dark_oak",
+        "mangrove"
+      ]
+    },
+    {
+      "id": "tier-1.20",
+      "minimumTarget": "1.20",
+      "availableRules": [
+        "boneMealGrassifyDirt",
+        "renewableLeavesCrafting",
+        "renewableHoneycombCrafting",
+        "renewableCalcite",
+        "renewableTuff",
+        "renewableLapisOre",
+        "renewableRawOresCrafting",
+        "pistonHarvestableAmethysts",
+        "obsidianHardnessReinforcedDeepslate",
+        "silkTouchableReinforcedDeepslate",
+        "wardensDropReinforcedDeepslate"
+      ],
+      "leafRecipeVariants": [
+        "oak",
+        "spruce",
+        "birch",
+        "jungle",
+        "acacia",
+        "dark_oak",
+        "mangrove",
+        "cherry"
+      ]
+    },
+    {
+      "id": "tier-1.21.4",
+      "minimumTarget": "1.21.4",
+      "availableRules": [
+        "boneMealGrassifyDirt",
+        "renewableLeavesCrafting",
+        "renewableHoneycombCrafting",
+        "renewableCalcite",
+        "renewableTuff",
+        "renewableLapisOre",
+        "renewableRawOresCrafting",
+        "pistonHarvestableAmethysts",
+        "obsidianHardnessReinforcedDeepslate",
+        "silkTouchableReinforcedDeepslate",
+        "wardensDropReinforcedDeepslate"
+      ],
+      "leafRecipeVariants": [
+        "oak",
+        "spruce",
+        "birch",
+        "jungle",
+        "acacia",
+        "dark_oak",
+        "mangrove",
+        "cherry",
+        "pale_oak"
+      ]
+    }
+  ],
+  "targets": [
+    {
+      "target": "1.14.4",
+      "profile": "mc_1_14_4",
+      "java": 8,
+      "sourceFamily": "yarn-1.14",
+      "status": "planned",
+      "capabilityTier": "tier-1.14",
+      "notes": "Earliest stable Fabric Carpet line; intentionally limited to leaves crafting and bone-meal grass conversion."
+    },
+    {
+      "target": "1.15",
+      "profile": "mc_1_15",
+      "java": 8,
+      "sourceFamily": "yarn-1.15",
+      "status": "planned",
+      "capabilityTier": "tier-1.15",
+      "notes": "First honeycomb-capable tier; no prior Carpet LIR release exists for this target."
+    },
+    {
+      "target": "1.15.1",
+      "profile": "mc_1_15_1",
+      "java": 8,
+      "sourceFamily": "yarn-1.15",
+      "status": "planned",
+      "capabilityTier": "tier-1.15",
+      "notes": "Stable Fabric Carpet target requiring a fresh compile and server smoke test."
+    },
+    {
+      "target": "1.15.2",
+      "profile": "mc_1_15_2",
+      "java": 8,
+      "sourceFamily": "yarn-1.15",
+      "status": "planned",
+      "capabilityTier": "tier-1.15",
+      "notes": "Final 1.15 source-family target; no prior Carpet LIR release exists."
+    },
+    {
+      "target": "1.16",
+      "profile": "mc_1_16",
+      "java": 8,
+      "sourceFamily": "yarn-1.16",
+      "status": "planned",
+      "capabilityTier": "tier-1.15",
+      "notes": "Stable Fabric Carpet target; keeps the 1.15 capability tier."
+    },
+    {
+      "target": "1.16.2",
+      "profile": "mc_1_16_2",
+      "java": 8,
+      "sourceFamily": "yarn-1.16",
+      "status": "planned",
+      "capabilityTier": "tier-1.15",
+      "notes": "Fabric Carpet has no stable 1.16.1 coordinate, so the catalog advances directly to 1.16.2."
+    },
+    {
+      "target": "1.16.3",
+      "profile": "mc_1_16_3",
+      "java": 8,
+      "sourceFamily": "yarn-1.16",
+      "status": "planned",
+      "capabilityTier": "tier-1.15",
+      "notes": "Stable Fabric Carpet target requiring a fresh compile and server smoke test."
+    },
+    {
+      "target": "1.16.4",
+      "profile": "mc_1_16_4",
+      "java": 8,
+      "sourceFamily": "yarn-1.16",
+      "status": "planned",
+      "capabilityTier": "tier-1.15",
+      "notes": "Stable Fabric Carpet target requiring a fresh compile and server smoke test."
+    },
+    {
+      "target": "1.16.5",
+      "profile": "mc_1_16_5",
+      "java": 8,
+      "sourceFamily": "yarn-1.16",
+      "status": "planned",
+      "capabilityTier": "tier-1.15",
+      "notes": "Final Java 8 target and long-lived 1.16 maintenance line."
+    },
+    {
+      "target": "1.17",
+      "profile": "mc_1_17",
+      "java": 16,
+      "sourceFamily": "yarn-1.17",
+      "status": "planned",
+      "capabilityTier": "tier-1.17",
+      "notes": "Adds calcite, tuff, lapis, raw-ore, and amethyst mechanics."
+    },
+    {
+      "target": "1.17.1",
+      "profile": "mc_1_17_1",
+      "java": 16,
+      "sourceFamily": "yarn-1.17",
+      "status": "planned",
+      "capabilityTier": "tier-1.17",
+      "notes": "Final Java 16 target; requires feature-level GameTest alternatives for this API generation."
+    },
+    {
+      "target": "1.18",
+      "profile": "mc_1_18",
+      "java": 17,
+      "sourceFamily": "yarn-1.18",
+      "status": "planned",
+      "capabilityTier": "tier-1.17",
+      "notes": "First Java 17 target; retains the 1.17 capability tier."
+    },
+    {
+      "target": "1.18.1",
+      "profile": "mc_1_18_1",
+      "java": 17,
+      "sourceFamily": "yarn-1.18",
+      "status": "planned",
+      "capabilityTier": "tier-1.17",
+      "notes": "Stable Fabric Carpet target requiring a fresh compile and server smoke test."
+    },
+    {
+      "target": "1.18.2",
+      "profile": "mc_1_18_2",
+      "java": 17,
+      "sourceFamily": "yarn-1.18",
+      "status": "planned",
+      "capabilityTier": "tier-1.17",
+      "notes": "Final 1.18 source-family target."
+    },
+    {
+      "target": "1.19",
+      "profile": "mc_1_19",
+      "java": 17,
+      "sourceFamily": "yarn-1.19",
+      "status": "planned",
+      "capabilityTier": "tier-1.19",
+      "notes": "Adds reinforced-deepslate rules, Warden drops, and mangrove leaf recipes."
+    },
+    {
+      "target": "1.19.1",
+      "profile": "mc_1_19_1",
+      "java": 17,
+      "sourceFamily": "yarn-1.19",
+      "status": "planned",
+      "capabilityTier": "tier-1.19",
+      "notes": "Stable Fabric Carpet target requiring a fresh compile and server smoke test."
+    },
+    {
+      "target": "1.19.2",
+      "profile": "mc_1_19_2",
+      "java": 17,
+      "sourceFamily": "yarn-1.19",
+      "status": "planned",
+      "capabilityTier": "tier-1.19",
+      "notes": "Stable Fabric Carpet target requiring a fresh compile and server smoke test."
+    },
+    {
+      "target": "1.19.3",
+      "profile": "mc_1_19_3",
+      "java": 17,
+      "sourceFamily": "yarn-1.19",
+      "status": "planned",
+      "capabilityTier": "tier-1.19",
+      "notes": "Stable Fabric Carpet target requiring a fresh compile and server smoke test."
+    },
+    {
+      "target": "1.19.4",
+      "profile": "mc_1_19_4",
+      "java": 17,
+      "sourceFamily": "yarn-1.19",
+      "status": "planned",
+      "capabilityTier": "tier-1.19",
+      "notes": "Final 1.19 source-family target."
+    },
+    {
+      "target": "1.20",
+      "profile": "mc_1_20",
+      "java": 17,
+      "sourceFamily": "yarn-1.20.1",
+      "status": "released-legacy",
+      "capabilityTier": "tier-1.20",
+      "notes": "Published in the v1.0.1 1.20-1.20.1 range artifact; must be rebuilt from audited code before renewed release."
+    },
+    {
+      "target": "1.20.2",
+      "profile": "mc_1_20_2",
+      "java": 17,
+      "sourceFamily": "yarn-1.20.2-plus",
+      "status": "released-legacy",
+      "capabilityTier": "tier-1.20",
+      "notes": "Published as a standalone v1.0.1 artifact; current regression suite has not yet been ported."
+    },
+    {
+      "target": "1.20.3",
+      "profile": "mc_1_20_3",
+      "java": 17,
+      "sourceFamily": "yarn-1.20.2-plus",
+      "status": "released-legacy",
+      "capabilityTier": "tier-1.20",
+      "notes": "Carpet coordinate used by the published v1.0.1 1.20.3-1.20.4 range artifact."
+    },
+    {
+      "target": "1.20.5",
+      "profile": "mc_1_20_5",
+      "java": 21,
+      "sourceFamily": "yarn-1.20.2-plus",
+      "status": "planned",
+      "capabilityTier": "tier-1.20",
+      "notes": "Stable Java 21 Carpet coordinate; the legacy range artifact was compiled against 1.20.6 instead."
+    },
+    {
+      "target": "1.20.6",
+      "profile": "mc_1_20_6",
+      "java": 21,
+      "sourceFamily": "yarn-1.20.2-plus",
+      "status": "released-legacy",
+      "capabilityTier": "tier-1.20",
+      "notes": "Compile target for the published v1.0.1 1.20.5-1.20.6 range artifact."
+    },
+    {
+      "target": "1.21",
+      "profile": "mc_1_21",
+      "java": 21,
+      "sourceFamily": "yarn-1.21.1",
+      "status": "released-legacy",
+      "capabilityTier": "tier-1.20",
+      "notes": "Carpet coordinate used by the published v1.0.1 1.21-1.21.1 range artifact."
+    },
+    {
+      "target": "1.21.2",
+      "profile": "mc_1_21_2",
+      "java": 21,
+      "sourceFamily": "yarn-1.21.2-plus",
+      "status": "released-legacy",
+      "capabilityTier": "tier-1.20",
+      "notes": "Carpet coordinate used by the published v1.0.1 1.21.2-1.21.3 range artifact; pale oak must remain excluded."
+    },
+    {
+      "target": "1.21.4",
+      "profile": "mc_1_21_4",
+      "java": 21,
+      "sourceFamily": "yarn-1.21.2-plus",
+      "status": "released-legacy",
+      "capabilityTier": "tier-1.21.4",
+      "notes": "Published as a standalone v1.0.1 artifact and first target with pale oak leaf recipes."
+    },
+    {
+      "target": "1.21.5",
+      "profile": "mc_1_21_5",
+      "java": 21,
+      "sourceFamily": "yarn-1.21.2-plus",
+      "status": "released-legacy",
+      "capabilityTier": "tier-1.21.4",
+      "notes": "Published as a standalone v1.0.1 artifact; requires fresh audited validation."
+    },
+    {
+      "target": "1.21.6",
+      "profile": "mc_1_21_6",
+      "java": 21,
+      "sourceFamily": "yarn-1.21.8",
+      "status": "planned",
+      "capabilityTier": "tier-1.21.4",
+      "notes": "Stable Carpet coordinate; the legacy grouped artifact was compiled with the later 1.21.7 Carpet release."
+    },
+    {
+      "target": "1.21.7",
+      "profile": "mc_1_21_7",
+      "java": 21,
+      "sourceFamily": "yarn-1.21.8",
+      "status": "released-legacy",
+      "capabilityTier": "tier-1.21.4",
+      "notes": "Carpet coordinate used by the published v1.0.1 1.21.6-1.21.8 range artifact."
+    },
+    {
+      "target": "1.21.9",
+      "profile": "mc_1_21_9",
+      "java": 21,
+      "sourceFamily": "yarn-1.21.11",
+      "status": "planned",
+      "capabilityTier": "tier-1.21.4",
+      "notes": "Stable Carpet coordinate; the legacy grouped artifact was compiled with 1.21.10."
+    },
+    {
+      "target": "1.21.10",
+      "profile": "mc_1_21_10",
+      "java": 21,
+      "sourceFamily": "yarn-1.21.11",
+      "status": "released-legacy",
+      "capabilityTier": "tier-1.21.4",
+      "notes": "Compile target for the published v1.0.1 1.21.9-1.21.10 range artifact."
+    },
+    {
+      "target": "1.21.11",
+      "profile": "mc_1_21_11",
+      "java": 21,
+      "sourceFamily": "yarn-1.21.11",
+      "status": "released-legacy",
+      "capabilityTier": "tier-1.21.4",
+      "notes": "Published as a standalone v1.0.1 artifact; not yet validated against the current audited implementation."
+    },
+    {
+      "target": "26.1",
+      "profile": "mc_26_1",
+      "java": 25,
+      "sourceFamily": "mojang-26",
+      "status": "planned",
+      "capabilityTier": "tier-1.21.4",
+      "notes": "An ignored local 1.0.3 draft exists, but there is no tagged release or current regression-suite result."
+    },
+    {
+      "target": "26.2",
+      "profile": "mc_26_2",
+      "java": 25,
+      "sourceFamily": "mojang-26",
+      "status": "verified",
+      "capabilityTier": "tier-1.21.4",
+      "notes": "Current audited source line with unit tests, GameTests, clean build, and server startup validation."
+    }
+  ]
+}
