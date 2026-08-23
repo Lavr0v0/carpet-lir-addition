@@ -94,6 +94,25 @@ public final class CarpetLIRGameTests {
     }
 
     @GameTest
+    public void boneMealSpectatorCannotModifyDirt(GameTestHelper helper) {
+        try {
+            LIRSettings.boneMealGrassifyDirt = true;
+            helper.setBlock(TEST_POS, Blocks.DIRT);
+            Player player = helper.makeMockPlayer(GameType.SPECTATOR);
+            player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.BONE_MEAL, 2));
+
+            InteractionResult result = useBoneMealCallback(helper, player);
+
+            helper.assertTrue(result == InteractionResult.PASS, "Expected spectator interaction to pass through");
+            helper.assertBlockPresent(Blocks.DIRT, TEST_POS);
+            helper.assertTrue(player.getMainHandItem().getCount() == 2, "Expected no spectator item consumption");
+            helper.succeed();
+        } finally {
+            LIRSettings.boneMealGrassifyDirt = false;
+        }
+    }
+
+    @GameTest
     public void boneMealRequiresGrassSurvivalSpace(GameTestHelper helper) {
         try {
             LIRSettings.boneMealGrassifyDirt = true;

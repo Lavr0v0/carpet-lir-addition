@@ -26,7 +26,7 @@ public final class BoneMealGrassifyDirtFeature {
     }
 
     private static ActionResult onUseBlock(PlayerEntity player, World world, Hand hand, BlockHitResult hitResult) {
-        if (!LIRSettings.boneMealGrassifyDirt) {
+        if (!canHandleInteraction(LIRSettings.boneMealGrassifyDirt, player.isSpectator())) {
             return ActionResult.PASS;
         }
 
@@ -55,6 +55,10 @@ public final class BoneMealGrassifyDirtFeature {
         stack.emitUseGameEvent(player, GameEvent.ITEM_INTERACT_FINISH);
         world.syncWorldEvent(1505, pos, 15);
         return ActionResult.SUCCESS_SERVER;
+    }
+
+    static boolean canHandleInteraction(boolean ruleEnabled, boolean spectator) {
+        return ruleEnabled && !spectator;
     }
 
     private static boolean canGrassSurvive(World world, BlockPos pos) {
