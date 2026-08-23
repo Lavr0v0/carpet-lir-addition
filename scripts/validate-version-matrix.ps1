@@ -267,8 +267,8 @@ try {
     exit 1
 }
 
-if ($matrix.schemaVersion -ne 3) {
-    Add-ValidationError "schemaVersion must be 3."
+if ($matrix.schemaVersion -ne 4) {
+    Add-ValidationError "schemaVersion must be 4."
 }
 
 $tiers = @($matrix.capabilityTiers)
@@ -461,7 +461,7 @@ if (-not (Test-SetEquality @($actualMinecraftVersions) $ExpectedMinecraftVersion
 
 $seenTargets = @{}
 $seenProfiles = @{}
-$seenCarpetVersions = @{}
+$seenCarpetArtifacts = @{}
 $previousTargetVersion = $null
 $previousJava = 0
 $previousRules = @()
@@ -513,14 +513,15 @@ foreach ($target in $targets) {
         Add-ValidationError "$context requires non-empty notes."
     }
 
-    $carpetVersion = [string]$target.carpetVersion
-    if ([string]::IsNullOrWhiteSpace($carpetVersion)) {
-        Add-ValidationError "$context requires an exact carpetVersion."
+    $carpetArtifact = [string]$target.carpetArtifact
+    $carpetModVersion = [string]$target.carpetModVersion
+    if ([string]::IsNullOrWhiteSpace($carpetArtifact)) {
+        Add-ValidationError "$context requires an exact carpetArtifact."
     } else {
-        if ($seenCarpetVersions.ContainsKey($carpetVersion)) {
-            Add-ValidationError "Duplicate Carpet version '$carpetVersion'."
+        if ($seenCarpetArtifacts.ContainsKey($carpetArtifact)) {
+            Add-ValidationError "Duplicate Carpet artifact '$carpetArtifact'."
         } else {
-            $seenCarpetVersions[$carpetVersion] = $true
+            $seenCarpetArtifacts[$carpetArtifact] = $true
         }
         $escapedTarget = [regex]::Escape($targetName)
         $coordinatePattern = if ($targetVersion -ge (Convert-ToTargetVersion '26.1')) {
@@ -528,8 +529,20 @@ foreach ($target in $targets) {
         } else {
             "^$escapedTarget-1\.\d+\.\d+\+v\d{6}$"
         }
-        if ($carpetVersion -notmatch $coordinatePattern) {
-            Add-ValidationError "$context has malformed Carpet coordinate '$carpetVersion'."
+        if ($carpetArtifact -notmatch $coordinatePattern) {
+            Add-ValidationError "$context has malformed Carpet artifact '$carpetArtifact'."
+        }
+    }
+    if ([string]::IsNullOrWhiteSpace($carpetModVersion)) {
+        Add-ValidationError "$context requires an exact carpetModVersion."
+    } elseif (-not [string]::IsNullOrWhiteSpace($carpetArtifact)) {
+        $expectedModVersion = if ($targetVersion -ge (Convert-ToTargetVersion '26.1')) {
+            $carpetArtifact
+        } else {
+            $carpetArtifact.Substring($targetName.Length + 1)
+        }
+        if ($carpetModVersion -ne $expectedModVersion) {
+            Add-ValidationError "$context Carpet mod version '$carpetModVersion' does not match artifact '$carpetArtifact'."
         }
     }
 
@@ -641,8 +654,8 @@ if ($VerifyMaven) {
                 continue
             }
             $latestPublished = $publishedForTarget[-1]
-            if ([string]$target.carpetVersion -ne $latestPublished) {
-                Add-ValidationError "Target '$targetName' pins '$($target.carpetVersion)' but official Maven latest is '$latestPublished'."
+            if ([string]$target.carpetArtifact -ne $latestPublished) {
+                Add-ValidationError "Target '$targetName' pins '$($target.carpetArtifact)' but official Maven latest is '$latestPublished'."
             }
         }
     } catch {

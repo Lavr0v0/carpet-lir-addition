@@ -171,8 +171,8 @@ try {
     if ([string]::IsNullOrWhiteSpace($carpetDependency) -or $carpetDependency -eq '*') {
         throw 'Release JAR must declare a bounded Fabric Carpet dependency.'
     }
-    if (-not $carpetDependency.Contains([string]$target.carpetVersion)) {
-        throw "Release JAR Carpet dependency '$carpetDependency' does not include audited coordinate '$($target.carpetVersion)'."
+    if (-not $carpetDependency.Contains([string]$target.carpetModVersion)) {
+        throw "Release JAR Carpet dependency '$carpetDependency' does not include runtime mod version '$($target.carpetModVersion)'."
     }
 
     $testEntries = @($zip.Entries | Where-Object {
