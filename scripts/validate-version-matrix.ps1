@@ -1,6 +1,7 @@
 param(
     [string]$MatrixPath = (Join-Path $PSScriptRoot '..\versions\support-matrix.json'),
     [switch]$VerifyMaven,
+    [switch]$VerifyArtifactMetadata,
     [string]$CarpetMavenMetadataUrl = 'https://masa.dy.fi/maven/carpet/fabric-carpet/maven-metadata.xml'
 )
 
@@ -536,13 +537,17 @@ foreach ($target in $targets) {
     if ([string]::IsNullOrWhiteSpace($carpetModVersion)) {
         Add-ValidationError "$context requires an exact carpetModVersion."
     } elseif (-not [string]::IsNullOrWhiteSpace($carpetArtifact)) {
-        $expectedModVersion = if ($targetVersion -ge (Convert-ToTargetVersion '26.1')) {
-            $carpetArtifact
-        } else {
-            $carpetArtifact.Substring($targetName.Length + 1)
+        if ($carpetModVersion -notmatch '^(?:1\.\d+\.\d+|26\.\d+)(?:\+v\d{6})?$') {
+            Add-ValidationError "$context has malformed Carpet mod version '$carpetModVersion'."
         }
-        if ($carpetModVersion -ne $expectedModVersion) {
-            Add-ValidationError "$context Carpet mod version '$carpetModVersion' does not match artifact '$carpetArtifact'."
+        $escapedModVersion = [regex]::Escape($carpetModVersion)
+        $matchesArtifact = if ($targetVersion -ge (Convert-ToTargetVersion '26.1')) {
+            $carpetArtifact -eq $carpetModVersion
+        } else {
+            $carpetArtifact -match "-$escapedModVersion(?:\+v\d{6})?$"
+        }
+        if (-not $matchesArtifact) {
+            Add-ValidationError "$context Carpet mod version '$carpetModVersion' is inconsistent with artifact '$carpetArtifact'."
         }
     }
 
@@ -631,10 +636,11 @@ if ($targets.Count -gt 0) {
     }
 }
 
-if ($VerifyMaven) {
+if ($VerifyMaven -or $VerifyArtifactMetadata) {
     try {
         $mavenResponse = Invoke-WebRequest -UseBasicParsing -Uri $CarpetMavenMetadataUrl
         $mavenMetadata = [xml]$mavenResponse.Content
+        $mavenBaseUrl = $CarpetMavenMetadataUrl.Substring(0, $CarpetMavenMetadataUrl.LastIndexOf('/') + 1)
         $publishedCarpetVersions = @($mavenMetadata.metadata.versioning.versions.version | ForEach-Object { [string]$_ })
         if ($publishedCarpetVersions.Count -eq 0) {
             throw 'Maven metadata contained no versions.'
@@ -656,6 +662,42 @@ if ($VerifyMaven) {
             $latestPublished = $publishedForTarget[-1]
             if ([string]$target.carpetArtifact -ne $latestPublished) {
                 Add-ValidationError "Target '$targetName' pins '$($target.carpetArtifact)' but official Maven latest is '$latestPublished'."
+            }
+
+            if ($VerifyArtifactMetadata) {
+                Add-Type -AssemblyName System.IO.Compression
+                $artifact = [string]$target.carpetArtifact
+                $artifactUrl = "${mavenBaseUrl}${artifact}/fabric-carpet-${artifact}.jar"
+                $artifactResponse = Invoke-WebRequest -UseBasicParsing -Uri $artifactUrl
+                $artifactMemory = New-Object System.IO.MemoryStream
+                $artifactZip = $null
+                try {
+                    $artifactResponse.RawContentStream.CopyTo($artifactMemory)
+                    $artifactMemory.Position = 0
+                    $artifactZip = New-Object System.IO.Compression.ZipArchive(
+                            $artifactMemory,
+                            [System.IO.Compression.ZipArchiveMode]::Read
+                    )
+                    $fabricMetadataEntry = $artifactZip.GetEntry('fabric.mod.json')
+                    if ($null -eq $fabricMetadataEntry) {
+                        Add-ValidationError "Official Carpet artifact '$artifact' has no fabric.mod.json."
+                    } else {
+                        $fabricMetadataReader = New-Object System.IO.StreamReader($fabricMetadataEntry.Open())
+                        try {
+                            $fabricMetadata = $fabricMetadataReader.ReadToEnd() | ConvertFrom-Json
+                        } finally {
+                            $fabricMetadataReader.Dispose()
+                        }
+                        if ([string]$fabricMetadata.version -ne [string]$target.carpetModVersion) {
+                            Add-ValidationError "Target '$targetName' records Carpet mod version '$($target.carpetModVersion)' but official artifact declares '$($fabricMetadata.version)'."
+                        }
+                    }
+                } finally {
+                    if ($null -ne $artifactZip) {
+                        $artifactZip.Dispose()
+                    }
+                    $artifactMemory.Dispose()
+                }
             }
         }
     } catch {

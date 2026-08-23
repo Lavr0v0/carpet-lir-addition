@@ -226,7 +226,7 @@
     {
       "target": "1.14.4",
       "carpetArtifact": "1.14.4-1.3.7+v200127",
-      "carpetModVersion": "1.3.7+v200127",
+      "carpetModVersion": "1.3.7",
       "profile": "mc_1_14_4",
       "java": 8,
       "sourceFamily": "yarn-1.14",
@@ -237,7 +237,7 @@
     {
       "target": "1.15",
       "carpetArtifact": "1.15-1.3.1+v191212",
-      "carpetModVersion": "1.3.1+v191212",
+      "carpetModVersion": "1.3.1",
       "profile": "mc_1_15",
       "java": 8,
       "sourceFamily": "yarn-1.15",
@@ -248,7 +248,7 @@
     {
       "target": "1.15.1",
       "carpetArtifact": "1.15.1-1.3.4+v200111",
-      "carpetModVersion": "1.3.4+v200111",
+      "carpetModVersion": "1.3.4",
       "profile": "mc_1_15_1",
       "java": 8,
       "sourceFamily": "yarn-1.15",
@@ -259,7 +259,7 @@
     {
       "target": "1.15.2",
       "carpetArtifact": "1.15.2-1.4.8+v200811",
-      "carpetModVersion": "1.4.8+v200811",
+      "carpetModVersion": "1.4.8",
       "profile": "mc_1_15_2",
       "java": 8,
       "sourceFamily": "yarn-1.15",
@@ -270,7 +270,7 @@
     {
       "target": "1.16",
       "carpetArtifact": "1.16-1.4.0+v200623",
-      "carpetModVersion": "1.4.0+v200623",
+      "carpetModVersion": "1.4.0",
       "profile": "mc_1_16",
       "java": 8,
       "sourceFamily": "yarn-1.16",
@@ -281,7 +281,7 @@
     {
       "target": "1.16.2",
       "carpetArtifact": "1.16.2-1.4.9+v200815",
-      "carpetModVersion": "1.4.9+v200815",
+      "carpetModVersion": "1.4.9",
       "profile": "mc_1_16_2",
       "java": 8,
       "sourceFamily": "yarn-1.16",
@@ -292,7 +292,7 @@
     {
       "target": "1.16.3",
       "carpetArtifact": "1.16.3-1.4.12+v201001",
-      "carpetModVersion": "1.4.12+v201001",
+      "carpetModVersion": "1.4.12",
       "profile": "mc_1_16_3",
       "java": 8,
       "sourceFamily": "yarn-1.16",
@@ -303,7 +303,7 @@
     {
       "target": "1.16.4",
       "carpetArtifact": "1.16.4-1.4.22+v210113",
-      "carpetModVersion": "1.4.22+v210113",
+      "carpetModVersion": "1.4.22",
       "profile": "mc_1_16_4",
       "java": 8,
       "sourceFamily": "yarn-1.16",
@@ -314,7 +314,7 @@
     {
       "target": "1.16.5",
       "carpetArtifact": "1.16.5-1.4.44+v210714",
-      "carpetModVersion": "1.4.44+v210714",
+      "carpetModVersion": "1.4.44",
       "profile": "mc_1_16_5",
       "java": 8,
       "sourceFamily": "yarn-1.16",
@@ -325,7 +325,7 @@
     {
       "target": "1.17",
       "carpetArtifact": "1.17-1.4.40+v210608",
-      "carpetModVersion": "1.4.40+v210608",
+      "carpetModVersion": "1.4.40",
       "profile": "mc_1_17",
       "java": 16,
       "sourceFamily": "yarn-1.17",
@@ -336,7 +336,7 @@
     {
       "target": "1.17.1",
       "carpetArtifact": "1.17.1-1.4.57+v220119",
-      "carpetModVersion": "1.4.57+v220119",
+      "carpetModVersion": "1.4.57",
       "profile": "mc_1_17_1",
       "java": 16,
       "sourceFamily": "yarn-1.17",
@@ -347,7 +347,7 @@
     {
       "target": "1.18",
       "carpetArtifact": "1.18-1.4.56+v211130",
-      "carpetModVersion": "1.4.56+v211130",
+      "carpetModVersion": "1.4.56",
       "profile": "mc_1_18",
       "java": 17,
       "sourceFamily": "yarn-1.18",
@@ -358,7 +358,7 @@
     {
       "target": "1.18.1",
       "carpetArtifact": "1.18.1-1.4.57+v220119",
-      "carpetModVersion": "1.4.57+v220119",
+      "carpetModVersion": "1.4.57",
       "profile": "mc_1_18_1",
       "java": 17,
       "sourceFamily": "yarn-1.18",
@@ -369,7 +369,7 @@
     {
       "target": "1.18.2",
       "carpetArtifact": "1.18.2-1.4.69+v220331",
-      "carpetModVersion": "1.4.69+v220331",
+      "carpetModVersion": "1.4.69",
       "profile": "mc_1_18_2",
       "java": 17,
       "sourceFamily": "yarn-1.18",
@@ -380,7 +380,7 @@
     {
       "target": "1.19",
       "carpetArtifact": "1.19-1.4.79+v220607",
-      "carpetModVersion": "1.4.79+v220607",
+      "carpetModVersion": "1.4.79",
       "profile": "mc_1_19",
       "java": 17,
       "sourceFamily": "yarn-1.19",
@@ -391,7 +391,7 @@
     {
       "target": "1.19.1",
       "carpetArtifact": "1.19.1-1.4.83+v220727",
-      "carpetModVersion": "1.4.83+v220727",
+      "carpetModVersion": "1.4.83",
       "profile": "mc_1_19_1",
       "java": 17,
       "sourceFamily": "yarn-1.19",
@@ -402,7 +402,7 @@
     {
       "target": "1.19.2",
       "carpetArtifact": "1.19.2-1.4.84+v221018",
-      "carpetModVersion": "1.4.84+v221018",
+      "carpetModVersion": "1.4.84",
       "profile": "mc_1_19_2",
       "java": 17,
       "sourceFamily": "yarn-1.19",

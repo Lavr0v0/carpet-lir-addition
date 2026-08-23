@@ -55,6 +55,12 @@ For a release audit, also verify every pinned coordinate against the current off
 powershell -ExecutionPolicy Bypass -File .\scripts\validate-version-matrix.ps1 -VerifyMaven
 ```
 
+The slower full provenance check downloads each pinned Carpet JAR and compares its internal Fabric mod version too:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\validate-version-matrix.ps1 -VerifyMaven -VerifyArtifactMetadata
+```
+
 The validator checks:
 
 - JSON parsing and required fields

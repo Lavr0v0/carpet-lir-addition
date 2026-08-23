@@ -161,18 +161,28 @@ try {
     }).Count) {
         throw "Release JAR Minecraft dependency '$($minecraftDependencies -join ', ')' does not cover $MinecraftVersion."
     }
-    foreach ($dependencyId in @('fabricloader', 'fabric-api')) {
-        $dependencyValue = [string]$metadata.depends.$dependencyId
-        if ([string]::IsNullOrWhiteSpace($dependencyValue) -or $dependencyValue -eq '*') {
-            throw "Release JAR must declare a bounded $dependencyId dependency."
-        }
+    $loaderDependency = [string]$metadata.depends.fabricloader
+    if ([string]::IsNullOrWhiteSpace($loaderDependency) -or $loaderDependency -eq '*') {
+        throw 'Release JAR must declare a bounded fabricloader dependency.'
+    }
+    $fabricDependency = [string]$metadata.depends.'fabric-api'
+    if ([string]::IsNullOrWhiteSpace($fabricDependency)) {
+        $fabricDependency = [string]$metadata.depends.fabric
+    }
+    if ([string]::IsNullOrWhiteSpace($fabricDependency) -or $fabricDependency -eq '*') {
+        throw "Release JAR must declare a bounded Fabric API dependency using the target generation's mod id."
     }
     $carpetDependency = [string]$metadata.depends.carpet
     if ([string]::IsNullOrWhiteSpace($carpetDependency) -or $carpetDependency -eq '*') {
         throw 'Release JAR must declare a bounded Fabric Carpet dependency.'
     }
-    if (-not $carpetDependency.Contains([string]$target.carpetModVersion)) {
-        throw "Release JAR Carpet dependency '$carpetDependency' does not include runtime mod version '$($target.carpetModVersion)'."
+    $escapedCarpetModVersion = [regex]::Escape([string]$target.carpetModVersion)
+    $carpetDependencyTokens = @($carpetDependency.Replace(',', ' ').Split(' ', [System.StringSplitOptions]::RemoveEmptyEntries))
+    $matchingRuntimeTokens = @($carpetDependencyTokens | Where-Object {
+        $_ -match "^(?:=|>=|<=|~|\^)?$escapedCarpetModVersion$"
+    })
+    if ($matchingRuntimeTokens.Count -eq 0) {
+        throw "Release JAR Carpet dependency '$carpetDependency' does not target runtime mod version '$($target.carpetModVersion)'."
     }
 
     $testEntries = @($zip.Entries | Where-Object {
