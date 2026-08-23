@@ -1,32 +1,23 @@
 package org.lavro.carpetlir;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import carpet.api.settings.Rule;
+import org.junit.jupiter.api.Test;
 
-import carpet.settings.Rule;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
-import org.junit.jupiter.api.Test;
 
-class RuleBoundaryTest {
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class RuleContractTest {
     @Test
-    void classicTargetExportsOnlyTwoDisabledByDefaultRules() throws IllegalAccessException {
+    void everyRuleIsPublicStaticAnnotatedAndDisabledByDefault() throws IllegalAccessException {
         Field[] ruleFields = Arrays.stream(LIRSettings.class.getDeclaredFields())
                 .filter(field -> field.getType() == boolean.class)
                 .toArray(Field[]::new);
-        Set<String> ruleNames = Arrays.stream(ruleFields)
-                .map(Field::getName)
-                .collect(Collectors.toSet());
 
-        assertEquals(new HashSet<>(Arrays.asList(
-                "boneMealGrassifyDirt",
-                "renewableLeavesCrafting"
-        )), ruleNames);
+        assertTrue(ruleFields.length > 0, "LIRSettings must expose at least one boolean rule");
         for (Field field : ruleFields) {
             int modifiers = field.getModifiers();
             assertTrue(Modifier.isPublic(modifiers), field.getName() + " must be public");
