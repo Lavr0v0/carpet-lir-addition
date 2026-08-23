@@ -5,7 +5,9 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$MinecraftVersion,
 
-    [string]$MatrixPath
+    [string]$MatrixPath,
+
+    [string]$ProfilePath
 )
 
 $ErrorActionPreference = 'Stop'
@@ -71,7 +73,7 @@ function Test-VersionPredicate {
     )
 
     if ([string]::IsNullOrWhiteSpace($Predicate) -or $Predicate.Trim() -eq '*') {
-        return $true
+        return $false
     }
 
     foreach ($alternative in @($Predicate -split '\|\|')) {
@@ -115,6 +117,22 @@ $resolvedJar = (Resolve-Path -LiteralPath $JarPath).Path
 $resolvedMatrix = (Resolve-Path -LiteralPath $MatrixPath).Path
 $matrix = Get-Content -LiteralPath $resolvedMatrix -Raw | ConvertFrom-Json
 
+$resolvedProfile = $null
+if (-not [string]::IsNullOrWhiteSpace($ProfilePath)) {
+    $resolvedProfile = (Resolve-Path -LiteralPath $ProfilePath).Path
+} else {
+    $projectRoot = Split-Path -Parent (Split-Path -Parent $resolvedMatrix)
+    $profileCandidate = Join-Path $projectRoot "versions\targets\$MinecraftVersion.properties"
+    if (Test-Path -LiteralPath $profileCandidate -PathType Leaf) {
+        $resolvedProfile = (Resolve-Path -LiteralPath $profileCandidate).Path
+    }
+}
+$profile = if ($null -ne $resolvedProfile) {
+    ConvertFrom-StringData (Get-Content -LiteralPath $resolvedProfile -Raw)
+} else {
+    $null
+}
+
 $matchingTargets = @($matrix.targets | Where-Object {
     (Get-CoveredVersions $_) -contains $MinecraftVersion
 })
@@ -140,6 +158,7 @@ $forbiddenBefore = @{
     'org/lavro/carpetlir/mixins/BlockMixin.class' = '1.17'
     'org/lavro/carpetlir/mixins/FluidBlockMixin.class' = '1.17'
     'org/lavro/carpetlir/mixins/PistonBlockMixin.class' = '1.17'
+    'org/lavro/carpetlir/mixins/PistonMoveMixin.class' = '1.17'
     'org/lavro/carpetlir/features/renewable/ReinforcedDeepslateFeature.class' = '1.19'
     'org/lavro/carpetlir/mixins/AbstractBlockStateMixin.class' = '1.19'
 }
@@ -156,19 +175,26 @@ try {
         throw "Release JAR has unexpected mod id '$($metadata.id)'."
     }
     $minecraftDependencies = @($metadata.depends.minecraft | ForEach-Object { [string]$_ })
-    if ($minecraftDependencies.Count -eq 0 -or -not @($minecraftDependencies | Where-Object {
+    $boundedMinecraftDependencies = @($minecraftDependencies | Where-Object {
+        -not [string]::IsNullOrWhiteSpace($_) -and $_.Trim() -ne '*'
+    })
+    if ($boundedMinecraftDependencies.Count -eq 0 -or -not @($boundedMinecraftDependencies | Where-Object {
         Test-VersionPredicate $_ $targetVersion
     }).Count) {
-        throw "Release JAR Minecraft dependency '$($minecraftDependencies -join ', ')' does not cover $MinecraftVersion."
+        throw "Release JAR must declare a bounded Minecraft dependency covering $MinecraftVersion; found '$($minecraftDependencies -join ', ')'."
     }
     $loaderDependency = [string]$metadata.depends.fabricloader
     if ([string]::IsNullOrWhiteSpace($loaderDependency) -or $loaderDependency -eq '*') {
         throw 'Release JAR must declare a bounded fabricloader dependency.'
     }
-    $fabricDependency = [string]$metadata.depends.'fabric-api'
-    if ([string]::IsNullOrWhiteSpace($fabricDependency)) {
-        $fabricDependency = [string]$metadata.depends.fabric
+    $fabricDependencyIds = @(@('fabric-api', 'fabric') | Where-Object {
+        $null -ne $metadata.depends.PSObject.Properties[$_]
+    })
+    if ($fabricDependencyIds.Count -ne 1) {
+        throw "Release JAR must declare exactly one Fabric API dependency id; found '$($fabricDependencyIds -join ', ')'."
     }
+    $fabricDependencyId = $fabricDependencyIds[0]
+    $fabricDependency = [string]$metadata.depends.PSObject.Properties[$fabricDependencyId].Value
     if ([string]::IsNullOrWhiteSpace($fabricDependency) -or $fabricDependency -eq '*') {
         throw "Release JAR must declare a bounded Fabric API dependency using the target generation's mod id."
     }
@@ -183,6 +209,63 @@ try {
     })
     if ($matchingRuntimeTokens.Count -eq 0) {
         throw "Release JAR Carpet dependency '$carpetDependency' does not target runtime mod version '$($target.carpetModVersion)'."
+    }
+
+    if ($null -ne $profile) {
+        $expectedMinecraftDependency = [string]$profile.minecraft_dependency
+        $expectedLoaderDependency = if ($profile.ContainsKey('loader_dependency')) {
+            [string]$profile.loader_dependency
+        } else {
+            ">=$([string]$profile.loader_version)"
+        }
+        $expectedFabricDependencyId = if ($profile.ContainsKey('fabric_api_mod_id')) {
+            [string]$profile.fabric_api_mod_id
+        } else {
+            'fabric-api'
+        }
+        $expectedFabricDependency = if ($profile.ContainsKey('fabric_api_dependency')) {
+            [string]$profile.fabric_api_dependency
+        } else {
+            ">=$([string]$profile.fabric_api_version)"
+        }
+        $profileCarpetModVersion = if ($profile.ContainsKey('carpet_mod_version')) {
+            [string]$profile.carpet_mod_version
+        } else {
+            [string]$profile.carpet_core_version
+        }
+        $expectedCarpetDependency = if ($profile.ContainsKey('carpet_dependency')) {
+            [string]$profile.carpet_dependency
+        } else {
+            ">=$profileCarpetModVersion"
+        }
+
+        if ($minecraftDependencies.Count -ne 1 -or $minecraftDependencies[0] -ne $expectedMinecraftDependency) {
+            throw "Release JAR Minecraft dependency '$($minecraftDependencies -join ', ')' does not match profile '$expectedMinecraftDependency'."
+        }
+        if ($loaderDependency -ne $expectedLoaderDependency) {
+            throw "Release JAR fabricloader dependency '$loaderDependency' does not match profile '$expectedLoaderDependency'."
+        }
+        if ($fabricDependencyId -ne $expectedFabricDependencyId -or $fabricDependency -ne $expectedFabricDependency) {
+            throw "Release JAR Fabric API dependency '${fabricDependencyId}: $fabricDependency' does not match profile '${expectedFabricDependencyId}: $expectedFabricDependency'."
+        }
+        if ($carpetDependency -ne $expectedCarpetDependency) {
+            throw "Release JAR Carpet dependency '$carpetDependency' does not match profile '$expectedCarpetDependency'."
+        }
+
+        $profileName = [System.IO.Path]::GetFileNameWithoutExtension($resolvedProfile)
+        $expectedTargetProfile = if ($profile.ContainsKey('target_profile')) {
+            [string]$profile.target_profile
+        } elseif ($profileName -eq $MinecraftVersion) {
+            $MinecraftVersion
+        } else {
+            $null
+        }
+        if ($null -ne $expectedTargetProfile) {
+            $actualTargetProfile = [string]$metadata.custom.'carpetlir:build'.target_profile
+            if ($actualTargetProfile -ne $expectedTargetProfile) {
+                throw "Release JAR target-profile metadata '$actualTargetProfile' does not match profile '$expectedTargetProfile'."
+            }
+        }
     }
 
     $testEntries = @($zip.Entries | Where-Object {

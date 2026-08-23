@@ -33,6 +33,8 @@ def targetLoaderVersion = requiredTargetProperty('loader_version')
 def targetFabricVersion = requiredTargetProperty('fabric_api_version')
 def targetCarpetVersion = requiredTargetProperty('carpet_core_version')
 def targetCarpetModVersion = targetProfile.getProperty('carpet_mod_version', targetCarpetVersion).trim()
+def targetFabricModId = targetProfile.getProperty('fabric_api_mod_id', 'fabric-api').trim()
+def targetLoaderDependency = targetProfile.getProperty('loader_dependency', ">=${targetLoaderVersion}").trim()
 def targetFabricDependency = targetProfile.getProperty('fabric_api_dependency', ">=${targetFabricVersion}").trim()
 def targetCarpetDependency = targetProfile.getProperty('carpet_dependency', ">=${targetCarpetModVersion}").trim()
 def archiveMinecraftLabel = requiredTargetProperty('archive_minecraft_label')
@@ -58,10 +60,17 @@ def buildTargetNames = file('versions/targets')
         .collect { it.name.replace('.properties', '') }
         .sort()
 
+if (!(targetFabricModId in ['fabric', 'fabric-api'])) {
+    throw new GradleException(
+            "Target '${targetVersion}' has unsupported Fabric API mod id '${targetFabricModId}'."
+    )
+}
+
 def resourceProperties = [
         version: version.toString(),
         minecraft_dependency: minecraftDependency,
-        loader_dependency: ">=${targetLoaderVersion}",
+        loader_dependency: targetLoaderDependency,
+        fabric_api_mod_id: targetFabricModId,
         fabric_api_dependency: targetFabricDependency,
         carpet_dependency: targetCarpetDependency,
         target_profile: targetVersion,
