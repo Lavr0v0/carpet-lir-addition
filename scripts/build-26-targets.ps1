@@ -9,6 +9,55 @@ $Wrapper = Join-Path $ProjectRoot 'gradlew.bat'
 $CollectionRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("carpetlir-26-build-" + [guid]::NewGuid())
 $OutputRoot = Join-Path $ProjectRoot 'build\multiversion'
 
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+
+function Assert-ReleaseJar {
+    param(
+        [System.IO.FileInfo]$Jar,
+        [string]$Target,
+        [string]$ProfilePath
+    )
+
+    $profileData = ConvertFrom-StringData (Get-Content -LiteralPath $ProfilePath -Raw)
+    $expectedMinecraft = [string]$profileData.minecraft_dependency
+    $archiveLabel = [string]$profileData.archive_minecraft_label
+    $expectedNamePrefix = "carpet-lir-addition-mc$archiveLabel-"
+    if (-not $Jar.Name.StartsWith($expectedNamePrefix, [System.StringComparison]::Ordinal)) {
+        throw "Minecraft $Target produced unexpected artifact name '$($Jar.Name)'."
+    }
+
+    $zip = [System.IO.Compression.ZipFile]::OpenRead($Jar.FullName)
+    try {
+        $metadataEntry = $zip.GetEntry('fabric.mod.json')
+        if ($null -eq $metadataEntry) {
+            throw "Minecraft $Target release JAR has no fabric.mod.json."
+        }
+
+        $reader = New-Object System.IO.StreamReader($metadataEntry.Open())
+        try {
+            $metadata = $reader.ReadToEnd() | ConvertFrom-Json
+        } finally {
+            $reader.Dispose()
+        }
+
+        if ([string]$metadata.depends.minecraft -ne $expectedMinecraft) {
+            throw "Minecraft $Target JAR declares '$($metadata.depends.minecraft)' instead of '$expectedMinecraft'."
+        }
+        if ([string]$metadata.custom.'carpetlir:build'.target_profile -ne $Target) {
+            throw "Minecraft $Target JAR has incorrect target-profile metadata."
+        }
+
+        $testEntries = @($zip.Entries | Where-Object {
+            $_.FullName -like '*GameTest*' -or $_.FullName -like '*/gametest/*'
+        })
+        if ($testEntries.Count -ne 0) {
+            throw "Minecraft $Target release JAR contains GameTest classes or resources."
+        }
+    } finally {
+        $zip.Dispose()
+    }
+}
+
 New-Item -ItemType Directory -Path $CollectionRoot | Out-Null
 
 try {
@@ -31,6 +80,7 @@ try {
             throw "Expected one release JAR for Minecraft $target, found $($jars.Count)."
         }
         $jar = $jars[0]
+        Assert-ReleaseJar -Jar $jar -Target $target -ProfilePath $profile
         Copy-Item -LiteralPath $jar.FullName -Destination (Join-Path $CollectionRoot $jar.Name)
     }
 
