@@ -18,21 +18,21 @@ Rules are managed through Carpet's normal `/carpet` command. For example:
 /carpet renewableCalcite true
 ```
 
-| Rule | Effect |
-| --- | --- |
-| `renewableCalcite` | Lava above a bone block generates calcite when an amethyst block is beside or above it. Non-matching lava interactions remain vanilla. |
-| `renewableTuff` | Enables smelting one gravel into one tuff. |
-| `renewableLapisOre` | Enables crafting eight calcite around one amethyst shard into one lapis ore. |
-| `renewableLeavesCrafting` | Enables recipes for four sticks plus a matching log to produce four leaves for all nine supported tree types. |
-| `renewableRawOresCrafting` | Enables eight cobblestone plus an ingot to produce the matching raw iron, copper, or gold. |
-| `renewableHoneycombCrafting` | Enables converting one honeycomb block back into four honeycombs. |
-| `boneMealGrassifyDirt` | Bone meal converts dirt into grass only where grass can actually survive, with vanilla feedback and item consumption. |
-| `obsidianHardnessReinforcedDeepslate` | Gives reinforced deepslate obsidian's actual hardness and mining progress. |
-| `silkTouchableReinforcedDeepslate` | Makes reinforced deepslate drop itself when mined with Silk Touch. |
-| `wardensDropReinforcedDeepslate` | Wardens drop 1–4 reinforced deepslate on death when `mob_drops` is enabled. |
-| `pistonHarvestableAmethysts` | Adds a budding-amethyst item drop when a piston destroys budding amethyst. |
+| Rule | First target | Effect |
+| --- | --- | --- |
+| `renewableCalcite` | 1.17 | Lava above a bone block generates calcite when an amethyst block is beside or above it. Non-matching lava interactions remain vanilla. |
+| `renewableTuff` | 1.17 | Enables smelting one gravel into one tuff. |
+| `renewableLapisOre` | 1.17 | Enables crafting eight calcite around one amethyst shard into one lapis ore. |
+| `renewableLeavesCrafting` | 1.14.4 | Enables recipes for four sticks plus a matching log to produce four leaves. The six original trees are always included; mangrove, cherry, and pale oak join only after vanilla adds them. |
+| `renewableRawOresCrafting` | 1.17 | Enables eight cobblestone plus an ingot to produce the matching raw iron, copper, or gold. |
+| `renewableHoneycombCrafting` | 1.15 | Enables converting one honeycomb block back into four honeycombs. |
+| `boneMealGrassifyDirt` | 1.14.4 | Bone meal converts dirt into grass only where grass can actually survive, with vanilla feedback and item consumption. |
+| `obsidianHardnessReinforcedDeepslate` | 1.19 | Gives reinforced deepslate obsidian's actual hardness and mining progress. |
+| `silkTouchableReinforcedDeepslate` | 1.19 | Makes reinforced deepslate drop itself when mined with Silk Touch. |
+| `wardensDropReinforcedDeepslate` | 1.19 | Wardens drop 1–4 reinforced deepslate on death when `mob_drops` is enabled. |
+| `pistonHarvestableAmethysts` | 1.17 | Adds a budding-amethyst item drop when a piston destroys budding amethyst. |
 
-All rules use the `LIR`, `FEATURE`, and `RENEWABLE` categories and default to `false`.
+All rules use the `LIR`, `FEATURE`, and `RENEWABLE` categories and default to `false`. A rule introduced after the selected Minecraft version is absent from that JAR rather than shown as a setting that cannot work.
 
 ## Development and verification
 
