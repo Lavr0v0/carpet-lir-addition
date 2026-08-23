@@ -174,6 +174,9 @@ try {
     if ([string]$metadata.id -ne 'carpetlir') {
         throw "Release JAR has unexpected mod id '$($metadata.id)'."
     }
+    if ([string]::IsNullOrWhiteSpace([string]$metadata.version) -or [string]$metadata.version -match '\$\{') {
+        throw "Release JAR has unresolved or empty mod version '$($metadata.version)'."
+    }
     $minecraftDependencies = @($metadata.depends.minecraft | ForEach-Object { [string]$_ })
     $boundedMinecraftDependencies = @($minecraftDependencies | Where-Object {
         -not [string]::IsNullOrWhiteSpace($_) -and $_.Trim() -ne '*'
@@ -288,6 +291,14 @@ try {
         throw 'Release JAR has no LIRSettings.class.'
     }
     $settingsText = [System.Text.Encoding]::UTF8.GetString((Get-ZipEntryBytes $settingsEntry))
+    $initializerEntry = $zip.GetEntry('org/lavro/carpetlir/CarpetLIRAddition.class')
+    if ($null -eq $initializerEntry) {
+        throw 'Release JAR has no CarpetLIRAddition.class.'
+    }
+    $initializerText = [System.Text.Encoding]::UTF8.GetString((Get-ZipEntryBytes $initializerEntry))
+    if ($initializerText.Contains('${version}')) {
+        throw 'Release JAR initializer contains an unresolved version placeholder.'
+    }
     foreach ($rule in $allRules) {
         $isPresent = $settingsText.Contains($rule)
         $isExpected = $expectedRules -contains $rule

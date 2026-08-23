@@ -4,6 +4,7 @@ import carpet.CarpetExtension;
 import carpet.CarpetServer;
 import carpet.utils.Translations;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.loader.api.FabricLoader;
 import org.lavro.carpetlir.features.renewable.BoneMealGrassifyDirtFeature;
 import org.lavro.carpetlir.features.renewable.ReinforcedDeepslateFeature;
 
@@ -13,7 +14,6 @@ import java.util.Map;
 public class CarpetLIRAddition implements CarpetExtension, ModInitializer {
     public static final String MOD_ID = "carpetlir";
     public static final String MOD_NAME = "Carpet LIR Addition";
-    public static final String MOD_VERSION = "${version}";
 
     @Override
     public void onInitialize() {
@@ -29,7 +29,10 @@ public class CarpetLIRAddition implements CarpetExtension, ModInitializer {
 
     @Override
     public String version() {
-        return MOD_VERSION;
+        return FabricLoader.getInstance()
+                .getModContainer(MOD_ID)
+                .map(container -> container.getMetadata().getVersion().getFriendlyString())
+                .orElse("unknown");
     }
 
     @Override
