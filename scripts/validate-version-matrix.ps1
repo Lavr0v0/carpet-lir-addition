@@ -1,5 +1,7 @@
 param(
-    [string]$MatrixPath = (Join-Path $PSScriptRoot '..\versions\support-matrix.json')
+    [string]$MatrixPath = (Join-Path $PSScriptRoot '..\versions\support-matrix.json'),
+    [switch]$VerifyMaven,
+    [string]$CarpetMavenMetadataUrl = 'https://masa.dy.fi/maven/carpet/fabric-carpet/maven-metadata.xml'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -522,6 +524,38 @@ if ($targets.Count -gt 0) {
     }
     if ([string]$targets[-1].target -ne [string]$matrix.scope.maximumTarget) {
         Add-ValidationError 'scope.maximumTarget does not match the last target.'
+    }
+}
+
+if ($VerifyMaven) {
+    try {
+        $mavenResponse = Invoke-WebRequest -UseBasicParsing -Uri $CarpetMavenMetadataUrl
+        $mavenMetadata = [xml]$mavenResponse.Content
+        $publishedCarpetVersions = @($mavenMetadata.metadata.versioning.versions.version | ForEach-Object { [string]$_ })
+        if ($publishedCarpetVersions.Count -eq 0) {
+            throw 'Maven metadata contained no versions.'
+        }
+
+        foreach ($target in $targets) {
+            $targetName = [string]$target.target
+            $targetVersion = Convert-ToTargetVersion $targetName
+            $stablePrefix = if ($targetVersion -ge (Convert-ToTargetVersion '26.1')) {
+                '^' + [regex]::Escape($targetName) + '\+'
+            } else {
+                '^' + [regex]::Escape($targetName) + '-'
+            }
+            $publishedForTarget = @($publishedCarpetVersions | Where-Object { $_ -match $stablePrefix })
+            if ($publishedForTarget.Count -eq 0) {
+                Add-ValidationError "Official Carpet Maven has no stable artifact for target '$targetName'."
+                continue
+            }
+            $latestPublished = $publishedForTarget[-1]
+            if ([string]$target.carpetVersion -ne $latestPublished) {
+                Add-ValidationError "Target '$targetName' pins '$($target.carpetVersion)' but official Maven latest is '$latestPublished'."
+            }
+        }
+    } catch {
+        Add-ValidationError "Unable to verify official Carpet Maven metadata: $($_.Exception.Message)"
     }
 }
 

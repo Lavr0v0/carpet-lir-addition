@@ -49,6 +49,12 @@ PowerShell 7 can use:
 pwsh -File ./scripts/validate-version-matrix.ps1
 ```
 
+For a release audit, also verify every pinned coordinate against the current official Carpet Maven metadata:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\validate-version-matrix.ps1 -VerifyMaven
+```
+
 The validator checks:
 
 - JSON parsing and required fields
