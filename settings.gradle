@@ -1,8 +1,23 @@
 pluginManagement {
+    def requestedTarget = providers.gradleProperty('targetVersion')
+            .orElse(providers.gradleProperty('minecraft_version'))
+            .get()
+    def targetProfileFile = new File(settingsDir, "versions/targets/${requestedTarget}.properties")
+    def targetProfile = new Properties()
+    if (targetProfileFile.exists()) {
+        targetProfileFile.withInputStream { targetProfile.load(it) }
+    }
+    def loomVersion = targetProfile.getProperty('loom_version', '1.17.11')
+
     repositories {
         maven { url = 'https://maven.fabricmc.net/' }
         mavenCentral()
         gradlePluginPortal()
+    }
+
+    plugins {
+        id 'fabric-loom' version loomVersion
+        id 'net.fabricmc.fabric-loom' version loomVersion
     }
 }
 

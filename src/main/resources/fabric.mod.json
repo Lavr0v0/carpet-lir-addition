@@ -16,7 +16,7 @@
     ]
   },
   "mixins": [
-    "carpet-lir-addition.mixins.json"
+    "${mixin_config}"
   ],
   "depends": {
     "fabricloader": "${loader_dependency}",
