@@ -64,6 +64,53 @@ function Get-ZipEntryBytes {
     }
 }
 
+function Test-VersionPredicate {
+    param(
+        [string]$Predicate,
+        [version]$ActualVersion
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Predicate) -or $Predicate.Trim() -eq '*') {
+        return $true
+    }
+
+    foreach ($alternative in @($Predicate -split '\|\|')) {
+        $matchesAlternative = $true
+        $tokens = @($alternative.Replace(',', ' ').Split(' ', [System.StringSplitOptions]::RemoveEmptyEntries))
+        foreach ($token in $tokens) {
+            if ($token -notmatch '^(>=|<=|>|<|=|~|\^)?(\d+(?:\.\d+){1,2})$') {
+                throw "Unsupported Minecraft dependency token '$token'."
+            }
+            $operator = [string]$Matches[1]
+            $requiredVersion = Convert-ToTargetVersion ([string]$Matches[2])
+            $matchesToken = switch ($operator) {
+                '>=' { $ActualVersion -ge $requiredVersion }
+                '<=' { $ActualVersion -le $requiredVersion }
+                '>' { $ActualVersion -gt $requiredVersion }
+                '<' { $ActualVersion -lt $requiredVersion }
+                '=' { $ActualVersion -eq $requiredVersion }
+                '~' {
+                    $upperBound = [version]("{0}.{1}.0" -f $requiredVersion.Major, ($requiredVersion.Minor + 1))
+                    $ActualVersion -ge $requiredVersion -and $ActualVersion -lt $upperBound
+                }
+                '^' {
+                    $upperBound = [version]("{0}.0.0" -f ($requiredVersion.Major + 1))
+                    $ActualVersion -ge $requiredVersion -and $ActualVersion -lt $upperBound
+                }
+                default { $ActualVersion -eq $requiredVersion }
+            }
+            if (-not $matchesToken) {
+                $matchesAlternative = $false
+                break
+            }
+        }
+        if ($matchesAlternative) {
+            return $true
+        }
+    }
+    return $false
+}
+
 $resolvedJar = (Resolve-Path -LiteralPath $JarPath).Path
 $resolvedMatrix = (Resolve-Path -LiteralPath $MatrixPath).Path
 $matrix = Get-Content -LiteralPath $resolvedMatrix -Raw | ConvertFrom-Json
@@ -107,6 +154,18 @@ try {
     $metadata = Get-ZipEntryText $metadataEntry | ConvertFrom-Json
     if ([string]$metadata.id -ne 'carpetlir') {
         throw "Release JAR has unexpected mod id '$($metadata.id)'."
+    }
+    $minecraftDependencies = @($metadata.depends.minecraft | ForEach-Object { [string]$_ })
+    if ($minecraftDependencies.Count -eq 0 -or -not @($minecraftDependencies | Where-Object {
+        Test-VersionPredicate $_ $targetVersion
+    }).Count) {
+        throw "Release JAR Minecraft dependency '$($minecraftDependencies -join ', ')' does not cover $MinecraftVersion."
+    }
+    foreach ($dependencyId in @('fabricloader', 'fabric-api')) {
+        $dependencyValue = [string]$metadata.depends.$dependencyId
+        if ([string]::IsNullOrWhiteSpace($dependencyValue) -or $dependencyValue -eq '*') {
+            throw "Release JAR must declare a bounded $dependencyId dependency."
+        }
     }
     $carpetDependency = [string]$metadata.depends.carpet
     if ([string]::IsNullOrWhiteSpace($carpetDependency) -or $carpetDependency -eq '*') {
