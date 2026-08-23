@@ -18,14 +18,14 @@ Some stable Carpet coordinates cover adjacent Minecraft patch releases. In those
 
 ## Capability tiers
 
-| Tier | First target | Rules added | Leaf recipe variants |
-| --- | --- | --- | --- |
-| `tier-1.14` | 1.14.4 | Leaves crafting and bone-meal grass conversion | Six original overworld tree families |
-| `tier-1.15` | 1.15 | Honeycomb reverse crafting | No change |
-| `tier-1.17` | 1.17 | Calcite, tuff, lapis ore, raw ores, and piston-harvestable amethyst | No change |
-| `tier-1.19` | 1.19 | Three reinforced-deepslate/Warden rules | Adds mangrove |
-| `tier-1.20` | 1.20 | No new rule | Adds cherry |
-| `tier-1.21.4` | 1.21.4 | No new rule | Adds pale oak |
+| Tier | First target | Rules added | Leaf recipe variants | Total recipes |
+| --- | --- | --- | --- | ---: |
+| `tier-1.14` | 1.14.4 | Leaves crafting and bone-meal grass conversion | Six original overworld tree families | 6 |
+| `tier-1.15` | 1.15 | Honeycomb reverse crafting | No change | 7 |
+| `tier-1.17` | 1.17 | Calcite, tuff, lapis ore, raw ores, and piston-harvestable amethyst | No change | 12 |
+| `tier-1.19` | 1.19 | Three reinforced-deepslate/Warden rules | Adds mangrove | 13 |
+| `tier-1.20` | 1.20 | No new rule | Adds cherry | 14 |
+| `tier-1.21.4` | 1.21.4 | No new rule | Adds pale oak | 15 |
 
 Unsupported rules are meant to be absent from that version's settings class, feature sources, mixin configuration, recipes, and tests. They must not be registered as nonfunctional rules.
 

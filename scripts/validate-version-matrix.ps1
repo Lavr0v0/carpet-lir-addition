@@ -31,6 +31,23 @@ $KnownLeafVariants = @(
     'cherry',
     'pale_oak'
 )
+$KnownRecipes = @(
+    'acacia_leaves_from_acacia_log_and_sticks',
+    'birch_leaves_from_birch_log_and_sticks',
+    'cherry_leaves_from_cherry_log_and_sticks',
+    'dark_oak_leaves_from_dark_oak_log_and_sticks',
+    'gravel_to_tuff_smelting',
+    'honeycomb_from_honeycomb_block',
+    'jungle_leaves_from_jungle_log_and_sticks',
+    'lapis_ore_from_calcite_and_amethyst_shard',
+    'mangrove_leaves_from_mangrove_log_and_sticks',
+    'oak_leaves_from_oak_log_and_sticks',
+    'pale_oak_leaves_from_pale_oak_log_and_sticks',
+    'raw_copper_from_cobblestone_and_copper_ingot',
+    'raw_gold_from_cobblestone_and_gold_ingot',
+    'raw_iron_from_cobblestone_and_iron_ingot',
+    'spruce_leaves_from_spruce_log_and_sticks'
+)
 $RuleMinimumTargets = @{
     boneMealGrassifyDirt = '1.14.4'
     renewableLeavesCrafting = '1.14.4'
@@ -54,6 +71,40 @@ $LeafMinimumTargets = @{
     mangrove = '1.19'
     cherry = '1.20'
     pale_oak = '1.21.4'
+}
+$RecipeMinimumTargets = @{
+    acacia_leaves_from_acacia_log_and_sticks = '1.14.4'
+    birch_leaves_from_birch_log_and_sticks = '1.14.4'
+    cherry_leaves_from_cherry_log_and_sticks = '1.20'
+    dark_oak_leaves_from_dark_oak_log_and_sticks = '1.14.4'
+    gravel_to_tuff_smelting = '1.17'
+    honeycomb_from_honeycomb_block = '1.15'
+    jungle_leaves_from_jungle_log_and_sticks = '1.14.4'
+    lapis_ore_from_calcite_and_amethyst_shard = '1.17'
+    mangrove_leaves_from_mangrove_log_and_sticks = '1.19'
+    oak_leaves_from_oak_log_and_sticks = '1.14.4'
+    pale_oak_leaves_from_pale_oak_log_and_sticks = '1.21.4'
+    raw_copper_from_cobblestone_and_copper_ingot = '1.17'
+    raw_gold_from_cobblestone_and_gold_ingot = '1.17'
+    raw_iron_from_cobblestone_and_iron_ingot = '1.17'
+    spruce_leaves_from_spruce_log_and_sticks = '1.14.4'
+}
+$RecipeRuleMap = @{
+    acacia_leaves_from_acacia_log_and_sticks = 'renewableLeavesCrafting'
+    birch_leaves_from_birch_log_and_sticks = 'renewableLeavesCrafting'
+    cherry_leaves_from_cherry_log_and_sticks = 'renewableLeavesCrafting'
+    dark_oak_leaves_from_dark_oak_log_and_sticks = 'renewableLeavesCrafting'
+    gravel_to_tuff_smelting = 'renewableTuff'
+    honeycomb_from_honeycomb_block = 'renewableHoneycombCrafting'
+    jungle_leaves_from_jungle_log_and_sticks = 'renewableLeavesCrafting'
+    lapis_ore_from_calcite_and_amethyst_shard = 'renewableLapisOre'
+    mangrove_leaves_from_mangrove_log_and_sticks = 'renewableLeavesCrafting'
+    oak_leaves_from_oak_log_and_sticks = 'renewableLeavesCrafting'
+    pale_oak_leaves_from_pale_oak_log_and_sticks = 'renewableLeavesCrafting'
+    raw_copper_from_cobblestone_and_copper_ingot = 'renewableRawOresCrafting'
+    raw_gold_from_cobblestone_and_gold_ingot = 'renewableRawOresCrafting'
+    raw_iron_from_cobblestone_and_iron_ingot = 'renewableRawOresCrafting'
+    spruce_leaves_from_spruce_log_and_sticks = 'renewableLeavesCrafting'
 }
 $KnownSourceFamilies = @(
     'yarn-1.14',
@@ -216,8 +267,8 @@ try {
     exit 1
 }
 
-if ($matrix.schemaVersion -ne 2) {
-    Add-ValidationError "schemaVersion must be 2."
+if ($matrix.schemaVersion -ne 3) {
+    Add-ValidationError "schemaVersion must be 3."
 }
 
 $tiers = @($matrix.capabilityTiers)
@@ -233,6 +284,7 @@ $tierById = @{}
 $previousTierVersion = $null
 $previousTierRules = @()
 $previousTierLeaves = @()
+$previousTierRecipes = @()
 
 foreach ($tier in $tiers) {
     $tierId = [string]$tier.id
@@ -258,8 +310,10 @@ foreach ($tier in $tiers) {
 
     $tierRules = @($tier.availableRules | ForEach-Object { [string]$_ })
     $tierLeaves = @($tier.leafRecipeVariants | ForEach-Object { [string]$_ })
+    $tierRecipes = @($tier.availableRecipes | ForEach-Object { [string]$_ })
     Assert-KnownUniqueValues "Capability tier '$tierId' rules" $tierRules $KnownRules
     Assert-KnownUniqueValues "Capability tier '$tierId' leaves" $tierLeaves $KnownLeafVariants
+    Assert-KnownUniqueValues "Capability tier '$tierId' recipes" $tierRecipes $KnownRecipes
 
     $expectedTierRules = @($KnownRules | Where-Object {
         $tierVersion -ge (Convert-ToTargetVersion $RuleMinimumTargets[$_])
@@ -293,6 +347,28 @@ foreach ($tier in $tiers) {
         }
     }
 
+    $expectedTierRecipes = @($KnownRecipes | Where-Object {
+        $tierVersion -ge (Convert-ToTargetVersion $RecipeMinimumTargets[$_])
+    })
+    if (-not (Test-SetEquality $tierRecipes $expectedTierRecipes)) {
+        $missingRecipes = @($expectedTierRecipes | Where-Object { $tierRecipes -notcontains $_ })
+        $prematureRecipes = @($tierRecipes | Where-Object {
+            $tierVersion -lt (Convert-ToTargetVersion $RecipeMinimumTargets[$_])
+        })
+        if ($missingRecipes.Count -gt 0) {
+            Add-ValidationError "Capability tier '$tierId' is missing required recipes: $($missingRecipes -join ', ')."
+        }
+        if ($prematureRecipes.Count -gt 0) {
+            Add-ValidationError "Capability tier '$tierId' enables recipes before their prerequisites: $($prematureRecipes -join ', ')."
+        }
+    }
+    foreach ($recipe in $tierRecipes) {
+        $guardRule = $RecipeRuleMap[$recipe]
+        if ($tierRules -notcontains $guardRule) {
+            Add-ValidationError "Capability tier '$tierId' includes recipe '$recipe' without guard rule '$guardRule'."
+        }
+    }
+
     foreach ($rule in $previousTierRules) {
         if ($tierRules -notcontains $rule) {
             Add-ValidationError "Capability tier '$tierId' removes earlier rule '$rule'."
@@ -303,15 +379,22 @@ foreach ($tier in $tiers) {
             Add-ValidationError "Capability tier '$tierId' removes earlier leaf variant '$leaf'."
         }
     }
+    foreach ($recipe in $previousTierRecipes) {
+        if ($tierRecipes -notcontains $recipe) {
+            Add-ValidationError "Capability tier '$tierId' removes earlier recipe '$recipe'."
+        }
+    }
 
     $tierById[$tierId] = @{
         Version = $tierVersion
         Rules = $tierRules
         Leaves = $tierLeaves
+        Recipes = $tierRecipes
     }
     $previousTierVersion = $tierVersion
     $previousTierRules = $tierRules
     $previousTierLeaves = $tierLeaves
+    $previousTierRecipes = $tierRecipes
 }
 
 $actualTargets = @($targets | ForEach-Object { [string]$_.target })
@@ -383,6 +466,7 @@ $previousTargetVersion = $null
 $previousJava = 0
 $previousRules = @()
 $previousLeaves = @()
+$previousRecipes = @()
 
 foreach ($target in $targets) {
     $targetName = [string]$target.target
@@ -484,6 +568,7 @@ foreach ($target in $targets) {
 
     $rules = @($selectedTier.Rules)
     $leaves = @($selectedTier.Leaves)
+    $recipes = @($selectedTier.Recipes)
     foreach ($rule in $previousRules) {
         if ($rules -notcontains $rule) {
             Add-ValidationError "$context loses earlier rule '$rule'."
@@ -492,6 +577,11 @@ foreach ($target in $targets) {
     foreach ($leaf in $previousLeaves) {
         if ($leaves -notcontains $leaf) {
             Add-ValidationError "$context loses earlier leaf variant '$leaf'."
+        }
+    }
+    foreach ($recipe in $previousRecipes) {
+        if ($recipes -notcontains $recipe) {
+            Add-ValidationError "$context loses earlier recipe '$recipe'."
         }
     }
 
@@ -516,6 +606,7 @@ foreach ($target in $targets) {
     $previousJava = $javaVersion
     $previousRules = $rules
     $previousLeaves = $leaves
+    $previousRecipes = $recipes
 }
 
 if ($targets.Count -gt 0) {

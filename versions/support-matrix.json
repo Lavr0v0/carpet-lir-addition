@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "scope": {
     "minimumTarget": "1.14.4",
     "maximumTarget": "26.2",
@@ -9,6 +9,14 @@
     {
       "id": "tier-1.14",
       "minimumTarget": "1.14.4",
+      "availableRecipes": [
+        "acacia_leaves_from_acacia_log_and_sticks",
+        "birch_leaves_from_birch_log_and_sticks",
+        "dark_oak_leaves_from_dark_oak_log_and_sticks",
+        "jungle_leaves_from_jungle_log_and_sticks",
+        "oak_leaves_from_oak_log_and_sticks",
+        "spruce_leaves_from_spruce_log_and_sticks"
+      ],
       "availableRules": [
         "boneMealGrassifyDirt",
         "renewableLeavesCrafting"
@@ -25,6 +33,15 @@
     {
       "id": "tier-1.15",
       "minimumTarget": "1.15",
+      "availableRecipes": [
+        "acacia_leaves_from_acacia_log_and_sticks",
+        "birch_leaves_from_birch_log_and_sticks",
+        "dark_oak_leaves_from_dark_oak_log_and_sticks",
+        "honeycomb_from_honeycomb_block",
+        "jungle_leaves_from_jungle_log_and_sticks",
+        "oak_leaves_from_oak_log_and_sticks",
+        "spruce_leaves_from_spruce_log_and_sticks"
+      ],
       "availableRules": [
         "boneMealGrassifyDirt",
         "renewableLeavesCrafting",
@@ -42,6 +59,20 @@
     {
       "id": "tier-1.17",
       "minimumTarget": "1.17",
+      "availableRecipes": [
+        "acacia_leaves_from_acacia_log_and_sticks",
+        "birch_leaves_from_birch_log_and_sticks",
+        "dark_oak_leaves_from_dark_oak_log_and_sticks",
+        "gravel_to_tuff_smelting",
+        "honeycomb_from_honeycomb_block",
+        "jungle_leaves_from_jungle_log_and_sticks",
+        "lapis_ore_from_calcite_and_amethyst_shard",
+        "oak_leaves_from_oak_log_and_sticks",
+        "raw_copper_from_cobblestone_and_copper_ingot",
+        "raw_gold_from_cobblestone_and_gold_ingot",
+        "raw_iron_from_cobblestone_and_iron_ingot",
+        "spruce_leaves_from_spruce_log_and_sticks"
+      ],
       "availableRules": [
         "boneMealGrassifyDirt",
         "renewableLeavesCrafting",
@@ -64,6 +95,21 @@
     {
       "id": "tier-1.19",
       "minimumTarget": "1.19",
+      "availableRecipes": [
+        "acacia_leaves_from_acacia_log_and_sticks",
+        "birch_leaves_from_birch_log_and_sticks",
+        "dark_oak_leaves_from_dark_oak_log_and_sticks",
+        "gravel_to_tuff_smelting",
+        "honeycomb_from_honeycomb_block",
+        "jungle_leaves_from_jungle_log_and_sticks",
+        "lapis_ore_from_calcite_and_amethyst_shard",
+        "mangrove_leaves_from_mangrove_log_and_sticks",
+        "oak_leaves_from_oak_log_and_sticks",
+        "raw_copper_from_cobblestone_and_copper_ingot",
+        "raw_gold_from_cobblestone_and_gold_ingot",
+        "raw_iron_from_cobblestone_and_iron_ingot",
+        "spruce_leaves_from_spruce_log_and_sticks"
+      ],
       "availableRules": [
         "boneMealGrassifyDirt",
         "renewableLeavesCrafting",
@@ -90,6 +136,22 @@
     {
       "id": "tier-1.20",
       "minimumTarget": "1.20",
+      "availableRecipes": [
+        "acacia_leaves_from_acacia_log_and_sticks",
+        "birch_leaves_from_birch_log_and_sticks",
+        "cherry_leaves_from_cherry_log_and_sticks",
+        "dark_oak_leaves_from_dark_oak_log_and_sticks",
+        "gravel_to_tuff_smelting",
+        "honeycomb_from_honeycomb_block",
+        "jungle_leaves_from_jungle_log_and_sticks",
+        "lapis_ore_from_calcite_and_amethyst_shard",
+        "mangrove_leaves_from_mangrove_log_and_sticks",
+        "oak_leaves_from_oak_log_and_sticks",
+        "raw_copper_from_cobblestone_and_copper_ingot",
+        "raw_gold_from_cobblestone_and_gold_ingot",
+        "raw_iron_from_cobblestone_and_iron_ingot",
+        "spruce_leaves_from_spruce_log_and_sticks"
+      ],
       "availableRules": [
         "boneMealGrassifyDirt",
         "renewableLeavesCrafting",
@@ -117,6 +179,23 @@
     {
       "id": "tier-1.21.4",
       "minimumTarget": "1.21.4",
+      "availableRecipes": [
+        "acacia_leaves_from_acacia_log_and_sticks",
+        "birch_leaves_from_birch_log_and_sticks",
+        "cherry_leaves_from_cherry_log_and_sticks",
+        "dark_oak_leaves_from_dark_oak_log_and_sticks",
+        "gravel_to_tuff_smelting",
+        "honeycomb_from_honeycomb_block",
+        "jungle_leaves_from_jungle_log_and_sticks",
+        "lapis_ore_from_calcite_and_amethyst_shard",
+        "mangrove_leaves_from_mangrove_log_and_sticks",
+        "oak_leaves_from_oak_log_and_sticks",
+        "pale_oak_leaves_from_pale_oak_log_and_sticks",
+        "raw_copper_from_cobblestone_and_copper_ingot",
+        "raw_gold_from_cobblestone_and_gold_ingot",
+        "raw_iron_from_cobblestone_and_iron_ingot",
+        "spruce_leaves_from_spruce_log_and_sticks"
+      ],
       "availableRules": [
         "boneMealGrassifyDirt",
         "renewableLeavesCrafting",
