@@ -646,6 +646,22 @@ if ($VerifyMaven -or $VerifyArtifactMetadata) {
             throw 'Maven metadata contained no versions.'
         }
 
+        $officialStableTargets = @($publishedCarpetVersions | ForEach-Object {
+            if ($_ -match '^(\d+\.\d+(?:\.\d+)?)\+') {
+                $Matches[1]
+            } elseif ($_ -match '^(\d+\.\d+(?:\.\d+)?)-\d+\.\d+') {
+                $Matches[1]
+            }
+        } | Where-Object { $_ } | Select-Object -Unique)
+        $missingOfficialTargets = @($officialStableTargets | Where-Object { $actualTargets -notcontains $_ })
+        $nonOfficialTargets = @($actualTargets | Where-Object { $officialStableTargets -notcontains $_ })
+        if ($missingOfficialTargets.Count -gt 0) {
+            Add-ValidationError "Stable target catalog is stale; official Carpet Maven also contains: $($missingOfficialTargets -join ', ')."
+        }
+        if ($nonOfficialTargets.Count -gt 0) {
+            Add-ValidationError "Stable target catalog contains targets absent from official Carpet Maven: $($nonOfficialTargets -join ', ')."
+        }
+
         foreach ($target in $targets) {
             $targetName = [string]$target.target
             $targetVersion = Convert-ToTargetVersion $targetName
