@@ -40,6 +40,8 @@ All rules use the `LIR`, `FEATURE`, and `RENEWABLE` categories and default to `f
 
 The builds pin the Java generation required by each Minecraft line: Java 8 for 1.14.4, Java 21 for 1.21.11, and Java 25 for 26.x. Gradle resolves compile toolchains automatically when necessary. The first build therefore needs network access, and a real 1.14.4 server smoke test must itself run on Java 8 because that generation's Mixin runtime cannot parse modern host classes.
 
+Root-profile development servers and GameTests use `run/<target>` rather than one shared world directory. This keeps worlds, logs, and generated server state from incompatible Minecraft data formats isolated.
+
 ```powershell
 # Fast logic and resource checks
 .\gradlew.bat test

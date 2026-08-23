@@ -158,6 +158,14 @@ if (sourceFamily == 'mojang-26') {
     }
 }
 
+loom {
+    runs {
+        configureEach {
+            runDir("run/${targetVersion}")
+        }
+    }
+}
+
 processResources {
     inputs.properties resourceProperties
 

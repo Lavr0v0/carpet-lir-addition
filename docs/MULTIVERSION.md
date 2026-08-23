@@ -80,6 +80,8 @@ The validator checks:
 
 The root Gradle build supports `1.21.11`, `26.1`, `26.1.1`, `26.1.2`, and `26.2` as independent targets. The Java 8 `1.14.4` target is isolated under `classic/1.14.4` so its old Loom, Carpet rule API, Fabric API mod id, and source set cannot leak into modern artifacts. Each build pins Minecraft, Fabric Loader, Fabric API, Carpet's Maven artifact, Carpet's runtime mod version, mappings, Java bytecode, and exact packaged dependency metadata.
 
+Every root target also receives a separate `run/<target>` directory. Never reuse a generated world across source families: newer Minecraft data can make an otherwise valid older server fail before mod initialization.
+
 ```powershell
 .\gradlew.bat -p classic\1.14.4 clean build
 .\gradlew.bat build '-PtargetVersion=1.21.11'

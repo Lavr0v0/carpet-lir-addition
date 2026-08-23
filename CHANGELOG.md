@@ -35,6 +35,7 @@
 - Prevented spectators from converting dirt with bone meal before vanilla's spectator interaction gate.
 - Made the 1.21.11 extension report its packaged Fabric metadata version instead of the literal `${version}` placeholder.
 - Parameterized the legacy `fabric` versus modern `fabric-api` dependency id so old loaders receive valid metadata.
+- Isolated each root build profile under `run/<target>` so a newer test world cannot break an older server smoke test.
 
 ## [1.0.3] - 2026-06-17
 
