@@ -10,7 +10,8 @@ Some stable Carpet coordinates cover adjacent Minecraft patch releases. In those
 
 ## Status meanings
 
-- `verified`: built and exercised with the current audited implementation and regression suite. The 26.1 line (including 26.1.1 and 26.1.2) and 26.2 have this status today.
+- `verified`: built and exercised with the current audited implementation and a behavior regression suite. Minecraft 1.14.4 and the 26.1 line (including 26.1.1 and 26.1.2) plus 26.2 have this status today. The classic target uses real Java 8 server/fake-player checks because its generation has no modern Fabric GameTest framework.
+- `build-only`: current sources compile and pass focused unit, packaging, and server-startup checks, but behavior automation is not yet sufficient for a release claim. Minecraft 1.21.11 has this status today.
 - `released-legacy`: an artifact was published in v1.0.1, but it predates the current audit fixes and automated tests. It must be ported and revalidated before another release.
 - `planned`: a stable Fabric Carpet target with no currently accepted audited build. Local drafts do not count as releases or verification.
 
@@ -61,6 +62,8 @@ The slower full provenance check downloads each pinned Carpet JAR and compares i
 powershell -ExecutionPolicy Bypass -File .\scripts\validate-version-matrix.ps1 -VerifyMaven -VerifyArtifactMetadata
 ```
 
+Online Maven verification is bidirectional: it checks every pinned artifact and also fails when official Maven contains a new stable target missing from the local catalog. Beta, pre-release, release-candidate, experimental, and snapshot coordinates remain outside the stable set.
+
 The validator checks:
 
 - JSON parsing and required fields
@@ -73,15 +76,18 @@ The validator checks:
 - exact Minecraft-version coverage, including patch releases that share one Carpet coordinate
 - a unique, well-formed stable Carpet Maven coordinate for every target
 
-## Audited 26.x builds
+## Current build-ready targets
 
-The root Gradle build now supports `26.1`, `26.1.1`, `26.1.2`, and `26.2` as independent targets. Each profile pins its Minecraft, Fabric Loader, Fabric API, and Carpet dependency and writes the exact Minecraft dependency into the JAR metadata.
+The root Gradle build supports `1.21.11`, `26.1`, `26.1.1`, `26.1.2`, and `26.2` as independent targets. The Java 8 `1.14.4` target is isolated under `classic/1.14.4` so its old Loom, Carpet rule API, Fabric API mod id, and source set cannot leak into modern artifacts. Each build pins Minecraft, Fabric Loader, Fabric API, Carpet's Maven artifact, Carpet's runtime mod version, mappings, Java bytecode, and exact packaged dependency metadata.
 
 ```powershell
-.\gradlew.bat build -PtargetVersion=26.1.2
+.\gradlew.bat -p classic\1.14.4 clean build
+.\gradlew.bat build '-PtargetVersion=1.21.11'
+.\gradlew.bat build '-PtargetVersion=26.1.2'
+powershell -ExecutionPolicy Bypass -File .\scripts\build-audited-targets.ps1
 powershell -ExecutionPolicy Bypass -File .\scripts\build-26-targets.ps1
 ```
 
-The batch command runs the full unit and GameTest suite for all four targets, then collects only release JARs under `build\multiversion`. Older source families remain explicitly unverified until their audited adapters and tests land.
+The audited batch command runs every target's available checks, opens each final remapped JAR, and collects six exact artifacts under `build\multiversion`. The 26.x targets run the full unit and 14-test server GameTest suite. The 1.14.4 target runs its focused tests and capability-boundary audit; its release acceptance also includes a Java 8 server and fake-player check. The 1.21.11 target remains `build-only` because it currently has focused unit and server-startup checks rather than the 26.x gameplay GameTests. Other source families remain explicitly unverified until their audited adapters and tests land.
 
-Every collected artifact is also opened and checked against the selected capability tier. `scripts/validate-built-jar.ps1` rejects wrong rule fields, rule translations, recipe resources, Mixin references, Java bytecode levels, test code, unbounded Carpet dependencies, and classes that do not exist in the target's Minecraft generation.
+Every collected artifact is checked against its selected capability tier and build profile. `scripts/validate-built-jar.ps1` rejects wrong rule fields, rule translations, recipe resources, Mixin references, Java bytecode levels, test code, unresolved versions, wildcard or mismatched dependencies, wrong Fabric API generation ids, misnamed artifacts, and classes that do not exist in the target's Minecraft generation.

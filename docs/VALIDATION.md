@@ -1,6 +1,6 @@
 # Rule validation guide
 
-Run these checks in a disposable Minecraft 26.2 test world. Begin each check with the named rule set to `false`, and reset it after the check so rule state cannot leak into later results.
+Run these checks in a disposable world matching the exact target JAR. Begin each check with the named rule set to `false`, and reset it after the check so rule state cannot leak into later results. Only test rules present in that target's capability tier; 1.14.4 intentionally exposes just `boneMealGrassifyDirt` and `renewableLeavesCrafting`.
 
 ## Renewable blocks and recipes
 
@@ -53,7 +53,7 @@ Run these checks in a disposable Minecraft 26.2 test world. Begin each check wit
 - **Trigger:** Use bone meal on a dirt block where a grass block can survive.
 - **Happy path:** Enable the rule; dirt becomes grass, one bone meal is consumed in survival, and the vanilla success particles and game event fire.
 - **Negative path:** Disable the rule; the callback passes through without converting dirt or consuming bone meal.
-- **Edge case:** Full water or an opaque block above prevents conversion. A single snow layer above is valid, and creative players do not consume bone meal.
+- **Edge case:** Full water or an opaque block above prevents conversion. A single snow layer above is valid, creative players do not consume bone meal, and spectators cannot convert the block even when the rule is enabled.
 
 ### `obsidianHardnessReinforcedDeepslate`
 
@@ -85,4 +85,4 @@ Run these checks in a disposable Minecraft 26.2 test world. Begin each check wit
 
 ## Automated coverage
 
-Use `./gradlew test` for fast rule/resource integrity tests and `./gradlew runGameTest` for actual server behavior. The GameTest suite covers the highest-risk positive, disabled, and environmental failure paths. The remaining manual checks above are release acceptance checks, particularly recipe shapes and Silk Touch loot-context integration.
+Use `./gradlew test` for fast rule/resource integrity tests and `./gradlew runGameTest` for actual 26.x server behavior. The 26.x GameTest suite covers the highest-risk positive, disabled, permission, and environmental failure paths. Minecraft 1.14.4 must be smoke-tested on a Java 8 server; Minecraft 1.21.11 stays `build-only` until equivalent gameplay automation is ported. The remaining manual checks above are release acceptance checks, particularly recipe shapes and Silk Touch loot-context integration.

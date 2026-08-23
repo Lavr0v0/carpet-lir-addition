@@ -9,6 +9,10 @@
 - Added a validated support matrix for 35 stable Fabric Carpet coordinates, 42 Minecraft releases, six capability tiers, and version-specific recipe sets.
 - Added independent audited build profiles for Minecraft 26.1, 26.1.1, 26.1.2, and 26.2.
 - Added batch artifact verification that rejects incorrect Minecraft metadata, unexpected names, ambiguous release JARs, and packaged GameTest code.
+- Added an isolated Java 8 Minecraft 1.14.4 target with only the two rules and six leaf recipes available in that generation.
+- Added an audited, build-only Minecraft 1.21.11 source profile with focused regression tests.
+- Added one audited batch command that builds, inspects, and collects all six current exact-version artifacts.
+- Added rule-contract tests requiring every boolean setting to be public, static, annotated, and disabled by default.
 
 ### Changed
 - Restricted calcite generation to the custom matching branch and left all non-matching lava behavior to vanilla.
@@ -18,6 +22,9 @@
 - Read the extension version from Fabric metadata instead of returning an unexpanded placeholder.
 - Pinned each stable support target to an official Carpet Maven coordinate and added optional live verification against Maven metadata.
 - Defined low-version support as capability-driven: unavailable rules and resources must be omitted instead of exposed as nonfunctional settings.
+- Selected Loom, mappings, Java, source overlays, Fabric API mod id, and exact runtime dependency predicates from each target profile.
+- Separated target-specific Maven artifact ids and moved ongoing multi-version work to `1.1.0-SNAPSHOT` so builds cannot overwrite the released 1.0.3 coordinates.
+- Made online matrix verification detect newly published stable Carpet targets as well as stale local pins.
 
 ### Fixed
 - Made Warden bonus drops respect `mob_drops` instead of the unrelated `block_drops` game rule.
@@ -25,6 +32,9 @@
 - Prevented custom calcite handling from duplicating and intercepting vanilla water, cobblestone, stone, and basalt branches while its rule is disabled.
 - Prevented bone meal from creating grass under full water or opaque blocks where it immediately decays.
 - Bridged the renamed 26.1/26.2 grass light-occlusion API without repeating reflection on every interaction.
+- Prevented spectators from converting dirt with bone meal before vanilla's spectator interaction gate.
+- Made the 1.21.11 extension report its packaged Fabric metadata version instead of the literal `${version}` placeholder.
+- Parameterized the legacy `fabric` versus modern `fabric-api` dependency id so old loaders receive valid metadata.
 
 ## [1.0.3] - 2026-06-17
 
