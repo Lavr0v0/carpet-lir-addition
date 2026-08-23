@@ -77,3 +77,5 @@ powershell -ExecutionPolicy Bypass -File .\scripts\build-26-targets.ps1
 ```
 
 The batch command runs the full unit and GameTest suite for all four targets, then collects only release JARs under `build\multiversion`. Older source families remain explicitly unverified until their audited adapters and tests land.
+
+Every collected artifact is also opened and checked against the selected capability tier. `scripts/validate-built-jar.ps1` rejects wrong rule fields, rule translations, recipe resources, Mixin references, Java bytecode levels, test code, unbounded Carpet dependencies, and classes that do not exist in the target's Minecraft generation.

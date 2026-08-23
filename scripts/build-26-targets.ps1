@@ -6,6 +6,7 @@ param(
 $ErrorActionPreference = 'Stop'
 $ProjectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $Wrapper = Join-Path $ProjectRoot 'gradlew.bat'
+$CapabilityValidator = Join-Path $PSScriptRoot 'validate-built-jar.ps1'
 $CollectionRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("carpetlir-26-build-" + [guid]::NewGuid())
 $OutputRoot = Join-Path $ProjectRoot 'build\multiversion'
 
@@ -81,6 +82,7 @@ try {
         }
         $jar = $jars[0]
         Assert-ReleaseJar -Jar $jar -Target $target -ProfilePath $profile
+        & $CapabilityValidator -JarPath $jar.FullName -MinecraftVersion $target
         Copy-Item -LiteralPath $jar.FullName -Destination (Join-Path $CollectionRoot $jar.Name)
     }
 
