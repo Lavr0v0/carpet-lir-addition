@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " S ",
+    "SWS",
+    " S "
+  ],
+  "key": {
+    "S": { "item": "minecraft:stick" },
+    "W": { "item": "minecraft:birch_log" }
+  },
+  "result": {
+    "item": "minecraft:birch_leaves",
+    "count": 4
+  }
+}

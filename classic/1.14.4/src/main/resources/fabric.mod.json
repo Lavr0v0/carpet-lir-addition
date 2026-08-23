@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "carpetlir",
+  "version": "${version}",
+  "name": "Carpet LIR Addition",
+  "description": "A minimal Fabric Carpet extension for renewable survival mechanics on Minecraft 1.14.4.",
+  "authors": [
+    "lavro"
+  ],
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "org.lavro.carpetlir.CarpetLIRAddition"
+    ]
+  },
+  "mixins": [
+    "carpet-lir-addition.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": "${loader_dependency}",
+    "minecraft": "${minecraft_dependency}",
+    "fabric": "${fabric_dependency}",
+    "carpet": "${carpet_dependency}"
+  },
+  "custom": {
+    "carpetlir:build": {
+      "target_profile": "${target_profile}",
+      "capability_tier": "tier-1.14"
+    }
+  }
+}

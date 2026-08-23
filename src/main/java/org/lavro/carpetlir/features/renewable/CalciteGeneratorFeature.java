@@ -1,13 +1,10 @@
 package org.lavro.carpetlir.features.renewable;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.fluid.FluidState;
-import net.minecraft.registry.tag.FluidTags;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.Level;
 import org.lavro.carpetlir.LIRSettings;
 
 import java.util.List;
@@ -24,37 +21,22 @@ public final class CalciteGeneratorFeature {
     private CalciteGeneratorFeature() {
     }
 
-    public static boolean receiveNeighborFluids(World world, BlockPos pos) {
-        BlockState blockBelow = world.getBlockState(pos.down());
-        boolean canGenerateBasalt = blockBelow.isOf(Blocks.SOUL_SOIL);
-        boolean canGenerateCalcite = LIRSettings.renewableCalcite && blockBelow.isOf(Blocks.BONE_BLOCK);
+    public static boolean tryGenerateCalcite(Level world, BlockPos pos) {
+        if (!LIRSettings.renewableCalcite || !world.getBlockState(pos.below()).is(Blocks.BONE_BLOCK)) {
+            return false;
+        }
 
         for (Direction direction : FLOW_DIRECTIONS) {
-            BlockPos checkPos = pos.offset(direction.getOpposite());
-            FluidState neighborFluid = world.getFluidState(checkPos);
-            if (neighborFluid.isIn(FluidTags.WATER)) {
-                Block generatedBlock = world.getFluidState(pos).isStill() ? Blocks.OBSIDIAN : Blocks.COBBLESTONE;
-                generate(world, pos, generatedBlock);
-                return true;
-            }
-
+            BlockPos checkPos = pos.relative(direction.getOpposite());
             BlockState neighborState = world.getBlockState(checkPos);
-            if (canGenerateBasalt && neighborState.isOf(Blocks.BLUE_ICE)) {
-                generate(world, pos, Blocks.BASALT);
-                return true;
-            }
-
-            if (canGenerateCalcite && neighborState.isOf(Blocks.AMETHYST_BLOCK)) {
-                generate(world, pos, Blocks.CALCITE);
+            if (neighborState.is(Blocks.AMETHYST_BLOCK)) {
+                world.setBlockAndUpdate(pos, Blocks.CALCITE.defaultBlockState());
+                world.levelEvent(1501, pos, 0);
                 return true;
             }
         }
 
         return false;
     }
-
-    private static void generate(World world, BlockPos pos, Block generatedBlock) {
-        world.setBlockState(pos, generatedBlock.getDefaultState());
-        world.syncWorldEvent(1501, pos, 0);
-    }
 }
+

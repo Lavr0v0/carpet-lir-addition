@@ -1,11 +1,11 @@
 .gradle/
 build/
-releases/
 out/
 run/
+/logs/
 *.iml
 .idea/
 *.class
-.codex/
-AGENTS.md
-Carpet_LIR_Codex_Spec.md
+tools/jdks/
+.codex/jdks/
+releases/

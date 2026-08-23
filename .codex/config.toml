@@ -1,0 +1,5 @@
+[project]
+root = "."
+
+[commands]
+build = ".\\gradlew.bat build"

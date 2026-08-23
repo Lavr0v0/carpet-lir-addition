@@ -61,3 +61,4 @@ public class LIRSettings {
     )
     public static boolean pistonHarvestableAmethysts = false;
 }
+

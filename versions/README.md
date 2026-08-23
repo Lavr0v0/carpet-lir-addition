@@ -1,4 +1,6 @@
-# Version Profiles
+# Archived Version Profiles
+
+> **Legacy, unaudited inputs:** this directory was restored from the 1.0.x release history so those sources are not lost. Its old `profile.properties` files, readiness labels, and `-PtargetKey` commands are not connected to the current Gradle build and must not be treated as current support claims. See [`docs/MULTIVERSION.md`](../docs/MULTIVERSION.md) and [`support-matrix.json`](support-matrix.json) for the maintained build workflow and audited compatibility status.
 
 This repository now stores version-specific build metadata under `versions/<profile>/`.
 
@@ -18,7 +20,7 @@ That makes it easier to:
 - `versions/<profile>/README.md`
   Stores human-readable notes about the version line, migration state, and known work needed.
 
-## Current policy
+## Archived 1.0.x policy (not current support)
 
 - `1.21.11`
   Maintained and build-ready in this branch.
@@ -49,7 +51,7 @@ That makes it easier to:
 - `26.1`
   Staged future migration target. This needs a Mojang-mappings migration and Java 25 before it can build in a dedicated branch or next-phase layout.
 
-## Commands
+## Archived commands (not valid in the current build)
 
 List known profiles:
 
