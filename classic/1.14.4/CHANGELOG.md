@@ -1,6 +1,6 @@
 # Classic target changelog
 
-## [Unreleased]
+## [1.1.0-beta.1] - 2026-08-22
 
 ### Added
 

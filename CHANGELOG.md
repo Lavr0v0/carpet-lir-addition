@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [1.1.0-beta.1] - 2026-08-22
 
 ### Added
 - Added unit tests for recipe-to-rule coverage and translation integrity.
@@ -23,7 +23,7 @@
 - Pinned each stable support target to an official Carpet Maven coordinate and added optional live verification against Maven metadata.
 - Defined low-version support as capability-driven: unavailable rules and resources must be omitted instead of exposed as nonfunctional settings.
 - Selected Loom, mappings, Java, source overlays, Fabric API mod id, and exact runtime dependency predicates from each target profile.
-- Separated target-specific Maven artifact ids and moved ongoing multi-version work to `1.1.0-SNAPSHOT` so builds cannot overwrite the released 1.0.3 coordinates.
+- Separated target-specific Maven artifact ids and published the audited multi-version work as the `1.1.0-beta.1` prerelease so it cannot overwrite the released 1.0.3 coordinates.
 - Made online matrix verification detect newly published stable Carpet targets as well as stale local pins.
 
 ### Fixed
