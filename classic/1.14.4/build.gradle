@@ -1,0 +1,141 @@
+plugins {
+    id 'fabric-loom' version '1.11.8'
+    id 'maven-publish'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+repositories {
+    maven { url = 'https://maven.fabricmc.net/' }
+    maven { url = 'https://masa.dy.fi/maven' }
+    mavenCentral()
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    modImplementation("carpet:fabric-carpet:${project.carpet_version}") {
+        transitive = false
+    }
+
+    testImplementation platform('org.junit:junit-bom:5.10.2')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+processResources {
+    inputs.properties(
+            version: project.version,
+            minecraft_dependency: project.minecraft_version,
+            loader_dependency: ">=${project.loader_version}",
+            fabric_dependency: ">=${project.fabric_version}",
+            carpet_dependency: "=${project.carpet_mod_version}"
+    )
+
+    filesMatching('fabric.mod.json') {
+        expand(
+                version: project.version,
+                minecraft_dependency: project.minecraft_version,
+                loader_dependency: ">=${project.loader_version}",
+                fabric_dependency: ">=${project.fabric_version}",
+                carpet_dependency: "=${project.carpet_mod_version}"
+        )
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(8)
+    }
+    withSourcesJar()
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+test {
+    useJUnitPlatform()
+}
+
+jar {
+    from('../../LICENSE') {
+        rename { "${it}_${project.archives_base_name}" }
+    }
+    manifest {
+        attributes(
+                'Implementation-Title': 'Carpet LIR Addition',
+                'Implementation-Version': project.version,
+                'Minecraft-Target': project.minecraft_version,
+                'Capability-Tier': 'tier-1.14'
+        )
+    }
+}
+
+tasks.register('verifyCapabilityBoundary') {
+    group = 'verification'
+    description = 'Asserts that the classic artifact contains only the two 1.14 rules and six leaf recipes.'
+    dependsOn tasks.named('jar')
+
+    doLast {
+        def jarFile = tasks.named('jar').get().archiveFile.get().asFile
+        def forbiddenTerms = [
+                'renewableCalcite',
+                'renewableTuff',
+                'renewableLapisOre',
+                'renewableRawOresCrafting',
+                'renewableHoneycombCrafting',
+                'obsidianHardnessReinforcedDeepslate',
+                'silkTouchableReinforcedDeepslate',
+                'wardensDropReinforcedDeepslate',
+                'pistonHarvestableAmethysts',
+                'mangrove',
+                'cherry',
+                'pale_oak'
+        ]
+
+        zipTree(jarFile).matching { include '**/*.class', '**/*.json' }.files.each { file ->
+            def content = file.bytes
+            forbiddenTerms.each { term ->
+                if (new String(content, 'ISO-8859-1').contains(term)) {
+                    throw new GradleException("Forbidden higher-tier capability '${term}' found in ${file}.")
+                }
+            }
+        }
+
+        def recipeNames = zipTree(jarFile).matching {
+            include 'data/carpetlir/recipes/*.json'
+        }.files.collect { it.name }.sort()
+        def expectedRecipes = [
+                'acacia_leaves_from_acacia_log_and_sticks.json',
+                'birch_leaves_from_birch_log_and_sticks.json',
+                'dark_oak_leaves_from_dark_oak_log_and_sticks.json',
+                'jungle_leaves_from_jungle_log_and_sticks.json',
+                'oak_leaves_from_oak_log_and_sticks.json',
+                'spruce_leaves_from_spruce_log_and_sticks.json'
+        ].sort()
+        if (recipeNames != expectedRecipes) {
+            throw new GradleException("Expected exactly six classic leaf recipes, found ${recipeNames}.")
+        }
+    }
+}
+
+check.dependsOn tasks.named('verifyCapabilityBoundary')
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId = project.archives_base_name
+            from components.java
+        }
+    }
+}

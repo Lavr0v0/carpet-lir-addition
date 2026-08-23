@@ -1,0 +1,6 @@
+{
+  "carpet.rule.boneMealGrassifyDirt.name": "Bone meal grassifies dirt",
+  "carpet.rule.boneMealGrassifyDirt.desc": "Allows bone meal to convert dirt into grass where grass can survive.",
+  "carpet.rule.renewableLeavesCrafting.name": "Renewable leaves crafting",
+  "carpet.rule.renewableLeavesCrafting.desc": "Enables recipes that craft four classic leaves from four sticks and a matching log."
+}

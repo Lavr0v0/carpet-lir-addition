@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " S ",
+    "SWS",
+    " S "
+  ],
+  "key": {
+    "S": { "item": "minecraft:stick" },
+    "W": { "item": "minecraft:spruce_log" }
+  },
+  "result": {
+    "item": "minecraft:spruce_leaves",
+    "count": 4
+  }
+}
