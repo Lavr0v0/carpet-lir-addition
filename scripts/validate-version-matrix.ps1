@@ -214,8 +214,8 @@ try {
     exit 1
 }
 
-if ($matrix.schemaVersion -ne 1) {
-    Add-ValidationError "schemaVersion must be 1."
+if ($matrix.schemaVersion -ne 2) {
+    Add-ValidationError "schemaVersion must be 2."
 }
 
 $tiers = @($matrix.capabilityTiers)
@@ -376,6 +376,7 @@ if (-not (Test-SetEquality @($actualMinecraftVersions) $ExpectedMinecraftVersion
 
 $seenTargets = @{}
 $seenProfiles = @{}
+$seenCarpetVersions = @{}
 $previousTargetVersion = $null
 $previousJava = 0
 $previousRules = @()
@@ -424,6 +425,26 @@ foreach ($target in $targets) {
     }
     if ([string]::IsNullOrWhiteSpace([string]$target.notes)) {
         Add-ValidationError "$context requires non-empty notes."
+    }
+
+    $carpetVersion = [string]$target.carpetVersion
+    if ([string]::IsNullOrWhiteSpace($carpetVersion)) {
+        Add-ValidationError "$context requires an exact carpetVersion."
+    } else {
+        if ($seenCarpetVersions.ContainsKey($carpetVersion)) {
+            Add-ValidationError "Duplicate Carpet version '$carpetVersion'."
+        } else {
+            $seenCarpetVersions[$carpetVersion] = $true
+        }
+        $escapedTarget = [regex]::Escape($targetName)
+        $coordinatePattern = if ($targetVersion -ge (Convert-ToTargetVersion '26.1')) {
+            "^$escapedTarget\+v\d{6}$"
+        } else {
+            "^$escapedTarget-1\.\d+\.\d+\+v\d{6}$"
+        }
+        if ($carpetVersion -notmatch $coordinatePattern) {
+            Add-ValidationError "$context has malformed Carpet coordinate '$carpetVersion'."
+        }
     }
 
     $javaVersion = [int]$target.java

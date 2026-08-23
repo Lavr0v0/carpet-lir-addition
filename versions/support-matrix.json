@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "scope": {
     "minimumTarget": "1.14.4",
     "maximumTarget": "26.2",
@@ -146,6 +146,7 @@
   "targets": [
     {
       "target": "1.14.4",
+      "carpetVersion": "1.14.4-1.3.7+v200127",
       "profile": "mc_1_14_4",
       "java": 8,
       "sourceFamily": "yarn-1.14",
@@ -155,6 +156,7 @@
     },
     {
       "target": "1.15",
+      "carpetVersion": "1.15-1.3.1+v191212",
       "profile": "mc_1_15",
       "java": 8,
       "sourceFamily": "yarn-1.15",
@@ -164,6 +166,7 @@
     },
     {
       "target": "1.15.1",
+      "carpetVersion": "1.15.1-1.3.4+v200111",
       "profile": "mc_1_15_1",
       "java": 8,
       "sourceFamily": "yarn-1.15",
@@ -173,6 +176,7 @@
     },
     {
       "target": "1.15.2",
+      "carpetVersion": "1.15.2-1.4.8+v200811",
       "profile": "mc_1_15_2",
       "java": 8,
       "sourceFamily": "yarn-1.15",
@@ -182,6 +186,7 @@
     },
     {
       "target": "1.16",
+      "carpetVersion": "1.16-1.4.0+v200623",
       "profile": "mc_1_16",
       "java": 8,
       "sourceFamily": "yarn-1.16",
@@ -191,6 +196,7 @@
     },
     {
       "target": "1.16.2",
+      "carpetVersion": "1.16.2-1.4.9+v200815",
       "profile": "mc_1_16_2",
       "java": 8,
       "sourceFamily": "yarn-1.16",
@@ -200,6 +206,7 @@
     },
     {
       "target": "1.16.3",
+      "carpetVersion": "1.16.3-1.4.12+v201001",
       "profile": "mc_1_16_3",
       "java": 8,
       "sourceFamily": "yarn-1.16",
@@ -209,6 +216,7 @@
     },
     {
       "target": "1.16.4",
+      "carpetVersion": "1.16.4-1.4.22+v210113",
       "profile": "mc_1_16_4",
       "java": 8,
       "sourceFamily": "yarn-1.16",
@@ -218,6 +226,7 @@
     },
     {
       "target": "1.16.5",
+      "carpetVersion": "1.16.5-1.4.44+v210714",
       "profile": "mc_1_16_5",
       "java": 8,
       "sourceFamily": "yarn-1.16",
@@ -227,6 +236,7 @@
     },
     {
       "target": "1.17",
+      "carpetVersion": "1.17-1.4.40+v210608",
       "profile": "mc_1_17",
       "java": 16,
       "sourceFamily": "yarn-1.17",
@@ -236,6 +246,7 @@
     },
     {
       "target": "1.17.1",
+      "carpetVersion": "1.17.1-1.4.57+v220119",
       "profile": "mc_1_17_1",
       "java": 16,
       "sourceFamily": "yarn-1.17",
@@ -245,6 +256,7 @@
     },
     {
       "target": "1.18",
+      "carpetVersion": "1.18-1.4.56+v211130",
       "profile": "mc_1_18",
       "java": 17,
       "sourceFamily": "yarn-1.18",
@@ -254,6 +266,7 @@
     },
     {
       "target": "1.18.1",
+      "carpetVersion": "1.18.1-1.4.57+v220119",
       "profile": "mc_1_18_1",
       "java": 17,
       "sourceFamily": "yarn-1.18",
@@ -263,6 +276,7 @@
     },
     {
       "target": "1.18.2",
+      "carpetVersion": "1.18.2-1.4.69+v220331",
       "profile": "mc_1_18_2",
       "java": 17,
       "sourceFamily": "yarn-1.18",
@@ -272,6 +286,7 @@
     },
     {
       "target": "1.19",
+      "carpetVersion": "1.19-1.4.79+v220607",
       "profile": "mc_1_19",
       "java": 17,
       "sourceFamily": "yarn-1.19",
@@ -281,6 +296,7 @@
     },
     {
       "target": "1.19.1",
+      "carpetVersion": "1.19.1-1.4.83+v220727",
       "profile": "mc_1_19_1",
       "java": 17,
       "sourceFamily": "yarn-1.19",
@@ -290,6 +306,7 @@
     },
     {
       "target": "1.19.2",
+      "carpetVersion": "1.19.2-1.4.84+v221018",
       "profile": "mc_1_19_2",
       "java": 17,
       "sourceFamily": "yarn-1.19",
@@ -299,6 +316,7 @@
     },
     {
       "target": "1.19.3",
+      "carpetVersion": "1.19.3-1.4.96+v230201",
       "profile": "mc_1_19_3",
       "java": 17,
       "sourceFamily": "yarn-1.19",
@@ -308,6 +326,7 @@
     },
     {
       "target": "1.19.4",
+      "carpetVersion": "1.19.4-1.4.101+v230319",
       "profile": "mc_1_19_4",
       "java": 17,
       "sourceFamily": "yarn-1.19",
@@ -317,6 +336,7 @@
     },
     {
       "target": "1.20",
+      "carpetVersion": "1.20-1.4.112+v230608",
       "minecraftVersions": [
         "1.20",
         "1.20.1"
@@ -330,6 +350,7 @@
     },
     {
       "target": "1.20.2",
+      "carpetVersion": "1.20.2-1.4.119+v230928",
       "profile": "mc_1_20_2",
       "java": 17,
       "sourceFamily": "yarn-1.20.2-plus",
@@ -339,6 +360,7 @@
     },
     {
       "target": "1.20.3",
+      "carpetVersion": "1.20.3-1.4.128+v231205",
       "minecraftVersions": [
         "1.20.3",
         "1.20.4"
@@ -352,6 +374,7 @@
     },
     {
       "target": "1.20.5",
+      "carpetVersion": "1.20.5-1.4.140+v240423",
       "profile": "mc_1_20_5",
       "java": 21,
       "sourceFamily": "yarn-1.20.2-plus",
@@ -361,6 +384,7 @@
     },
     {
       "target": "1.20.6",
+      "carpetVersion": "1.20.6-1.4.141+v240429",
       "profile": "mc_1_20_6",
       "java": 21,
       "sourceFamily": "yarn-1.20.2-plus",
@@ -370,6 +394,7 @@
     },
     {
       "target": "1.21",
+      "carpetVersion": "1.21-1.4.147+v240613",
       "minecraftVersions": [
         "1.21",
         "1.21.1"
@@ -383,6 +408,7 @@
     },
     {
       "target": "1.21.2",
+      "carpetVersion": "1.21.2-1.4.158+v241022",
       "minecraftVersions": [
         "1.21.2",
         "1.21.3"
@@ -396,6 +422,7 @@
     },
     {
       "target": "1.21.4",
+      "carpetVersion": "1.21.4-1.4.161+v241203",
       "profile": "mc_1_21_4",
       "java": 21,
       "sourceFamily": "yarn-1.21.2-plus",
@@ -405,6 +432,7 @@
     },
     {
       "target": "1.21.5",
+      "carpetVersion": "1.21.5-1.4.169+v250325",
       "profile": "mc_1_21_5",
       "java": 21,
       "sourceFamily": "yarn-1.21.2-plus",
@@ -414,6 +442,7 @@
     },
     {
       "target": "1.21.6",
+      "carpetVersion": "1.21.6-1.4.176+v250617",
       "profile": "mc_1_21_6",
       "java": 21,
       "sourceFamily": "yarn-1.21.8",
@@ -423,6 +452,7 @@
     },
     {
       "target": "1.21.7",
+      "carpetVersion": "1.21.7-1.4.177+v250630",
       "minecraftVersions": [
         "1.21.7",
         "1.21.8"
@@ -436,6 +466,7 @@
     },
     {
       "target": "1.21.9",
+      "carpetVersion": "1.21.9-1.4.185+v250930",
       "profile": "mc_1_21_9",
       "java": 21,
       "sourceFamily": "yarn-1.21.11",
@@ -445,6 +476,7 @@
     },
     {
       "target": "1.21.10",
+      "carpetVersion": "1.21.10-1.4.188+v251016",
       "profile": "mc_1_21_10",
       "java": 21,
       "sourceFamily": "yarn-1.21.11",
@@ -454,6 +486,7 @@
     },
     {
       "target": "1.21.11",
+      "carpetVersion": "1.21.11-1.4.194+v260107",
       "profile": "mc_1_21_11",
       "java": 21,
       "sourceFamily": "yarn-1.21.11",
@@ -463,6 +496,7 @@
     },
     {
       "target": "26.1",
+      "carpetVersion": "26.1+v260401",
       "minecraftVersions": [
         "26.1",
         "26.1.1",
@@ -477,6 +511,7 @@
     },
     {
       "target": "26.2",
+      "carpetVersion": "26.2+v260616",
       "profile": "mc_26_2",
       "java": 25,
       "sourceFamily": "mojang-26",

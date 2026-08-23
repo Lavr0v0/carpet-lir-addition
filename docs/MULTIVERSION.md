@@ -1,6 +1,6 @@
 # Multi-version support model
 
-`versions/support-matrix.json` is the source of truth for the first multi-version milestone. It catalogs stable Fabric Carpet coordinates from Minecraft 1.14.4 through 26.2 without changing the current 26.2 build.
+`versions/support-matrix.json` is the support-policy source of truth. It catalogs stable Fabric Carpet coordinates from Minecraft 1.14.4 through 26.2, their exact latest stable Carpet artifact, their Minecraft-version coverage, and the feature tier available in each line.
 
 ## Scope
 
@@ -59,6 +59,7 @@ The validator checks:
 - version prerequisites for every feature and leaf recipe
 - monotonic capabilities, so later targets cannot silently lose an earlier feature
 - exact Minecraft-version coverage, including patch releases that share one Carpet coordinate
+- a unique, well-formed stable Carpet Maven coordinate for every target
 
 ## Audited 26.x builds
 
