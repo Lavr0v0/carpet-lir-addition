@@ -6,6 +6,9 @@
 - Added unit tests for recipe-to-rule coverage and translation integrity.
 - Added server-side Fabric GameTests for calcite, bone meal, recipes, reinforced deepslate hardness, Warden drops, game-rule handling, and piston harvesting.
 - Added automatic Java 25 toolchain resolution for portable development builds.
+- Added a validated support matrix for 35 stable Fabric Carpet coordinates, 42 Minecraft releases, six capability tiers, and version-specific recipe sets.
+- Added independent audited build profiles for Minecraft 26.1, 26.1.1, 26.1.2, and 26.2.
+- Added batch artifact verification that rejects incorrect Minecraft metadata, unexpected names, ambiguous release JARs, and packaged GameTest code.
 
 ### Changed
 - Restricted calcite generation to the custom matching branch and left all non-matching lava behavior to vanilla.
@@ -13,12 +16,15 @@
 - Centralized all 15 recipe-to-rule mappings and bounded Fabric API and Carpet dependency metadata to tested minimum versions.
 - Scoped budding-amethyst loot replacement directly to the piston destruction call site.
 - Read the extension version from Fabric metadata instead of returning an unexpanded placeholder.
+- Pinned each stable support target to an official Carpet Maven coordinate and added optional live verification against Maven metadata.
+- Defined low-version support as capability-driven: unavailable rules and resources must be omitted instead of exposed as nonfunctional settings.
 
 ### Fixed
 - Made Warden bonus drops respect `mob_drops` instead of the unrelated `block_drops` game rule.
 - Cleared disabled cached recipe hints before vanilla fallback, preventing a stale cache from suppressing another valid recipe.
 - Prevented custom calcite handling from duplicating and intercepting vanilla water, cobblestone, stone, and basalt branches while its rule is disabled.
 - Prevented bone meal from creating grass under full water or opaque blocks where it immediately decays.
+- Bridged the renamed 26.1/26.2 grass light-occlusion API without repeating reflection on every interaction.
 
 ## [1.0.3] - 2026-06-17
 
