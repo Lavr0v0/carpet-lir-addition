@@ -19,6 +19,8 @@ The build produces Java 8 bytecode. It pins Yarn `1.14.4+build.16`, Fabric
 Loader `0.10.5+build.213`, Fabric API `0.28.5+1.14`, and Fabric Carpet
 Maven artifact `1.14.4-1.3.7+v200127`. That Carpet artifact reports runtime
 mod version `1.3.7`, so the packaged metadata pins `carpet` to `=1.3.7`.
+The real server smoke test must also run on Java 8: this generation's old
+Mixin runtime cannot parse Java 21 class files from the host process.
 
 ## Behavior and validation
 

@@ -1,6 +1,6 @@
 # Classic target changelog
 
-## [1.0.3-classic.1] - 2026-08-22
+## [Unreleased]
 
 ### Added
 

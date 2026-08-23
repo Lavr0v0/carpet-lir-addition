@@ -25,7 +25,7 @@
   },
   "custom": {
     "carpetlir:build": {
-      "target_profile": "mc_1_14_4",
+      "target_profile": "${target_profile}",
       "capability_tier": "tier-1.14"
     }
   }

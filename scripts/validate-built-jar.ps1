@@ -239,6 +239,14 @@ try {
             ">=$profileCarpetModVersion"
         }
 
+        if ($profile.ContainsKey('archive_minecraft_label')) {
+            $expectedJarPrefix = "carpet-lir-addition-mc$([string]$profile.archive_minecraft_label)-"
+            $actualJarName = [System.IO.Path]::GetFileName($resolvedJar)
+            if (-not $actualJarName.StartsWith($expectedJarPrefix, [System.StringComparison]::Ordinal)) {
+                throw "Release JAR name '$actualJarName' does not start with profile prefix '$expectedJarPrefix'."
+            }
+        }
+
         if ($minecraftDependencies.Count -ne 1 -or $minecraftDependencies[0] -ne $expectedMinecraftDependency) {
             throw "Release JAR Minecraft dependency '$($minecraftDependencies -join ', ')' does not match profile '$expectedMinecraftDependency'."
         }
