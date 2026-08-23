@@ -105,6 +105,50 @@ $ExpectedTargets = @(
     '26.1',
     '26.2'
 )
+$ExpectedMinecraftVersions = @(
+    '1.14.4',
+    '1.15',
+    '1.15.1',
+    '1.15.2',
+    '1.16',
+    '1.16.2',
+    '1.16.3',
+    '1.16.4',
+    '1.16.5',
+    '1.17',
+    '1.17.1',
+    '1.18',
+    '1.18.1',
+    '1.18.2',
+    '1.19',
+    '1.19.1',
+    '1.19.2',
+    '1.19.3',
+    '1.19.4',
+    '1.20',
+    '1.20.1',
+    '1.20.2',
+    '1.20.3',
+    '1.20.4',
+    '1.20.5',
+    '1.20.6',
+    '1.21',
+    '1.21.1',
+    '1.21.2',
+    '1.21.3',
+    '1.21.4',
+    '1.21.5',
+    '1.21.6',
+    '1.21.7',
+    '1.21.8',
+    '1.21.9',
+    '1.21.10',
+    '1.21.11',
+    '26.1',
+    '26.1.1',
+    '26.1.2',
+    '26.2'
+)
 
 $Errors = New-Object 'System.Collections.Generic.List[string]'
 
@@ -280,6 +324,56 @@ if (-not (Test-SetEquality $actualTargets $ExpectedTargets)) {
     }
 }
 
+$actualMinecraftVersions = New-Object 'System.Collections.Generic.List[string]'
+foreach ($target in $targets) {
+    $targetName = [string]$target.target
+    $coveredVersions = @(
+        if ($target.PSObject.Properties.Name -contains 'minecraftVersions') {
+            $target.minecraftVersions | ForEach-Object { [string]$_ }
+        } else {
+            $targetName
+        }
+    )
+
+    if ($coveredVersions.Count -eq 0) {
+        Add-ValidationError "Target '$targetName' must cover at least one Minecraft version."
+        continue
+    }
+    if ($coveredVersions[0] -ne $targetName) {
+        Add-ValidationError "Target '$targetName' must list its Carpet coordinate first in minecraftVersions."
+    }
+
+    $previousCoveredVersion = $null
+    foreach ($coveredVersion in $coveredVersions) {
+        try {
+            $parsedCoveredVersion = Convert-ToTargetVersion $coveredVersion
+        } catch {
+            Add-ValidationError "Target '$targetName' covers invalid Minecraft version '$coveredVersion'."
+            continue
+        }
+        if ($null -ne $previousCoveredVersion -and $parsedCoveredVersion -le $previousCoveredVersion) {
+            Add-ValidationError "Target '$targetName' minecraftVersions must be unique and chronological."
+        }
+        $actualMinecraftVersions.Add($coveredVersion)
+        $previousCoveredVersion = $parsedCoveredVersion
+    }
+}
+
+$duplicateMinecraftVersions = @($actualMinecraftVersions | Group-Object | Where-Object Count -gt 1 | ForEach-Object Name)
+foreach ($duplicate in $duplicateMinecraftVersions) {
+    Add-ValidationError "Minecraft version '$duplicate' is covered by more than one Carpet target."
+}
+if (-not (Test-SetEquality @($actualMinecraftVersions) $ExpectedMinecraftVersions)) {
+    $missingMinecraftVersions = @($ExpectedMinecraftVersions | Where-Object { $actualMinecraftVersions -notcontains $_ })
+    $unexpectedMinecraftVersions = @($actualMinecraftVersions | Where-Object { $ExpectedMinecraftVersions -notcontains $_ })
+    if ($missingMinecraftVersions.Count -gt 0) {
+        Add-ValidationError "Minecraft coverage is missing: $($missingMinecraftVersions -join ', ')."
+    }
+    if ($unexpectedMinecraftVersions.Count -gt 0) {
+        Add-ValidationError "Minecraft coverage contains unexpected versions: $($unexpectedMinecraftVersions -join ', ')."
+    }
+}
+
 $seenTargets = @{}
 $seenProfiles = @{}
 $previousTargetVersion = $null
@@ -418,5 +512,5 @@ if ($Errors.Count -gt 0) {
     exit 1
 }
 
-Write-Host "Version matrix is valid: $($targets.Count) stable targets, $($tiers.Count) capability tiers." -ForegroundColor Green
+Write-Host "Version matrix is valid: $($targets.Count) stable Carpet targets, $($actualMinecraftVersions.Count) Minecraft versions, $($tiers.Count) capability tiers." -ForegroundColor Green
 exit 0

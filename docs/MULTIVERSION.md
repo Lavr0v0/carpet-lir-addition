@@ -6,11 +6,11 @@
 
 The target list follows stable `carpet:fabric-carpet` Maven coordinates. Snapshot, experimental, pre-release, release-candidate, and beta builds are excluded. Minecraft 1.12 and 1.13 are also excluded because they predate the Fabric Carpet line covered by this project.
 
-Some stable Carpet coordinates cover adjacent Minecraft patch releases. The matrix records the exact Carpet compile target instead of inventing a coordinate that does not exist. For example, the historical LIR releases used the 1.20 coordinate for a 1.20-1.20.1 artifact and the 1.21.7 coordinate for a 1.21.6-1.21.8 artifact.
+Some stable Carpet coordinates cover adjacent Minecraft patch releases. In those rows, `target` remains the real Carpet coordinate while `minecraftVersions` enumerates every Minecraft release that coordinate covers. This keeps 1.20.1, 1.20.4, 1.21.1, 1.21.3, 1.21.8, 26.1.1, and 26.1.2 visible without inventing Carpet coordinates that do not exist.
 
 ## Status meanings
 
-- `verified`: built and exercised with the current audited implementation and regression suite. Only 26.2 has this status today.
+- `verified`: built and exercised with the current audited implementation and regression suite. The 26.1 line (including 26.1.1 and 26.1.2) and 26.2 have this status today.
 - `released-legacy`: an artifact was published in v1.0.1, but it predates the current audit fixes and automated tests. It must be ported and revalidated before another release.
 - `planned`: a stable Fabric Carpet target with no currently accepted audited build. Local drafts do not count as releases or verification.
 
@@ -58,5 +58,15 @@ The validator checks:
 - Java version transitions
 - version prerequisites for every feature and leaf recipe
 - monotonic capabilities, so later targets cannot silently lose an earlier feature
+- exact Minecraft-version coverage, including patch releases that share one Carpet coordinate
 
-This milestone intentionally does not wire profiles into Gradle. Build integration should follow only after the metadata and capability policy are accepted.
+## Audited 26.x builds
+
+The root Gradle build now supports `26.1`, `26.1.1`, `26.1.2`, and `26.2` as independent targets. Each profile pins its Minecraft, Fabric Loader, Fabric API, and Carpet dependency and writes the exact Minecraft dependency into the JAR metadata.
+
+```powershell
+.\gradlew.bat build -PtargetVersion=26.1.2
+powershell -ExecutionPolicy Bypass -File .\scripts\build-26-targets.ps1
+```
+
+The batch command runs the full unit and GameTest suite for all four targets, then collects only release JARs under `build\multiversion`. Older source families remain explicitly unverified until their audited adapters and tests land.

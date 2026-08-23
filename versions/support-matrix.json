@@ -317,6 +317,10 @@
     },
     {
       "target": "1.20",
+      "minecraftVersions": [
+        "1.20",
+        "1.20.1"
+      ],
       "profile": "mc_1_20",
       "java": 17,
       "sourceFamily": "yarn-1.20.1",
@@ -335,6 +339,10 @@
     },
     {
       "target": "1.20.3",
+      "minecraftVersions": [
+        "1.20.3",
+        "1.20.4"
+      ],
       "profile": "mc_1_20_3",
       "java": 17,
       "sourceFamily": "yarn-1.20.2-plus",
@@ -362,6 +370,10 @@
     },
     {
       "target": "1.21",
+      "minecraftVersions": [
+        "1.21",
+        "1.21.1"
+      ],
       "profile": "mc_1_21",
       "java": 21,
       "sourceFamily": "yarn-1.21.1",
@@ -371,6 +383,10 @@
     },
     {
       "target": "1.21.2",
+      "minecraftVersions": [
+        "1.21.2",
+        "1.21.3"
+      ],
       "profile": "mc_1_21_2",
       "java": 21,
       "sourceFamily": "yarn-1.21.2-plus",
@@ -407,6 +423,10 @@
     },
     {
       "target": "1.21.7",
+      "minecraftVersions": [
+        "1.21.7",
+        "1.21.8"
+      ],
       "profile": "mc_1_21_7",
       "java": 21,
       "sourceFamily": "yarn-1.21.8",
@@ -443,12 +463,17 @@
     },
     {
       "target": "26.1",
+      "minecraftVersions": [
+        "26.1",
+        "26.1.1",
+        "26.1.2"
+      ],
       "profile": "mc_26_1",
       "java": 25,
       "sourceFamily": "mojang-26",
-      "status": "planned",
+      "status": "verified",
       "capabilityTier": "tier-1.21.4",
-      "notes": "An ignored local 1.0.3 draft exists, but there is no tagged release or current regression-suite result."
+      "notes": "Minecraft 26.1, 26.1.1, and 26.1.2 now have independent artifacts; every target passed the current unit suite and 13/13 server GameTests."
     },
     {
       "target": "26.2",
