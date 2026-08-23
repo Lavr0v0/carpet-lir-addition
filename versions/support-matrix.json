@@ -230,9 +230,9 @@
       "profile": "mc_1_14_4",
       "java": 8,
       "sourceFamily": "yarn-1.14",
-      "status": "planned",
+      "status": "verified",
       "capabilityTier": "tier-1.14",
-      "notes": "Earliest stable Fabric Carpet line; intentionally limited to leaves crafting and bone-meal grass conversion."
+      "notes": "Runtime-verified Java 8 classic target with only leaves crafting and bone-meal grass conversion; passed focused tests, JAR audit, server startup, and fake-player behavior checks."
     },
     {
       "target": "1.15",
@@ -602,9 +602,9 @@
       "profile": "mc_1_21_11",
       "java": 21,
       "sourceFamily": "yarn-1.21.11",
-      "status": "released-legacy",
+      "status": "build-only",
       "capabilityTier": "tier-1.21.4",
-      "notes": "Published as a standalone v1.0.1 artifact; not yet validated against the current audited implementation."
+      "notes": "Current audited sources compile and pass focused unit, packaging, and server-startup checks; automated gameplay GameTests are still pending before release verification."
     },
     {
       "target": "26.1",

@@ -7,7 +7,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-$KnownStatuses = @('verified', 'released-legacy', 'planned')
+$KnownStatuses = @('verified', 'build-only', 'released-legacy', 'planned')
 $KnownRules = @(
     'boneMealGrassifyDirt',
     'renewableLeavesCrafting',
