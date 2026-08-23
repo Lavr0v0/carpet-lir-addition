@@ -7,7 +7,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.monster.warden.Warden;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -24,6 +24,7 @@ import net.minecraft.world.phys.Vec3;
 
 public final class CarpetLIRGameTests {
     private static final BlockPos TEST_POS = new BlockPos(1, 2, 1);
+    private static final EntityType<Warden> WARDEN_TYPE = resolveWardenType();
 
     @GameTest
     public void calciteGeneratesWhenRuleAndStructureMatch(GameTestHelper helper) {
@@ -117,7 +118,7 @@ public final class CarpetLIRGameTests {
         try {
             LIRSettings.wardensDropReinforcedDeepslate = true;
             level.getGameRules().set(GameRules.MOB_DROPS, true, level.getServer());
-            Warden warden = helper.spawn(EntityTypes.WARDEN, TEST_POS);
+            Warden warden = helper.spawn(WARDEN_TYPE, TEST_POS);
 
             warden.kill(level);
 
@@ -134,7 +135,7 @@ public final class CarpetLIRGameTests {
         try {
             LIRSettings.wardensDropReinforcedDeepslate = false;
             level.getGameRules().set(GameRules.MOB_DROPS, true, level.getServer());
-            Warden warden = helper.spawn(EntityTypes.WARDEN, TEST_POS);
+            Warden warden = helper.spawn(WARDEN_TYPE, TEST_POS);
 
             warden.kill(level);
 
@@ -151,7 +152,7 @@ public final class CarpetLIRGameTests {
         try {
             LIRSettings.wardensDropReinforcedDeepslate = true;
             level.getGameRules().set(GameRules.MOB_DROPS, false, level.getServer());
-            Warden warden = helper.spawn(EntityTypes.WARDEN, TEST_POS);
+            Warden warden = helper.spawn(WARDEN_TYPE, TEST_POS);
 
             warden.kill(level);
 
@@ -263,5 +264,17 @@ public final class CarpetLIRGameTests {
         helper.setBlock(TEST_POS.east(), Blocks.BUDDING_AMETHYST);
         helper.setBlock(TEST_POS, piston);
         helper.setBlock(TEST_POS.west(), Blocks.REDSTONE_BLOCK);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static EntityType<Warden> resolveWardenType() {
+        for (String owner : new String[]{"net.minecraft.world.entity.EntityTypes", EntityType.class.getName()}) {
+            try {
+                return (EntityType<Warden>) Class.forName(owner).getField("WARDEN").get(null);
+            } catch (ClassNotFoundException | NoSuchFieldException | IllegalAccessException ignored) {
+                // Entity type constants moved from EntityType to EntityTypes between 26.1 and 26.2.
+            }
+        }
+        throw new ExceptionInInitializerError("Unable to resolve the Warden entity type");
     }
 }

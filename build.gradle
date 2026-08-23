@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id 'net.fabricmc.fabric-loom' version '1.17.11'
     id 'maven-publish'
@@ -6,18 +8,49 @@ plugins {
 version = project.mod_version
 group = project.maven_group
 
+def targetVersion = providers.gradleProperty('targetVersion').orElse(project.minecraft_version).get()
+def targetProfileFile = file("versions/targets/${targetVersion}.properties")
+if (!targetProfileFile.exists()) {
+    throw new GradleException(
+            "Unknown Minecraft target '${targetVersion}'. Use ./gradlew listBuildTargets to see build-ready targets."
+    )
+}
+
+def targetProfile = new Properties()
+targetProfileFile.withInputStream { targetProfile.load(it) }
+def requiredTargetProperty = { String key ->
+    def value = targetProfile.getProperty(key)?.trim()
+    if (!value) {
+        throw new GradleException("Missing '${key}' in ${targetProfileFile}.")
+    }
+    value
+}
+
+def minecraftVersion = requiredTargetProperty('minecraft_version')
+def minecraftDependency = requiredTargetProperty('minecraft_dependency')
+def targetLoaderVersion = requiredTargetProperty('loader_version')
+def targetFabricVersion = requiredTargetProperty('fabric_api_version')
+def targetCarpetVersion = requiredTargetProperty('carpet_core_version')
+def archiveMinecraftLabel = requiredTargetProperty('archive_minecraft_label')
+def archiveBaseName = "${archives_base_name}-mc${archiveMinecraftLabel}"
+def buildTargetNames = file('versions/targets')
+        .listFiles()
+        .findAll { it.name.endsWith('.properties') }
+        .collect { it.name.replace('.properties', '') }
+        .sort()
+
 def resourceProperties = [
         version: version.toString(),
-        minecraft_dependency: "~${minecraft_version}",
-        loader_dependency: ">=${loader_version}",
-        fabric_api_dependency: ">=${fabric_version}",
-        carpet_dependency: ">=${carpet_core_version}",
-        target_profile: minecraft_version.toString()
+        minecraft_dependency: minecraftDependency,
+        loader_dependency: ">=${targetLoaderVersion}",
+        fabric_api_dependency: ">=${targetFabricVersion}",
+        carpet_dependency: ">=${targetCarpetVersion}",
+        target_profile: targetVersion
 ]
-def licenseArchiveName = archives_base_name.toString()
+def licenseArchiveName = archiveBaseName
 
 base {
-    archivesName = project.archives_base_name
+    archivesName = archiveBaseName
 }
 
 repositories {
@@ -27,11 +60,11 @@ repositories {
 }
 
 dependencies {
-    minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
-    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-    implementation "carpet:fabric-carpet:${project.carpet_core_version}"
-    testImplementation "net.fabricmc:fabric-loader-junit:${project.loader_version}"
+    minecraft "com.mojang:minecraft:${minecraftVersion}"
+    implementation "net.fabricmc:fabric-loader:${targetLoaderVersion}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${targetFabricVersion}"
+    implementation "carpet:fabric-carpet:${targetCarpetVersion}"
+    testImplementation "net.fabricmc:fabric-loader-junit:${targetLoaderVersion}"
 }
 
 loom {
@@ -73,6 +106,26 @@ java {
 
 test {
     useJUnitPlatform()
+}
+
+tasks.register('printBuildTarget') {
+    group = 'help'
+    description = 'Prints the selected build-ready Minecraft target.'
+    doLast {
+        println "Minecraft : ${minecraftVersion}"
+        println "Profile   : ${targetProfileFile}"
+        println "Fabric API: ${targetFabricVersion}"
+        println "Carpet    : ${targetCarpetVersion}"
+        println "Artifact  : ${archiveBaseName}-${version}.jar"
+    }
+}
+
+tasks.register('listBuildTargets') {
+    group = 'help'
+    description = 'Lists Minecraft targets that can be built from the audited 26.x source family.'
+    doLast {
+        buildTargetNames.each { println it }
+    }
 }
 
 jar {

@@ -23,5 +23,10 @@
     "minecraft": "${minecraft_dependency}",
     "fabric-api": "${fabric_api_dependency}",
     "carpet": "${carpet_dependency}"
+  },
+  "custom": {
+    "carpetlir:build": {
+      "target_profile": "${target_profile}"
+    }
   }
 }

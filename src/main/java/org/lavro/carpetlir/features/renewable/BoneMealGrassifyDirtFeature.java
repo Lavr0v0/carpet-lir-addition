@@ -10,12 +10,12 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.level.gameevent.GameEvent;
-import net.minecraft.world.level.lighting.LightEngine;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import org.lavro.carpetlir.LIRSettings;
+import org.lavro.carpetlir.helpers.GrassSurvivalCompatibility;
 
 public final class BoneMealGrassifyDirtFeature {
     private BoneMealGrassifyDirtFeature() {
@@ -72,7 +72,7 @@ public final class BoneMealGrassifyDirtFeature {
             return false;
         }
 
-        int lightDampening = LightEngine.getLightDampeningInto(
+        int lightDampening = GrassSurvivalCompatibility.getLightBlockInto(
                 grass,
                 above,
                 Direction.UP,
