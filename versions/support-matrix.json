@@ -558,9 +558,9 @@
       "profile": "mc_1_21_6",
       "java": 21,
       "sourceFamily": "yarn-1.21.8",
-      "status": "planned",
+      "status": "build-only",
       "capabilityTier": "tier-1.21.4",
-      "notes": "Stable Carpet coordinate; the legacy grouped artifact was compiled with the later 1.21.7 Carpet release."
+      "notes": "Exact current adapter passes compilation, unit tests, packaging, JAR audit, and an isolated real-server rule-on/rule-off/spectator/furnace-cache smoke; full gameplay automation is still pending."
     },
     {
       "target": "1.21.7",
@@ -573,9 +573,9 @@
       "profile": "mc_1_21_7",
       "java": 21,
       "sourceFamily": "yarn-1.21.8",
-      "status": "released-legacy",
+      "status": "build-only",
       "capabilityTier": "tier-1.21.4",
-      "notes": "Carpet coordinate used by the published v1.0.1 1.21.6-1.21.8 range artifact."
+      "notes": "Exact 1.21.7 and 1.21.8 adapters pass compilation, unit tests, packaging, JAR audit, and isolated real-server rule-on/rule-off/spectator/furnace-cache smokes; full gameplay automation is still pending."
     },
     {
       "target": "1.21.9",

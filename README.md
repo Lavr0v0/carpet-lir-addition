@@ -2,7 +2,7 @@
 
 Carpet LIR Addition is a server-authoritative Fabric Carpet extension focused on renewable-item survival mechanics. It adds no custom screens or client rendering, and every behavior is guarded by a Carpet rule that defaults to `false`.
 
-Eight exact Minecraft targets now have current build paths. Minecraft 1.14.4 is a runtime-verified Java 8 classic build containing only its two available rules. Minecraft 1.21.9, 1.21.10, and 1.21.11 have audited builds and focused server coverage but remain `build-only` until gameplay GameTests are ported. Minecraft 26.1, 26.1.1, 26.1.2, and 26.2 pass the full current unit and server GameTest suite. Every target receives its own JAR with exact dependency metadata; there is no fake all-version JAR.
+Eleven exact Minecraft targets now have current build paths. Minecraft 1.14.4 is a runtime-verified Java 8 classic build containing only its two available rules. Minecraft 1.21.6 through 1.21.11 have audited builds and focused server coverage but remain `build-only` until gameplay GameTests are ported. Minecraft 26.1, 26.1.1, 26.1.2, and 26.2 pass the full current unit and server GameTest suite. Every target receives its own JAR with exact dependency metadata; there is no fake all-version JAR.
 
 The broader support catalog covers all 35 stable Fabric Carpet coordinates from Minecraft 1.14.4 through 26.2, representing 43 Minecraft releases. Older lines are being ported by capability tier: unavailable rules, classes, mixins, recipes, and translations are removed rather than registered as no-op features. See [the multi-version support model](docs/MULTIVERSION.md) for the verified/legacy/planned distinction.
 
@@ -38,7 +38,7 @@ All rules use the `LIR`, `FEATURE`, and `RENEWABLE` categories and default to `f
 
 ## Development and verification
 
-The builds pin the Java generation required by each Minecraft line: Java 8 for 1.14.4, Java 21 for 1.21.9–1.21.11, and Java 25 for 26.x. Gradle resolves compile toolchains automatically when necessary. The first build therefore needs network access, and a real 1.14.4 server smoke test must itself run on Java 8 because that generation's Mixin runtime cannot parse modern host classes.
+The builds pin the Java generation required by each Minecraft line: Java 8 for 1.14.4, Java 21 for 1.21.6–1.21.11, and Java 25 for 26.x. Gradle resolves compile toolchains automatically when necessary. The first build therefore needs network access, and a real 1.14.4 server smoke test must itself run on Java 8 because that generation's Mixin runtime cannot parse modern host classes.
 
 Root-profile development servers and GameTests use `run/<target>` rather than one shared world directory. This keeps worlds, logs, and generated server state from incompatible Minecraft data formats isolated.
 The disposable smoke harness requires an EULA file that the user has already accepted. Pass it with `-EulaSourcePath` when the repository does not yet contain one under `run/`.
@@ -57,6 +57,7 @@ The disposable smoke harness requires an EULA file that the user has already acc
 .\gradlew.bat clean build '-PtargetVersion=26.1.2'
 
 # Build one current Yarn adapter
+.\gradlew.bat clean build '-PtargetVersion=1.21.6'
 .\gradlew.bat clean build '-PtargetVersion=1.21.9'
 .\gradlew.bat clean build '-PtargetVersion=1.21.11'
 
@@ -66,7 +67,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\smoke-test-modern-server.ps1 
 # Build the isolated Java 8 classic adapter
 .\gradlew.bat -p classic\1.14.4 clean build
 
-# Build, test, inspect, and collect all eight current artifacts
+# Build, test, inspect, and collect all eleven current artifacts
 powershell -ExecutionPolicy Bypass -File .\scripts\build-audited-targets.ps1
 
 # Compatibility wrapper for only the four audited 26.x artifacts
@@ -82,5 +83,5 @@ The automated suite checks rule visibility and conservative defaults, recipe-to-
 
 - Rule changes affect server recipe matching immediately. A connected client's recipe-book display may remain stale until its recipes are resynchronized, commonly by reconnecting; crafting and furnace validation still use the current server rule.
 - Recipe JSONs are always present in the data pack and are gated during server recipe lookup. Data-pack inspection alone does not indicate whether a recipe is currently enabled.
-- The support catalog is complete for today's 35 stable Fabric Carpet coordinates, but it is not yet the same as 35 release-ready builds. Eight exact Minecraft targets have current adapters; the remaining matrix rows stay `released-legacy` or `planned` until their own versioned sources pass build and behavior checks.
-- Minecraft 1.21.9–1.21.11 are deliberately marked `build-only`: their current adapters pass unit, packaging, JAR, and server checks, but they do not yet have the 26.x gameplay GameTest coverage.
+- The support catalog is complete for today's 35 stable Fabric Carpet coordinates, but it is not yet the same as 35 release-ready builds. Eleven exact Minecraft targets have current adapters; the remaining matrix rows stay `released-legacy` or `planned` until their own versioned sources pass build and behavior checks.
+- Minecraft 1.21.6–1.21.11 are deliberately marked `build-only`: their current adapters pass unit, packaging, JAR, and server checks, but they do not yet have the 26.x gameplay GameTest coverage.

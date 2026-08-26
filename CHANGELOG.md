@@ -5,10 +5,14 @@
 ### Added
 - Added a server GameTest proving that reinforced deepslate drops exactly one block with Silk Touch only while its Carpet rule is enabled.
 - Added exact, audited build profiles and a dedicated API adapter for Minecraft 1.21.9 and 1.21.10.
+- Added exact, audited build profiles and a shared API adapter for Minecraft 1.21.6, 1.21.7, and 1.21.8 while keeping one exact JAR per release.
 - Added a uniquely isolated real-server smoke harness covering enabled dirt conversion, disabled behavior, spectator denial, live furnace-cache invalidation, clean shutdown, and optional test-world cleanup.
 
 ### Fixed
 - Added Minecraft 1.16.1 to the support catalog because Carpet's stable 1.16 artifact declares compatibility with the full 1.16.x line.
+- Replaced the legacy 1.21.6–1.21.8 grass survival and recipe-cache paths so opaque/full-water blocks, spectators, and disabled cached furnace recipes are handled correctly.
+- Made the real-server smoke harness wait for its fake player to finish logging in before interaction commands, removing a load-dependent cross-version race.
+- Made the JAR audit reject undeclared extra mixin configurations so a stale version overlay cannot be packaged silently.
 
 ## [1.1.0-beta.1] - 2026-08-22
 
