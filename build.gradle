@@ -45,6 +45,7 @@ def yarnMappings = targetProfile.getProperty('yarn_mappings')?.trim()
 def sourceOverlay = targetProfile.getProperty('source_overlay', targetVersion).trim()
 def mixinConfig = targetProfile.getProperty('mixin_config', 'carpet-lir-addition.mixins.json').trim()
 def supportStatus = targetProfile.getProperty('support_status', 'verified').trim()
+def runDirectoryName = providers.gradleProperty('runDirectoryName').orElse(targetVersion).get().trim()
 def excludedSources = targetProfile.getProperty('excluded_sources', '')
         .split(',')
         .collect { it.trim() }
@@ -77,6 +78,14 @@ def resourceProperties = [
         mixin_config: mixinConfig
 ]
 def licenseArchiveName = archiveBaseName
+
+def normalizedRunRoot = file('run').toPath().toAbsolutePath().normalize()
+def normalizedRunDirectory = file("run/${runDirectoryName}").toPath().toAbsolutePath().normalize()
+if (!(runDirectoryName ==~ /[A-Za-z0-9][A-Za-z0-9._-]*/) ||
+        runDirectoryName.contains('..') ||
+        normalizedRunDirectory.parent != normalizedRunRoot) {
+    throw new GradleException("Unsafe run directory name '${runDirectoryName}'.")
+}
 
 if (sourceFamily == 'mojang-26') {
     apply plugin: 'net.fabricmc.fabric-loom'
@@ -161,7 +170,7 @@ if (sourceFamily == 'mojang-26') {
 loom {
     runs {
         configureEach {
-            runDir("run/${targetVersion}")
+            runDir("run/${runDirectoryName}")
         }
     }
 }
