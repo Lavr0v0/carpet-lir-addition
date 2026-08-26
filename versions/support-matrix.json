@@ -620,7 +620,7 @@
       "sourceFamily": "mojang-26",
       "status": "verified",
       "capabilityTier": "tier-1.21.4",
-      "notes": "Minecraft 26.1, 26.1.1, and 26.1.2 now have independent artifacts; every target passed the current unit suite and 14/14 server GameTests."
+      "notes": "Minecraft 26.1, 26.1.1, and 26.1.2 now have independent artifacts; every target passed the current unit suite and 15/15 server GameTests, including Silk Touch loot-context coverage."
     },
     {
       "target": "26.2",

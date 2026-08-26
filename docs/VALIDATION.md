@@ -85,4 +85,4 @@ Run these checks in a disposable world matching the exact target JAR. Begin each
 
 ## Automated coverage
 
-Use `./gradlew test` for fast rule/resource integrity tests and `./gradlew runGameTest` for actual 26.x server behavior. The 26.x GameTest suite covers the highest-risk positive, disabled, permission, and environmental failure paths. Minecraft 1.14.4 must be smoke-tested on a Java 8 server; Minecraft 1.21.11 stays `build-only` until equivalent gameplay automation is ported. The remaining manual checks above are release acceptance checks, particularly recipe shapes and Silk Touch loot-context integration.
+Use `./gradlew test` for fast rule/resource integrity tests and `./gradlew runGameTest` for actual 26.x server behavior. The 26.x GameTest suite covers the highest-risk positive, disabled, permission, environmental, and Silk Touch loot-context paths. Minecraft 1.14.4 must be smoke-tested on a Java 8 server; Minecraft 1.21.11 stays `build-only` until equivalent gameplay automation is ported. The remaining manual checks above are release acceptance checks, particularly recipe shapes and in-world interaction feel.
