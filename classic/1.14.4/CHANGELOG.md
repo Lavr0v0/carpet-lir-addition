@@ -1,5 +1,11 @@
 # Classic target changelog
 
+## [1.1.0-beta.2] - 2026-08-26
+
+### Changed
+
+- Rebuilt the unchanged, runtime-verified Minecraft 1.14.4 adapter under the coherent 43-version beta.2 release identity.
+
 ## [1.1.0-beta.1] - 2026-08-22
 
 ### Added

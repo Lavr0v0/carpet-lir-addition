@@ -7,7 +7,9 @@ param(
 
     [string]$MatrixPath,
 
-    [string]$ProfilePath
+    [string]$ProfilePath,
+
+    [string]$ExpectedModVersion
 )
 
 $ErrorActionPreference = 'Stop'
@@ -239,6 +241,10 @@ try {
     }
     if ([string]::IsNullOrWhiteSpace([string]$metadata.version) -or [string]$metadata.version -match '\$\{') {
         throw "Release JAR has unresolved or empty mod version '$($metadata.version)'."
+    }
+    if (-not [string]::IsNullOrWhiteSpace($ExpectedModVersion) -and
+            [string]$metadata.version -ne $ExpectedModVersion) {
+        throw "Release JAR mod version '$($metadata.version)' does not match expected release version '$ExpectedModVersion'."
     }
     $minecraftDependencies = @($metadata.depends.minecraft | ForEach-Object { [string]$_ })
     $boundedMinecraftDependencies = @($minecraftDependencies | Where-Object {

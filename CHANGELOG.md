@@ -1,8 +1,9 @@
 # Changelog
 
-## [Unreleased]
+## [1.1.0-beta.2] - 2026-08-26
 
 ### Added
+- Added release-manifest and SHA-256 checksum generation plus an independent bundle revalidator to the audited 43-target build, with a clean-Git and full-test requirement for release acceptance.
 - Added exact Minecraft 1.15, 1.15.1, and 1.15.2 Java 8 profiles with official Carpet, Yarn, and exact mapping-bound Fabric API coordinates, producing one independently constrained JAR per release.
 - Added the 1.15 bone-meal interaction overlay and Java 8 RecipeManager Mixin resource while reusing the capability-pruned tier-1.15 settings, feature bootstrap, legacy entrypoint, and direct recipe filter.
 - Added a focused legacy translation-key test and disposable real-server coverage for all three 1.15 releases, including `/carpetlir`, bone-meal consumption and interaction gates, same-furnace/direct recipe fallback, clean shutdown, and automatic world cleanup.
