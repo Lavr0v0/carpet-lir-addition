@@ -228,7 +228,12 @@ if (sourceFamily == 'mojang-26') {
             }
         }
         test {
-            java.setSrcDirs(['src/legacy/test/java'])
+            java {
+                setSrcDirs(['src/legacy/test/java'])
+                if (!availableRuleNames.contains('pistonHarvestableAmethysts')) {
+                    exclude '**/PistonHarvestableAmethystFeatureTest.java'
+                }
+            }
             resources.setSrcDirs([])
         }
     }
@@ -337,7 +342,9 @@ processResources {
 }
 
 tasks.withType(JavaCompile).configureEach {
-    it.options.release = javaVersion
+    if (javaVersion >= 9) {
+        it.options.release = javaVersion
+    }
     it.options.encoding = 'UTF-8'
     it.options.compilerArgs.add('-Xlint:deprecation')
 }
