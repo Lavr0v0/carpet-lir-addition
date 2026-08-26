@@ -22,7 +22,7 @@ public final class RecipeToggleFeature {
     }
 
     static Identifier identifierForTest(String namespace, String path) {
-        return Identifier.of(namespace, path);
+        return new Identifier(namespace, path);
     }
 
     private static Map<Identifier, BooleanSupplier> createRuleMap() {
@@ -35,9 +35,6 @@ public final class RecipeToggleFeature {
         registerIfBundled(rules, "jungle_leaves_from_jungle_log_and_sticks", () -> LIRSettings.renewableLeavesCrafting);
         registerIfBundled(rules, "acacia_leaves_from_acacia_log_and_sticks", () -> LIRSettings.renewableLeavesCrafting);
         registerIfBundled(rules, "dark_oak_leaves_from_dark_oak_log_and_sticks", () -> LIRSettings.renewableLeavesCrafting);
-        registerIfBundled(rules, "mangrove_leaves_from_mangrove_log_and_sticks", () -> LIRSettings.renewableLeavesCrafting);
-        registerIfBundled(rules, "cherry_leaves_from_cherry_log_and_sticks", () -> LIRSettings.renewableLeavesCrafting);
-        registerIfBundled(rules, "pale_oak_leaves_from_pale_oak_log_and_sticks", () -> LIRSettings.renewableLeavesCrafting);
         registerIfBundled(rules, "honeycomb_from_honeycomb_block", () -> LIRSettings.renewableHoneycombCrafting);
         registerIfBundled(rules, "raw_iron_from_cobblestone_and_iron_ingot", () -> LIRSettings.renewableRawOresCrafting);
         registerIfBundled(rules, "raw_copper_from_cobblestone_and_copper_ingot", () -> LIRSettings.renewableRawOresCrafting);

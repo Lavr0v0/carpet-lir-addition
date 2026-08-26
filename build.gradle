@@ -41,12 +41,17 @@ def targetFabricDependency = targetProfile.getProperty('fabric_api_dependency', 
 def targetCarpetDependency = targetProfile.getProperty('carpet_dependency', ">=${targetCarpetModVersion}").trim()
 def archiveMinecraftLabel = requiredTargetProperty('archive_minecraft_label')
 def sourceFamily = requiredTargetProperty('source_family')
+def capabilityTierId = requiredTargetProperty('capability_tier')
 def javaVersion = Integer.parseInt(requiredTargetProperty('java_version'))
 def mappingsMode = requiredTargetProperty('mappings_mode')
 def yarnMappings = targetProfile.getProperty('yarn_mappings')?.trim()
 def sourceOverlay = targetProfile.getProperty('source_overlay', targetVersion).trim()
 def settingsSourceOverlay = targetProfile.getProperty('settings_source_overlay', 'rule-categories').trim()
 def fluidTagSourceOverlay = targetProfile.getProperty('fluid_tag_source_overlay', 'fluid-tags-registry').trim()
+def featureBootstrapOverlay = targetProfile.getProperty(
+        'feature_bootstrap_overlay',
+        'feature-bootstrap-reinforced'
+).trim()
 def sharedSourceOverlays = targetProfile.getProperty('shared_source_overlays', '')
         .split(',')
         .collect { it.trim() }
@@ -71,6 +76,22 @@ def buildTargetNames = file('versions/targets')
         .findAll { it.name.endsWith('.properties') }
         .collect { it.name.replace('.properties', '') }
         .sort()
+def supportMatrix = new JsonSlurper().parse(file('versions/support-matrix.json'))
+def matchingCapabilityTiers = supportMatrix.capabilityTiers.findAll { it.id == capabilityTierId }
+if (matchingCapabilityTiers.size() != 1) {
+    throw new GradleException(
+            "Target '${targetVersion}' selects unknown or duplicate capability tier '${capabilityTierId}'."
+    )
+}
+def selectedCapabilityTier = matchingCapabilityTiers.first()
+def allRuleNames = supportMatrix.capabilityTiers
+        .collectMany { it.availableRules as List }
+        .collect { it.toString() }
+        .toSet()
+def availableRuleNames = (selectedCapabilityTier.availableRules as List)
+        .collect { it.toString() }
+        .toSet()
+def unavailableRuleTranslations = (allRuleNames - availableRuleNames).sort()
 
 if (!(recipeSchema in [
         'modern-shorthand-result-id',
@@ -91,6 +112,7 @@ if (!(recipeDirectory in ['recipe', 'recipes'])) {
 ([source_overlay: sourceOverlay,
   settings_source_overlay: settingsSourceOverlay,
   fluid_tag_source_overlay: fluidTagSourceOverlay,
+  feature_bootstrap_overlay: featureBootstrapOverlay,
   recipe_api_overlay: recipeApiOverlay] +
         sharedSourceOverlays.withIndex().collectEntries { name, index ->
             [("shared_source_overlays[${index}]".toString()): name]
@@ -154,7 +176,8 @@ dependencies {
         modImplementation "net.fabricmc:fabric-loader:${targetLoaderVersion}"
         modImplementation "net.fabricmc.fabric-api:fabric-api:${targetFabricVersion}"
         modImplementation "carpet:fabric-carpet:${targetCarpetVersion}"
-        testImplementation "net.fabricmc:fabric-loader-junit:${targetLoaderVersion}"
+        testImplementation "org.junit.jupiter:junit-jupiter:5.10.0"
+        testRuntimeOnly "org.junit.platform:junit-platform-launcher:1.10.0"
     } else if (mappingsMode == 'mojang') {
         implementation "net.fabricmc:fabric-loader:${targetLoaderVersion}"
         implementation "net.fabricmc.fabric-api:fabric-api:${targetFabricVersion}"
@@ -187,7 +210,8 @@ if (sourceFamily == 'mojang-26') {
                         'src/legacy/main/java',
                         "src/legacy/versioned/${sourceOverlay}/java",
                         "src/legacy/versioned/${settingsSourceOverlay}/java",
-                        "src/legacy/versioned/${fluidTagSourceOverlay}/java"
+                        "src/legacy/versioned/${fluidTagSourceOverlay}/java",
+                        "src/legacy/versioned/${featureBootstrapOverlay}/java"
                 ] + sharedSourceOverlays.collect {
                     "src/legacy/versioned/${it}/java"
                 } + ["src/legacy/versioned/${recipeApiOverlay}/java"])
@@ -220,6 +244,8 @@ processResources {
     inputs.properties resourceProperties
     inputs.property('recipe_schema', recipeSchema)
     inputs.property('recipe_directory', recipeDirectory)
+    inputs.property('capability_tier', capabilityTierId)
+    inputs.property('unavailable_rule_translations', unavailableRuleTranslations.join(','))
 
     eachFile { details ->
         if (recipeDirectory == 'recipes' && details.path.startsWith('data/carpetlir/recipe/')) {
@@ -286,6 +312,26 @@ processResources {
             }
         }
     }
+
+    doLast {
+        if (!unavailableRuleTranslations.isEmpty()) {
+            fileTree(destinationDir) {
+                include 'assets/carpetlir/lang/*.json'
+            }.files.each { File languageFile ->
+                def language = new JsonSlurper().parse(languageFile, 'UTF-8')
+                unavailableRuleTranslations.each { String ruleName ->
+                    String nameKey = "carpet.rule.${ruleName}.name"
+                    String descriptionKey = "carpet.rule.${ruleName}.desc"
+                    language.remove(nameKey)
+                    language.remove(descriptionKey)
+                }
+                languageFile.setText(
+                        JsonOutput.prettyPrint(JsonOutput.toJson(language)) + System.lineSeparator(),
+                        'UTF-8'
+                )
+            }
+        }
+    }
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -317,6 +363,9 @@ tasks.register('printBuildTarget') {
         println "Sources   : ${sourceFamily}"
         println "Mappings  : ${mappingsMode}${yarnMappings ? " (${yarnMappings})" : ''}"
         println "Java      : ${javaVersion}"
+        println "Tier      : ${capabilityTierId}"
+        println "Rule keys : ${availableRuleNames.sort().join(', ')}"
+        println "Omit keys : ${unavailableRuleTranslations.join(', ')}"
         println "Status    : ${supportStatus}"
         println "Profile   : ${targetProfileFile}"
         println "Fabric API: ${targetFabricVersion}"

@@ -3,6 +3,7 @@ param(
     [string]$TargetVersion,
     [string]$EulaSourcePath,
     [int]$StartupTimeoutSeconds = 240,
+    [int]$GameplayTimeoutSeconds = 360,
     [int]$CommandDelayMilliseconds = 1200,
     [switch]$CleanRunDirectory
 )
@@ -58,6 +59,9 @@ if ($recipeDirectory -notin @('recipe', 'recipes')) {
 }
 $isTier119 = [string]$profile.capability_tier -eq 'tier-1.19'
 $dataPackFormats = @{
+    '1.18' = 8
+    '1.18.1' = 8
+    '1.18.2' = 9
     '1.19' = 10
     '1.19.1' = 10
     '1.19.2' = 10
@@ -235,6 +239,19 @@ $preTierGameplayCommands = @(
     'execute if block 0 101 2 minecraft:dirt run say CARPETLIR_BONEMEAL_SPECTATOR_PASS',
     'gamemode survival Notch',
     'tp Notch 0.5 101 0.5',
+    'carpet renewableCalcite false',
+    'setblock 3 100 0 minecraft:bone_block',
+    'setblock 4 101 0 minecraft:amethyst_block',
+    'setblock 3 101 0 minecraft:lava',
+    'execute if block 3 101 0 minecraft:lava run say CARPETLIR_CALCITE_DISABLED_PASS',
+    'setblock 3 101 0 minecraft:air',
+    'carpet renewableCalcite true',
+    'setblock 3 101 0 minecraft:lava',
+    'execute if block 3 101 0 minecraft:calcite run say CARPETLIR_CALCITE_ENABLED_PASS',
+    'carpet renewableCalcite false',
+    'setblock 3 101 0 minecraft:air',
+    'setblock 4 101 0 minecraft:air',
+    'setblock 3 100 0 minecraft:air',
     'carpet renewableLeavesCrafting true',
     'recipe give Notch carpetlir:oak_leaves_from_oak_log_and_sticks',
     'carpet renewableLeavesCrafting false',
@@ -319,6 +336,8 @@ $requiredMarkers = @(
     'CARPETLIR_BONEMEAL_SNOWY_PASS',
     'CARPETLIR_BONEMEAL_DISABLED_PASS',
     'CARPETLIR_BONEMEAL_SPECTATOR_PASS',
+    'CARPETLIR_CALCITE_DISABLED_PASS',
+    'CARPETLIR_CALCITE_ENABLED_PASS',
     'CARPETLIR_RECIPE_ENABLED_PASS',
     'CARPETLIR_RECIPE_DIRECT_ENABLED_PASS',
     'CARPETLIR_RECIPE_CACHED_FALLBACK_PASS',
@@ -398,6 +417,7 @@ $cleanupErrorMessage = $null
 $exitCode = $null
 $readTask = $null
 $deadline = [DateTime]::UtcNow.AddSeconds($StartupTimeoutSeconds)
+$deadlinePhase = 'startup'
 
 try {
     if (Test-Path -LiteralPath $RunDirectory) {
@@ -492,7 +512,12 @@ try {
     while (-not $process.HasExited) {
         $now = [DateTime]::UtcNow
         if ($now -ge $deadline) {
-            throw "Minecraft $TargetVersion did not finish its smoke test within $StartupTimeoutSeconds seconds."
+            $timeoutSeconds = if ($deadlinePhase -eq 'startup') {
+                $StartupTimeoutSeconds
+            } else {
+                $GameplayTimeoutSeconds
+            }
+            throw "Minecraft $TargetVersion did not finish its $deadlinePhase phase within $timeoutSeconds seconds."
         }
 
         if ($waitingForRecipeReload -and $now -ge $recipeReloadDeadline) {
@@ -602,6 +627,8 @@ try {
 
         if (-not $serverReady -and $line -match '\bDone \(') {
             $serverReady = $true
+            $deadline = [DateTime]::UtcNow.AddSeconds($GameplayTimeoutSeconds)
+            $deadlinePhase = 'gameplay smoke'
             foreach ($command in $startupCommands) {
                 $output.Add(">>> $command")
                 Write-Host ">>> $command" -ForegroundColor Cyan
@@ -679,9 +706,9 @@ if ($combinedOutput -notmatch '(?:Gave|Unlocked) 1 recipe') {
 }
 
 $coverageSummary = if ($isTier119) {
-    'dirt rule states, cached/direct recipe fallbacks, mangrove resource, hardness, real Silk Touch mining, Warden loot gates, piston negative/positive paths, and clean shutdown'
+    'dirt and calcite rule states, cached/direct recipe fallbacks, mangrove resource, hardness, real Silk Touch mining, Warden loot gates, piston negative/positive paths, and clean shutdown'
 } else {
-    'dirt rule states, cached/direct recipe fallbacks, piston negative/positive paths, and clean shutdown'
+    'dirt and calcite rule states, cached/direct recipe fallbacks, piston negative/positive paths, and clean shutdown'
 }
 Write-Host "Minecraft $TargetVersion server smoke passed: $coverageSummary." -ForegroundColor Green
 Write-Host "Evidence: $EvidencePath" -ForegroundColor Green

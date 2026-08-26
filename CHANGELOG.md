@@ -3,6 +3,9 @@
 ## [Unreleased]
 
 ### Added
+- Added exact Minecraft 1.18, 1.18.1, and 1.18.2 profiles with Java 17 bytecode, exact Carpet/Yarn/Fabric API dependencies, version-correct `fabric` versus `fabric-api` ids, and one audited JAR per release.
+- Added narrow 1.18 adapters for the old Carpet Rule annotation, legacy `Identifier` and fluid tags, `GameEvent.BLOCK_CHANGE`, and the direct three-parameter `RecipeManager` API, plus a capability-selected feature bootstrap that omits 1.19-only classes.
+- Extended full disposable real-server coverage through all three exact Minecraft 1.18 releases, including dirt and snowy-state interaction gates, disabled/enabled calcite generation, cached/direct recipe fallback, piston no-drop/drop behavior, clean shutdown, and automatic world cleanup.
 - Added exact Minecraft 1.19, 1.19.1, and 1.19.2 profiles with Java 17 bytecode, exact Carpet/Yarn/Fabric API dependencies, version-correct `fabric` versus `fabric-api` ids, and one audited JAR per release.
 - Added an old `carpet.settings.Rule` adapter with required descriptions for Minecraft 1.19, plus a server-only Warden death Mixin for Fabric API 0.58.x and a shared event adapter for 1.19.2–1.19.4.
 - Extended full tier-1.19 real-server coverage through all five exact Minecraft 1.19 releases, including cached/direct recipe fallback, real Silk Touch mining, `/kill` Warden loot gates and count, piston no-drop/drop behavior, and automatic world cleanup.
@@ -24,6 +27,9 @@
 - Extended basic real-server smoke coverage through Minecraft 1.19–1.20.6 and 1.21–1.21.11. The enhanced disposable-data-pack checks use an enabled direct-query baseline before asserting cached and direct recipe fallbacks on exact pre-entry 1.19–1.20.1 and representative 1.20.2, 1.20.6, and 1.21.10 API boundaries; acceptance runs use `-CleanRunDirectory` to remove their GUID worlds and temporary data packs.
 
 ### Fixed
+- Split disposable-server startup and gameplay deadlines so the expanded tier-1.19 regression suite cannot exhaust a startup-inclusive 240-second global timeout after otherwise passing checks.
+- Loaded legacy Carpet translations directly from this mod's classpath because the 1.18-era Carpet helper ignores an extension-supplied translation path, and pruned higher-tier translation keys together with unavailable rules and resources.
+- Kept legacy Yarn unit tests independent of a full Fabric registry bootstrap, avoiding the 1.18.2 named-Yarn cross-package access failure while real Fabric/Mixin behavior remains covered by disposable server smokes.
 - Made JAR validation require capability-critical fluid, reinforced-deepslate, recipe, and piston adapters to be registered in a server-active Mixin configuration, not merely present as unused classes.
 - Reworked the Yarn server smoke runner to drain output while pacing commands, preventing pipe backpressure from collapsing delayed interactions into one tick; added JAR guards and real piston no-drop/drop assertions for `pistonHarvestableAmethysts`.
 - Replaced the legacy 1.20–1.20.1 direct-only recipe filter with direct and cached fallbacks that return the valid fallback recipe identifier instead of preserving a disabled cache hint.

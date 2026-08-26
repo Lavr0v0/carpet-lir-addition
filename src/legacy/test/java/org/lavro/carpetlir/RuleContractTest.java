@@ -7,7 +7,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -62,5 +64,29 @@ class RuleContractTest {
 
             assertFalse(field.getBoolean(null), field.getName() + " must default to false");
         }
+    }
+
+    @Test
+    void bundledEnglishTranslationsMatchTheSelectedRuleTier() {
+        Set<String> ruleNames = Arrays.stream(LIRSettings.class.getDeclaredFields())
+                .filter(field -> field.getType() == boolean.class)
+                .map(Field::getName)
+                .collect(Collectors.toUnmodifiableSet());
+        Map<String, String> translations = new CarpetLIRAddition().canHasTranslations("en_us");
+
+        for (String ruleName : ruleNames) {
+            assertTrue(translations.containsKey("carpet.rule." + ruleName + ".name"),
+                    ruleName + " must have an English name");
+            assertTrue(translations.containsKey("carpet.rule." + ruleName + ".desc"),
+                    ruleName + " must have an English description");
+        }
+
+        Set<String> translatedRuleNames = translations.keySet().stream()
+                .filter(key -> key.startsWith("carpet.rule."))
+                .filter(key -> key.endsWith(".name") || key.endsWith(".desc"))
+                .map(key -> key.substring("carpet.rule.".length(), key.lastIndexOf('.')))
+                .collect(Collectors.toUnmodifiableSet());
+        assertEquals(ruleNames, translatedRuleNames,
+                "translation resources must not expose rules omitted by the selected capability tier");
     }
 }

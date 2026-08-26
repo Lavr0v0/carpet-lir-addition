@@ -758,6 +758,7 @@ foreach ($profileFile in $profileFiles) {
         Add-ValidationError "$context must use ingredient-objects-result-id in the plural recipes directory."
     }
     if ($profileVersion -in @(
+            '1.18', '1.18.1', '1.18.2',
             '1.19', '1.19.1', '1.19.2', '1.19.3', '1.19.4',
             '1.20', '1.20.1', '1.20.2', '1.20.3', '1.20.4'
     ) -and
@@ -808,6 +809,7 @@ foreach ($profileFile in $profileFiles) {
         $compatibilityOverlayDefaults = @{
             settings_source_overlay = 'rule-categories'
             fluid_tag_source_overlay = 'fluid-tags-registry'
+            feature_bootstrap_overlay = 'feature-bootstrap-reinforced'
         }
         foreach ($compatibilityOverlay in $compatibilityOverlayDefaults.GetEnumerator()) {
             $compatibilityOverlayName = if ($profile.ContainsKey($compatibilityOverlay.Key)) {

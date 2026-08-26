@@ -19,7 +19,11 @@ public final class RecipeToggleFeature {
     }
 
     private static Identifier recipeId(String path) {
-        return Identifier.of(CarpetLIRAddition.MOD_ID, path);
+        return identifierForTest(CarpetLIRAddition.MOD_ID, path);
+    }
+
+    static Identifier identifierForTest(String namespace, String path) {
+        return Identifier.of(namespace, path);
     }
 
     private static Map<Identifier, BooleanSupplier> createRuleMap() {

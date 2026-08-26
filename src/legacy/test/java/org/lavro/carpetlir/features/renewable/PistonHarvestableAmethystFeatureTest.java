@@ -1,10 +1,6 @@
 package org.lavro.carpetlir.features.renewable;
 
-import net.minecraft.Bootstrap;
-import net.minecraft.SharedConstants;
-import net.minecraft.block.Blocks;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.lavro.carpetlir.LIRSettings;
 
@@ -12,12 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PistonHarvestableAmethystFeatureTest {
-    @BeforeAll
-    static void bootstrapMinecraftRegistries() {
-        SharedConstants.createGameVersion();
-        Bootstrap.initialize();
-    }
-
     @AfterEach
     void resetRule() {
         LIRSettings.pistonHarvestableAmethysts = false;
@@ -25,33 +15,23 @@ class PistonHarvestableAmethystFeatureTest {
 
     @Test
     void buddingAmethystIsNotDestroyableByDefault() {
-        assertFalse(PistonHarvestableAmethystFeature.shouldBreakWhenPushed(
-                Blocks.BUDDING_AMETHYST.getDefaultState()
-        ));
+        assertFalse(PistonHarvestableAmethystFeature.shouldHarvestBuddingAmethyst(true));
     }
 
     @Test
     void ruleMakesOnlyBuddingAmethystDestroyable() {
         LIRSettings.pistonHarvestableAmethysts = true;
 
-        assertTrue(PistonHarvestableAmethystFeature.shouldBreakWhenPushed(
-                Blocks.BUDDING_AMETHYST.getDefaultState()
-        ));
-        assertFalse(PistonHarvestableAmethystFeature.shouldBreakWhenPushed(
-                Blocks.AMETHYST_BLOCK.getDefaultState()
-        ));
+        assertTrue(PistonHarvestableAmethystFeature.shouldHarvestBuddingAmethyst(true));
+        assertFalse(PistonHarvestableAmethystFeature.shouldHarvestBuddingAmethyst(false));
     }
 
     @Test
     void disablingRuleTakesEffectImmediately() {
         LIRSettings.pistonHarvestableAmethysts = true;
-        assertTrue(PistonHarvestableAmethystFeature.shouldBreakWhenPushed(
-                Blocks.BUDDING_AMETHYST.getDefaultState()
-        ));
+        assertTrue(PistonHarvestableAmethystFeature.shouldHarvestBuddingAmethyst(true));
 
         LIRSettings.pistonHarvestableAmethysts = false;
-        assertFalse(PistonHarvestableAmethystFeature.shouldBreakWhenPushed(
-                Blocks.BUDDING_AMETHYST.getDefaultState()
-        ));
+        assertFalse(PistonHarvestableAmethystFeature.shouldHarvestBuddingAmethyst(true));
     }
 }

@@ -362,6 +362,7 @@ try {
         }
         $expectedRuleAnnotation = switch ($settingsSourceOverlay) {
             'rule-category' { 'carpet/settings/Rule' }
+            'rule-category-tier-1.17' { 'carpet/settings/Rule' }
             'rule-categories' { 'carpet/api/settings/Rule' }
             default { throw "Unsupported settings source overlay '$settingsSourceOverlay'." }
         }
@@ -375,13 +376,15 @@ try {
             throw "LIRSettings does not use only the rule annotation selected by '$settingsSourceOverlay'."
         }
 
-        $fluidBlockMixinEntry = $zip.GetEntry('org/lavro/carpetlir/mixins/FluidBlockMixin.class')
-        $fluidTagCompatibilityEntry = $zip.GetEntry('org/lavro/carpetlir/helpers/FluidTagCompatibility.class')
-        if ($null -eq $fluidBlockMixinEntry -or $null -eq $fluidTagCompatibilityEntry -or
-                -not [System.Text.Encoding]::UTF8.GetString(
-                        (Get-ZipEntryBytes $fluidBlockMixinEntry)
-                ).Contains('FluidTagCompatibility')) {
-            throw 'Legacy Yarn JAR does not retain the selected FluidTags compatibility adapter.'
+        if ($expectedRules -contains 'renewableCalcite') {
+            $fluidBlockMixinEntry = $zip.GetEntry('org/lavro/carpetlir/mixins/FluidBlockMixin.class')
+            $fluidTagCompatibilityEntry = $zip.GetEntry('org/lavro/carpetlir/helpers/FluidTagCompatibility.class')
+            if ($null -eq $fluidBlockMixinEntry -or $null -eq $fluidTagCompatibilityEntry -or
+                    -not [System.Text.Encoding]::UTF8.GetString(
+                            (Get-ZipEntryBytes $fluidBlockMixinEntry)
+                    ).Contains('FluidTagCompatibility')) {
+                throw 'Legacy Yarn JAR with renewableCalcite does not retain the selected FluidTags compatibility adapter.'
+            }
         }
     }
     $initializerEntry = $zip.GetEntry('org/lavro/carpetlir/CarpetLIRAddition.class')
@@ -391,6 +394,46 @@ try {
     $initializerText = [System.Text.Encoding]::UTF8.GetString((Get-ZipEntryBytes $initializerEntry))
     if ($initializerText.Contains('${version}')) {
         throw 'Release JAR initializer contains an unresolved version placeholder.'
+    }
+    if ($isLegacyYarnProfile) {
+        if (-not $initializerText.Contains('LegacyFeatureBootstrap') -or
+                $initializerText.Contains('ReinforcedDeepslateFeature')) {
+            throw 'Legacy initializer must delegate feature registration without directly linking optional features.'
+        }
+        if ($initializerText.Contains('carpet/utils/Translations')) {
+            throw 'Legacy initializer still relies on Carpet translation loading that ignores extension resource paths.'
+        }
+
+        $featureBootstrapEntry = $zip.GetEntry('org/lavro/carpetlir/LegacyFeatureBootstrap.class')
+        if ($null -eq $featureBootstrapEntry) {
+            throw 'Legacy Yarn JAR has no target-selected feature bootstrap.'
+        }
+        $featureBootstrapText = [System.Text.Encoding]::UTF8.GetString(
+                (Get-ZipEntryBytes $featureBootstrapEntry)
+        )
+        $featureBootstrapOverlay = if ($profile.ContainsKey('feature_bootstrap_overlay')) {
+            [string]$profile.feature_bootstrap_overlay
+        } else {
+            'feature-bootstrap-reinforced'
+        }
+        if (-not $featureBootstrapText.Contains('BoneMealGrassifyDirtFeature')) {
+            throw 'Target-selected feature bootstrap does not register bone-meal grass conversion.'
+        }
+        switch ($featureBootstrapOverlay) {
+            'feature-bootstrap-tier-1.17' {
+                if ($featureBootstrapText.Contains('ReinforcedDeepslateFeature')) {
+                    throw 'Tier-1.17 feature bootstrap links an unavailable reinforced-deepslate feature.'
+                }
+            }
+            'feature-bootstrap-reinforced' {
+                if (-not $featureBootstrapText.Contains('ReinforcedDeepslateFeature')) {
+                    throw 'Modern legacy feature bootstrap does not register reinforced-deepslate behavior.'
+                }
+            }
+            default {
+                throw "Unsupported feature bootstrap overlay '$featureBootstrapOverlay'."
+            }
+        }
     }
     foreach ($rule in $allRules) {
         $isPresent = $settingsText.Contains($rule)
@@ -499,6 +542,19 @@ try {
         $minimumVersion = Convert-ToTargetVersion $forbiddenBefore[$classPath]
         if ($targetVersion -lt $minimumVersion -and $null -ne $zip.GetEntry($classPath)) {
             throw "Minecraft $MinecraftVersion JAR contains unavailable class '$classPath'."
+        }
+    }
+
+    if ($isLegacyYarnProfile -and
+            $targetVersion -ge (Convert-ToTargetVersion '1.18') -and
+            $targetVersion -lt (Convert-ToTargetVersion '1.19')) {
+        $recipeMixinEntry = $zip.GetEntry('org/lavro/carpetlir/mixins/RecipeManagerMixin.class')
+        if ($null -eq $recipeMixinEntry) {
+            throw 'Minecraft 1.18 JAR is missing RecipeManagerMixin.'
+        }
+        $recipeMixinText = [System.Text.Encoding]::UTF8.GetString((Get-ZipEntryBytes $recipeMixinEntry))
+        if ($recipeMixinText.Contains('com/mojang/datafixers/util/Pair')) {
+            throw 'Minecraft 1.18 RecipeManagerMixin incorrectly links the later cached Pair overload.'
         }
     }
 

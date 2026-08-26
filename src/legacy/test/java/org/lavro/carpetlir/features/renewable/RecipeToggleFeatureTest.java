@@ -44,7 +44,7 @@ class RecipeToggleFeatureTest {
     void everyBundledRecipeIsControlledByARule() {
         Set<Identifier> bundledRecipeIds = KNOWN_RECIPE_PATHS.stream()
                 .filter(RecipeToggleFeatureTest::isBundledRecipe)
-                .map(path -> Identifier.of(CarpetLIRAddition.MOD_ID, path))
+                .map(path -> RecipeToggleFeature.identifierForTest(CarpetLIRAddition.MOD_ID, path))
                 .collect(Collectors.toUnmodifiableSet());
 
         assertEquals(bundledRecipeIds, RecipeToggleFeature.controlledRecipeIds());
@@ -55,7 +55,9 @@ class RecipeToggleFeatureTest {
         RecipeToggleFeature.controlledRecipeIds()
                 .forEach(id -> assertFalse(RecipeToggleFeature.isEnabled(id), id.toString()));
 
-        assertTrue(RecipeToggleFeature.isEnabled(Identifier.of("minecraft", "crafting_table")));
+        assertTrue(RecipeToggleFeature.isEnabled(
+                RecipeToggleFeature.identifierForTest("minecraft", "crafting_table")
+        ));
     }
 
     @Test
@@ -88,7 +90,7 @@ class RecipeToggleFeatureTest {
         enableRule.run();
         Set<Identifier> expected = Stream.of(expectedPaths)
                 .filter(RecipeToggleFeatureTest::isBundledRecipe)
-                .map(path -> Identifier.of(CarpetLIRAddition.MOD_ID, path))
+                .map(path -> RecipeToggleFeature.identifierForTest(CarpetLIRAddition.MOD_ID, path))
                 .collect(Collectors.toUnmodifiableSet());
         Set<Identifier> enabled = RecipeToggleFeature.controlledRecipeIds().stream()
                 .filter(RecipeToggleFeature::isEnabled)

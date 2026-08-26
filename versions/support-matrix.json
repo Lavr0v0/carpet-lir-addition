@@ -355,9 +355,9 @@
       "profile": "mc_1_18",
       "java": 17,
       "sourceFamily": "yarn-1.18",
-      "status": "planned",
+      "status": "build-only",
       "capabilityTier": "tier-1.17",
-      "notes": "First Java 17 target; retains the 1.17 capability tier."
+      "notes": "Audited exact Java 17 adapter retaining only eight tier-1.17 rules and twelve recipes, with the old Rule API, fabric id, and direct three-parameter RecipeManager; unit, JAR, and disposable dirt/calcite/recipe/piston server checks passed."
     },
     {
       "target": "1.18.1",
@@ -366,9 +366,9 @@
       "profile": "mc_1_18_1",
       "java": 17,
       "sourceFamily": "yarn-1.18",
-      "status": "planned",
+      "status": "build-only",
       "capabilityTier": "tier-1.17",
-      "notes": "Stable Fabric Carpet target requiring a fresh compile and server smoke test."
+      "notes": "Audited exact 1.18.1 adapter retaining only eight tier-1.17 rules and twelve recipes, with the old Rule API, fabric id, and direct three-parameter RecipeManager; unit, JAR, and disposable dirt/calcite/recipe/piston server checks passed."
     },
     {
       "target": "1.18.2",
@@ -377,9 +377,9 @@
       "profile": "mc_1_18_2",
       "java": 17,
       "sourceFamily": "yarn-1.18",
-      "status": "planned",
+      "status": "build-only",
       "capabilityTier": "tier-1.17",
-      "notes": "Final 1.18 source-family target."
+      "notes": "Audited exact final 1.18 source-family adapter retaining only eight tier-1.17 rules and twelve recipes, with the old Rule API, fabric-api id, and direct three-parameter RecipeManager; unit, JAR, and disposable dirt/calcite/recipe/piston server checks passed."
     },
     {
       "target": "1.19",
