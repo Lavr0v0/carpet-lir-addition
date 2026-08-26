@@ -278,9 +278,9 @@
       "profile": "mc_1_16",
       "java": 8,
       "sourceFamily": "yarn-1.16",
-      "status": "planned",
+      "status": "build-only",
       "capabilityTier": "tier-1.15",
-      "notes": "Stable Fabric Carpet target covering both 1.16 and 1.16.1; the official artifact declares Minecraft 1.16.x compatibility and keeps the 1.15 capability tier."
+      "notes": "Audited exact Java 8 adapters for Minecraft 1.16 and 1.16.1 sharing Carpet 1.4.0 while retaining separate Minecraft, Yarn, Fabric API metadata, and JARs. Both expose only the three tier-1.15 rules and seven recipes through /carpetlir and pass unit, JAR, and focused disposable-server checks."
     },
     {
       "target": "1.16.2",
@@ -289,9 +289,9 @@
       "profile": "mc_1_16_2",
       "java": 8,
       "sourceFamily": "yarn-1.16",
-      "status": "planned",
+      "status": "build-only",
       "capabilityTier": "tier-1.15",
-      "notes": "The next distinct Carpet coordinate after the shared 1.16/1.16.1 artifact."
+      "notes": "Audited exact Java 8 adapter for Carpet 1.4.9 with the legacy fabric dependency id, extension-owned /carpetlir settings, and only the three tier-1.15 rules and seven recipes; unit, JAR, and focused disposable-server checks passed."
     },
     {
       "target": "1.16.3",
@@ -300,9 +300,9 @@
       "profile": "mc_1_16_3",
       "java": 8,
       "sourceFamily": "yarn-1.16",
-      "status": "planned",
+      "status": "build-only",
       "capabilityTier": "tier-1.15",
-      "notes": "Stable Fabric Carpet target requiring a fresh compile and server smoke test."
+      "notes": "Audited exact Java 8 adapter for Carpet 1.4.12 with the legacy fabric dependency id, extension-owned /carpetlir settings, and only the three tier-1.15 rules and seven recipes; unit, JAR, and focused disposable-server checks passed."
     },
     {
       "target": "1.16.4",
@@ -311,9 +311,9 @@
       "profile": "mc_1_16_4",
       "java": 8,
       "sourceFamily": "yarn-1.16",
-      "status": "planned",
+      "status": "build-only",
       "capabilityTier": "tier-1.15",
-      "notes": "Stable Fabric Carpet target requiring a fresh compile and server smoke test."
+      "notes": "Audited exact Java 8 adapter for Carpet 1.4.22 with the legacy fabric dependency id, extension-owned /carpetlir settings, and only the three tier-1.15 rules and seven recipes; unit, JAR, and focused disposable-server checks passed."
     },
     {
       "target": "1.16.5",
@@ -322,9 +322,9 @@
       "profile": "mc_1_16_5",
       "java": 8,
       "sourceFamily": "yarn-1.16",
-      "status": "planned",
+      "status": "build-only",
       "capabilityTier": "tier-1.15",
-      "notes": "Final Java 8 target and long-lived 1.16 maintenance line."
+      "notes": "Audited exact Java 8 adapter for Carpet 1.4.44 with the legacy fabric dependency id, extension-owned /carpetlir settings, and only the three tier-1.15 rules and seven recipes; unit, JAR, and focused disposable-server checks passed."
     },
     {
       "target": "1.17",

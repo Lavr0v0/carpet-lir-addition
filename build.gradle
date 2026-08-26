@@ -35,6 +35,10 @@ def targetLoaderVersion = requiredTargetProperty('loader_version')
 def targetFabricVersion = requiredTargetProperty('fabric_api_version')
 def targetCarpetVersion = requiredTargetProperty('carpet_core_version')
 def targetCarpetModVersion = targetProfile.getProperty('carpet_mod_version', targetCarpetVersion).trim()
+def targetEntrypointClass = targetProfile.getProperty(
+        'entrypoint_class',
+        'org.lavro.carpetlir.CarpetLIRAddition'
+).trim()
 def targetFabricModId = targetProfile.getProperty('fabric_api_mod_id', 'fabric-api').trim()
 def targetLoaderDependency = targetProfile.getProperty('loader_dependency', ">=${targetLoaderVersion}").trim()
 def targetFabricDependency = targetProfile.getProperty('fabric_api_dependency', ">=${targetFabricVersion}").trim()
@@ -132,6 +136,7 @@ if (!(targetFabricModId in ['fabric', 'fabric-api'])) {
 
 def resourceProperties = [
         version: version.toString(),
+        entrypoint_class: targetEntrypointClass,
         minecraft_dependency: minecraftDependency,
         loader_dependency: targetLoaderDependency,
         fabric_api_mod_id: targetFabricModId,
@@ -148,6 +153,11 @@ if (!(runDirectoryName ==~ /[A-Za-z0-9][A-Za-z0-9._-]*/) ||
         runDirectoryName.contains('..') ||
         normalizedRunDirectory.parent != normalizedRunRoot) {
     throw new GradleException("Unsafe run directory name '${runDirectoryName}'.")
+}
+if (!(targetEntrypointClass ==~ /[A-Za-z_$][A-Za-z0-9_$]*(\.[A-Za-z_$][A-Za-z0-9_$]*)+/)) {
+    throw new GradleException(
+            "Target '${targetVersion}' has unsafe entrypoint_class '${targetEntrypointClass}'."
+    )
 }
 if (sourceFamily == 'mojang-26') {
     apply plugin: 'net.fabricmc.fabric-loom'
@@ -385,6 +395,7 @@ tasks.register('printBuildTarget') {
         println "Fabric API: ${targetFabricVersion}"
         println "Carpet    : ${targetCarpetVersion}"
         println "Carpet mod: ${targetCarpetModVersion}"
+        println "Entrypoint: ${targetEntrypointClass}"
         println "Requires  : ${targetCarpetDependency}"
         println "Artifact  : ${archiveBaseName}-${version}.jar"
     }

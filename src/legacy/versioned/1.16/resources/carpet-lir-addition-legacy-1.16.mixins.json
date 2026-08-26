@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "package": "org.lavro.carpetlir.mixins",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+    "RecipeManagerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

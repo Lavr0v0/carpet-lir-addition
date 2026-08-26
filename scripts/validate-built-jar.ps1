@@ -217,6 +217,7 @@ $forbiddenBefore = @{
     'org/lavro/carpetlir/features/renewable/CalciteGeneratorFeature.class' = '1.17'
     'org/lavro/carpetlir/features/renewable/PistonHarvestableAmethystFeature.class' = '1.17'
     'org/lavro/carpetlir/helpers/PistonHarvestContext.class' = '1.17'
+    'org/lavro/carpetlir/helpers/FluidTagCompatibility.class' = '1.17'
     'org/lavro/carpetlir/mixins/BlockMixin.class' = '1.17'
     'org/lavro/carpetlir/mixins/FluidBlockMixin.class' = '1.17'
     'org/lavro/carpetlir/mixins/PistonBlockMixin.class' = '1.17'
@@ -362,6 +363,7 @@ try {
         }
         $expectedRuleAnnotation = switch ($settingsSourceOverlay) {
             'rule-category' { 'carpet/settings/Rule' }
+            'rule-category-tier-1.15' { 'carpet/settings/Rule' }
             'rule-category-tier-1.17' { 'carpet/settings/Rule' }
             'rule-categories' { 'carpet/api/settings/Rule' }
             default { throw "Unsupported settings source overlay '$settingsSourceOverlay'." }
@@ -387,9 +389,27 @@ try {
             }
         }
     }
-    $initializerEntry = $zip.GetEntry('org/lavro/carpetlir/CarpetLIRAddition.class')
+    $mainEntrypoints = @($metadata.entrypoints.main)
+    if ($mainEntrypoints.Count -ne 1) {
+        throw 'Release JAR must declare exactly one main entrypoint.'
+    }
+    $actualEntrypointClass = if ($mainEntrypoints[0] -is [string]) {
+        [string]$mainEntrypoints[0]
+    } else {
+        [string]$mainEntrypoints[0].value
+    }
+    $expectedEntrypointClass = if ($null -ne $profile -and $profile.ContainsKey('entrypoint_class')) {
+        [string]$profile.entrypoint_class
+    } else {
+        'org.lavro.carpetlir.CarpetLIRAddition'
+    }
+    if ($actualEntrypointClass -ne $expectedEntrypointClass) {
+        throw "Release JAR entrypoint '$actualEntrypointClass' does not match profile '$expectedEntrypointClass'."
+    }
+    $initializerClassPath = $actualEntrypointClass.Replace('.', '/') + '.class'
+    $initializerEntry = $zip.GetEntry($initializerClassPath)
     if ($null -eq $initializerEntry) {
-        throw 'Release JAR has no CarpetLIRAddition.class.'
+        throw "Release JAR has no declared entrypoint class '$initializerClassPath'."
     }
     $initializerText = [System.Text.Encoding]::UTF8.GetString((Get-ZipEntryBytes $initializerEntry))
     if ($initializerText.Contains('${version}')) {
@@ -403,7 +423,11 @@ try {
         if ($initializerText.Contains('carpet/utils/Translations')) {
             throw 'Legacy initializer still relies on Carpet translation loading that ignores extension resource paths.'
         }
-
+        if ([string]$profile.capability_tier -eq 'tier-1.15' -and
+                (-not $initializerText.Contains('carpet/settings/SettingsManager') -or
+                -not $initializerText.Contains('customSettingsManager'))) {
+            throw 'Tier-1.15 entrypoint does not expose its required extension-owned SettingsManager.'
+        }
         $featureBootstrapEntry = $zip.GetEntry('org/lavro/carpetlir/LegacyFeatureBootstrap.class')
         if ($null -eq $featureBootstrapEntry) {
             throw 'Legacy Yarn JAR has no target-selected feature bootstrap.'
@@ -420,6 +444,11 @@ try {
             throw 'Target-selected feature bootstrap does not register bone-meal grass conversion.'
         }
         switch ($featureBootstrapOverlay) {
+            'feature-bootstrap-tier-1.15' {
+                if ($featureBootstrapText.Contains('ReinforcedDeepslateFeature')) {
+                    throw 'Tier-1.15 feature bootstrap links an unavailable reinforced-deepslate feature.'
+                }
+            }
             'feature-bootstrap-tier-1.17' {
                 if ($featureBootstrapText.Contains('ReinforcedDeepslateFeature')) {
                     throw 'Tier-1.17 feature bootstrap links an unavailable reinforced-deepslate feature.'
@@ -546,15 +575,15 @@ try {
     }
 
     if ($isLegacyYarnProfile -and
-            $targetVersion -ge (Convert-ToTargetVersion '1.17') -and
+            $targetVersion -ge (Convert-ToTargetVersion '1.16') -and
             $targetVersion -lt (Convert-ToTargetVersion '1.19')) {
         $recipeMixinEntry = $zip.GetEntry('org/lavro/carpetlir/mixins/RecipeManagerMixin.class')
         if ($null -eq $recipeMixinEntry) {
-            throw 'Minecraft 1.17-1.18 JAR is missing RecipeManagerMixin.'
+            throw 'Minecraft 1.16-1.18 JAR is missing RecipeManagerMixin.'
         }
         $recipeMixinText = [System.Text.Encoding]::UTF8.GetString((Get-ZipEntryBytes $recipeMixinEntry))
         if ($recipeMixinText.Contains('com/mojang/datafixers/util/Pair')) {
-            throw 'Minecraft 1.17-1.18 RecipeManagerMixin incorrectly links the later cached Pair overload.'
+            throw 'Minecraft 1.16-1.18 RecipeManagerMixin incorrectly links the later cached Pair overload.'
         }
     }
 

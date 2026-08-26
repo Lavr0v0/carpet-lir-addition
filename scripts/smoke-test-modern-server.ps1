@@ -12,6 +12,7 @@ $ErrorActionPreference = 'Stop'
 $ProjectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $Wrapper = Join-Path $ProjectRoot 'gradlew.bat'
 $ProfilePath = Join-Path $ProjectRoot "versions\targets\$TargetVersion.properties"
+$MatrixPath = Join-Path $ProjectRoot 'versions\support-matrix.json'
 $RunRoot = Join-Path $ProjectRoot 'run'
 $RunDirectoryName = "$TargetVersion-smoke-$([guid]::NewGuid().ToString('N'))"
 $RunDirectory = Join-Path $RunRoot $RunDirectoryName
@@ -35,8 +36,53 @@ if (-not (Test-Path -LiteralPath $ProfilePath -PathType Leaf)) {
 }
 $profile = ConvertFrom-StringData (Get-Content -LiteralPath $ProfilePath -Raw)
 $expectedJavaVersion = [int]$profile.java_version
-if ([string]$profile.source_family -ne 'legacy-yarn' -or $expectedJavaVersion -lt 16) {
+$ruleCommandRoot = if ($profile.ContainsKey('rule_command_root')) {
+    [string]$profile.rule_command_root
+} else {
+    'carpet'
+}
+if ($ruleCommandRoot -notin @('carpet', 'carpetlir')) {
+    throw "Target '$TargetVersion' has unsupported rule command root '$ruleCommandRoot'."
+}
+if ([string]$profile.source_family -ne 'legacy-yarn') {
     throw "Target '$TargetVersion' is not supported by the audited Yarn server smoke harness."
+}
+$matrix = Get-Content -LiteralPath $MatrixPath -Raw | ConvertFrom-Json
+$matchingCapabilityTiers = @($matrix.capabilityTiers | Where-Object {
+    [string]$_.id -eq [string]$profile.capability_tier
+})
+if ($matchingCapabilityTiers.Count -ne 1) {
+    throw "Target '$TargetVersion' does not resolve to exactly one capability tier."
+}
+$availableRules = @($matchingCapabilityTiers[0].availableRules | ForEach-Object { [string]$_ })
+$availableRecipes = @($matchingCapabilityTiers[0].availableRecipes | ForEach-Object { [string]$_ })
+$hasCalcite = $availableRules -contains 'renewableCalcite'
+$hasTuffRecipe = $availableRecipes -contains 'gravel_to_tuff_smelting'
+$hasHoneycombRecipe = $availableRecipes -contains 'honeycomb_from_honeycomb_block'
+$hasPiston = $availableRules -contains 'pistonHarvestableAmethysts'
+$hasMangroveRecipe = $availableRecipes -contains 'mangrove_leaves_from_mangrove_log_and_sticks'
+$reinforcedRules = @(
+    'obsidianHardnessReinforcedDeepslate',
+    'silkTouchableReinforcedDeepslate',
+    'wardensDropReinforcedDeepslate'
+)
+$hasReinforced = @($reinforcedRules | Where-Object { $availableRules -contains $_ }).Count -eq 3
+$runReinforcedChecks = $hasReinforced -and [string]$profile.capability_tier -eq 'tier-1.19'
+if (-not $hasTuffRecipe -and -not $hasHoneycombRecipe) {
+    throw "Target '$TargetVersion' has no audited controlled recipe for the fallback smoke."
+}
+$targetSemanticVersion = [version]$TargetVersion
+$usesLegacyReplaceItem = $targetSemanticVersion -lt [version]'1.17'
+$hasRecipeMatchCache = $targetSemanticVersion -ge [version]'1.19'
+$recipeFallbackMarker = if ($hasRecipeMatchCache) {
+    'CARPETLIR_RECIPE_CACHED_FALLBACK_PASS'
+} else {
+    'CARPETLIR_RECIPE_SAME_FURNACE_FALLBACK_PASS'
+}
+$recipeFallbackCoverage = if ($hasRecipeMatchCache) {
+    'cached/direct recipe fallbacks'
+} else {
+    'same-furnace/direct recipe fallbacks'
 }
 $recipeSchema = if ($profile.ContainsKey('recipe_schema')) {
     [string]$profile.recipe_schema
@@ -58,8 +104,16 @@ if ($recipeSchema -notin @(
 if ($recipeDirectory -notin @('recipe', 'recipes')) {
     throw "Target '$TargetVersion' has unsupported recipe directory '$recipeDirectory'."
 }
-$isTier119 = [string]$profile.capability_tier -eq 'tier-1.19'
 $dataPackFormats = @{
+    '1.15' = 5
+    '1.15.1' = 5
+    '1.15.2' = 5
+    '1.16' = 5
+    '1.16.1' = 5
+    '1.16.2' = 6
+    '1.16.3' = 6
+    '1.16.4' = 6
+    '1.16.5' = 6
     '1.17' = 7
     '1.17.1' = 7
     '1.18' = 8
@@ -121,30 +175,33 @@ $startupCommands = @(
     'fill -2 100 -2 4 104 4 minecraft:air',
     'setblock 0 100 0 minecraft:stone',
     'setblock 0 101 2 minecraft:dirt',
-    'carpet boneMealGrassifyDirt true',
+    "$ruleCommandRoot boneMealGrassifyDirt true",
     'player Notch spawn'
 )
-$tier119Commands = @()
-if ($isTier119) {
+$enhancedCommands = @()
+if ($runReinforcedChecks) {
+    if (-not $hasMangroveRecipe) {
+        throw "Target '$TargetVersion' exposes reinforced-deepslate rules without the audited mangrove recipe."
+    }
     $startupCommands += @(
         'fill 8 100 0 15 104 15 minecraft:air',
         'fill 8 100 0 15 100 15 minecraft:stone',
         'scoreboard objectives add clrSmoke dummy'
     )
-    $tier119Commands = @(
+    $enhancedCommands = @(
         'clear Notch',
-        'carpet renewableLeavesCrafting true',
+        "$ruleCommandRoot renewableLeavesCrafting true",
         $mangroveRecipeGiveCommand,
         'say CARPETLIR_MANGROVE_RESOURCE_PASS',
-        'carpet renewableLeavesCrafting false',
+        "$ruleCommandRoot renewableLeavesCrafting false",
         'clear Notch',
         'setblock 10 101 6 minecraft:reinforced_deepslate',
         'setblock 11 101 6 minecraft:obsidian',
-        'carpet obsidianHardnessReinforcedDeepslate false',
+        "$ruleCommandRoot obsidianHardnessReinforcedDeepslate false",
         $hardnessDisabledCommand,
-        'carpet obsidianHardnessReinforcedDeepslate true',
+        "$ruleCommandRoot obsidianHardnessReinforcedDeepslate true",
         $hardnessEnabledCommand,
-        'carpet obsidianHardnessReinforcedDeepslate false',
+        "$ruleCommandRoot obsidianHardnessReinforcedDeepslate false",
         'setblock 10 101 6 minecraft:air',
         'setblock 11 101 6 minecraft:air',
         'gamemode survival Notch',
@@ -154,7 +211,7 @@ if ($isTier119) {
         'execute as @e[type=minecraft:item] run kill @s',
         'clear Notch minecraft:reinforced_deepslate',
         'item replace entity Notch weapon.mainhand with minecraft:diamond_pickaxe',
-        'carpet silkTouchableReinforcedDeepslate true',
+        "$ruleCommandRoot silkTouchableReinforcedDeepslate true",
         'setblock 10 101 6 minecraft:reinforced_deepslate',
         'player Notch attack continuous',
         'player Notch stop',
@@ -164,7 +221,7 @@ if ($isTier119) {
         'clear Notch minecraft:reinforced_deepslate',
         'item replace entity Notch weapon.mainhand with minecraft:diamond_pickaxe',
         'enchant Notch minecraft:silk_touch 1',
-        'carpet silkTouchableReinforcedDeepslate false',
+        "$ruleCommandRoot silkTouchableReinforcedDeepslate false",
         'setblock 10 101 6 minecraft:reinforced_deepslate',
         'player Notch attack continuous',
         'player Notch stop',
@@ -174,20 +231,20 @@ if ($isTier119) {
         'clear Notch minecraft:reinforced_deepslate',
         'item replace entity Notch weapon.mainhand with minecraft:diamond_pickaxe',
         'enchant Notch minecraft:silk_touch 1',
-        'carpet silkTouchableReinforcedDeepslate true',
+        "$ruleCommandRoot silkTouchableReinforcedDeepslate true",
         'setblock 10 101 6 minecraft:reinforced_deepslate',
         'player Notch attack continuous',
         'player Notch stop',
         $WaitForEntitySettleCommand,
         $silkEnabledDropProbeCommand,
         'execute as @e[type=minecraft:item] run kill @s',
-        'carpet silkTouchableReinforcedDeepslate false',
+        "$ruleCommandRoot silkTouchableReinforcedDeepslate false",
         'effect clear Notch minecraft:haste',
         'gamemode spectator Notch',
         'tp Notch 0.5 101 0.5',
         'execute as @e[type=minecraft:item] run kill @s',
         'gamerule doMobLoot true',
-        'carpet wardensDropReinforcedDeepslate false',
+        "$ruleCommandRoot wardensDropReinforcedDeepslate false",
         'summon minecraft:warden 12.5 101 12.5 {Tags:["clrWardenOff"],NoAI:1b,Silent:1b,PersistenceRequired:1b}',
         'execute if entity @e[type=minecraft:warden,tag=clrWardenOff,x=12.5,y=101,z=12.5,distance=..2] run say CARPETLIR_WARDEN_OFF_SPAWNED',
         'kill @e[type=minecraft:warden,tag=clrWardenOff,limit=1]',
@@ -195,7 +252,7 @@ if ($isTier119) {
         'execute unless entity @e[type=minecraft:warden,tag=clrWardenOff] unless entity @e[type=minecraft:item,nbt={Item:{id:"minecraft:reinforced_deepslate"}}] run say CARPETLIR_WARDEN_DISABLED_PASS',
         'execute as @e[type=minecraft:item] run kill @s',
         'gamerule doMobLoot false',
-        'carpet wardensDropReinforcedDeepslate true',
+        "$ruleCommandRoot wardensDropReinforcedDeepslate true",
         'summon minecraft:warden 12.5 101 12.5 {Tags:["clrWardenNoLoot"],NoAI:1b,Silent:1b,PersistenceRequired:1b}',
         'execute if entity @e[type=minecraft:warden,tag=clrWardenNoLoot,x=12.5,y=101,z=12.5,distance=..2] run say CARPETLIR_WARDEN_NOLOOT_SPAWNED',
         'kill @e[type=minecraft:warden,tag=clrWardenNoLoot,limit=1]',
@@ -203,7 +260,7 @@ if ($isTier119) {
         'execute unless entity @e[type=minecraft:warden,tag=clrWardenNoLoot] unless entity @e[type=minecraft:item,nbt={Item:{id:"minecraft:reinforced_deepslate"}}] run say CARPETLIR_WARDEN_NOLOOT_PASS',
         'execute as @e[type=minecraft:item] run kill @s',
         'gamerule doMobLoot true',
-        'carpet wardensDropReinforcedDeepslate true',
+        "$ruleCommandRoot wardensDropReinforcedDeepslate true",
         'summon minecraft:warden 12.5 101 12.5 {Tags:["clrWardenOn"],NoAI:1b,Silent:1b,PersistenceRequired:1b}',
         'execute if entity @e[type=minecraft:warden,tag=clrWardenOn,x=12.5,y=101,z=12.5,distance=..2] run say CARPETLIR_WARDEN_ON_SPAWNED',
         'kill @e[type=minecraft:warden,tag=clrWardenOn,limit=1]',
@@ -215,74 +272,145 @@ if ($isTier119) {
         'execute store result score #warden_count clrSmoke run data get entity @e[type=minecraft:item,x=12.5,y=101,z=12.5,distance=..4,limit=1,nbt={Item:{id:"minecraft:reinforced_deepslate"}}] Item.Count 1',
         'execute if score #warden_entities clrSmoke matches 1 if score #warden_count clrSmoke matches 1..4 run say CARPETLIR_WARDEN_ENABLED_PASS',
         'execute as @e[type=minecraft:item] run kill @s',
-        'carpet wardensDropReinforcedDeepslate false',
+        "$ruleCommandRoot wardensDropReinforcedDeepslate false",
         'gamerule doMobLoot true'
     )
 }
+$boneMealHandCommand = if ($usesLegacyReplaceItem) {
+    'replaceitem entity Notch weapon.mainhand minecraft:bone_meal 3'
+} else {
+    'item replace entity Notch weapon.mainhand with minecraft:bone_meal 3'
+}
+$boneMealLookCommand = if ($usesLegacyReplaceItem) {
+    # Carpet 1.16's numeric look command feeds RotationArgumentType's
+    # pitch/yaw Vec2f directly into an action-pack yaw/pitch method.
+    'player Notch look 37 0'
+} else {
+    'player Notch look at 0.5 101.5 2.5'
+}
+$boneMealConsumedProbeCommand = 'execute if entity @a[name=Notch,nbt={Inventory:[{id:"minecraft:bone_meal",Count:2b}]}] run say CARPETLIR_BONEMEAL_CONSUMED_PASS'
+$furnaceInputOneCommand = if ($usesLegacyReplaceItem) {
+    'replaceitem block 2 101 2 container.0 minecraft:gravel 1'
+} else {
+    'item replace block 2 101 2 container.0 with minecraft:gravel 1'
+}
+$furnaceFuelCommand = if ($usesLegacyReplaceItem) {
+    'replaceitem block 2 101 2 container.1 minecraft:coal 1'
+} else {
+    'item replace block 2 101 2 container.1 with minecraft:coal 1'
+}
+$furnaceOutputClearCommand = if ($usesLegacyReplaceItem) {
+    'replaceitem block 2 101 2 container.2 minecraft:air'
+} else {
+    'item replace block 2 101 2 container.2 with minecraft:air'
+}
+$furnaceInputTwoCommand = if ($usesLegacyReplaceItem) {
+    'replaceitem block 2 101 2 container.0 minecraft:gravel 2'
+} else {
+    'item replace block 2 101 2 container.0 with minecraft:gravel 2'
+}
+$controlledRecipePath = if ($hasTuffRecipe) {
+    'gravel_to_tuff_smelting'
+} else {
+    'honeycomb_from_honeycomb_block'
+}
+$controlledRecipeRule = if ($hasTuffRecipe) { 'renewableTuff' } else { 'renewableHoneycombCrafting' }
+$controlledRecipeResult = if ($hasTuffRecipe) { 'tuff' } else { 'honeycomb' }
+$controlledRecipeEnabledProbe = "execute if data block 2 101 2 Items[{Slot:2b,id:`"minecraft:$controlledRecipeResult`"}] run say CARPETLIR_RECIPE_ENABLED_PASS"
+$controlledRecipeDirectProbe = "execute if entity @a[name=Notch,nbt={Inventory:[{id:`"minecraft:$controlledRecipeResult`"}]}] run say CARPETLIR_RECIPE_DIRECT_ENABLED_PASS"
+
 $preTierGameplayCommands = @(
     'tp Notch 0.5 101 0.5',
+    'gamemode survival Notch',
     'effect give Notch minecraft:water_breathing 1000000 0 true',
-    'player Notch look at 0.5 101.5 2.5',
-    'item replace entity Notch weapon.mainhand with minecraft:bone_meal 3',
-    'player Notch use once',
+    $boneMealLookCommand,
+    $boneMealHandCommand,
+    'player Notch use once'
+)
+if ($usesLegacyReplaceItem) {
+    $preTierGameplayCommands += $boneMealConsumedProbeCommand
+}
+$preTierGameplayCommands += @(
     'execute if block 0 101 2 minecraft:grass_block run say CARPETLIR_BONEMEAL_ENABLED_PASS',
     'setblock 0 101 2 minecraft:dirt',
     'setblock 0 102 2 minecraft:snow[layers=1]',
     'player Notch use once',
     'execute if block 0 101 2 minecraft:grass_block[snowy=true] run say CARPETLIR_BONEMEAL_SNOWY_PASS',
     'setblock 0 102 2 minecraft:air',
-    'carpet boneMealGrassifyDirt false',
+    "$ruleCommandRoot boneMealGrassifyDirt false",
     'setblock 0 101 2 minecraft:dirt',
     'player Notch use once',
     'execute if block 0 101 2 minecraft:dirt run say CARPETLIR_BONEMEAL_DISABLED_PASS',
-    'carpet boneMealGrassifyDirt true',
+    "$ruleCommandRoot boneMealGrassifyDirt true",
     'gamemode spectator Notch',
     'setblock 0 101 2 minecraft:dirt',
     'player Notch use once',
     'execute if block 0 101 2 minecraft:dirt run say CARPETLIR_BONEMEAL_SPECTATOR_PASS',
     'gamemode survival Notch',
-    'tp Notch 0.5 101 0.5',
-    'carpet renewableCalcite false',
+    'tp Notch 0.5 101 0.5'
+)
+if ($hasCalcite) {
+    $preTierGameplayCommands += @(
+    "$ruleCommandRoot renewableCalcite false",
     'setblock 3 100 0 minecraft:bone_block',
     'setblock 4 101 0 minecraft:amethyst_block',
     'setblock 3 101 0 minecraft:lava',
     'execute if block 3 101 0 minecraft:lava run say CARPETLIR_CALCITE_DISABLED_PASS',
     'setblock 3 101 0 minecraft:air',
-    'carpet renewableCalcite true',
+    "$ruleCommandRoot renewableCalcite true",
     'setblock 3 101 0 minecraft:lava',
     'execute if block 3 101 0 minecraft:calcite run say CARPETLIR_CALCITE_ENABLED_PASS',
-    'carpet renewableCalcite false',
+    "$ruleCommandRoot renewableCalcite false",
     'setblock 3 101 0 minecraft:air',
     'setblock 4 101 0 minecraft:air',
-    'setblock 3 100 0 minecraft:air',
-    'carpet renewableLeavesCrafting true',
+    'setblock 3 100 0 minecraft:air'
+    )
+}
+$preTierGameplayCommands += @(
+    "$ruleCommandRoot renewableLeavesCrafting true",
     'recipe give Notch carpetlir:oak_leaves_from_oak_log_and_sticks',
-    'carpet renewableLeavesCrafting false',
+    "$ruleCommandRoot renewableLeavesCrafting false"
+)
+if (-not $hasTuffRecipe) {
+    $preTierGameplayCommands += @(
+        "$ruleCommandRoot renewableHoneycombCrafting true",
+        'recipe give Notch carpetlir:honeycomb_from_honeycomb_block',
+        "$ruleCommandRoot renewableHoneycombCrafting false",
+        $InstallFixtureCommand
+    )
+}
+$preTierGameplayCommands += @(
     'setblock 2 101 2 minecraft:furnace',
-    'carpet renewableTuff true',
-    'item replace block 2 101 2 container.0 with minecraft:gravel 1',
-    'item replace block 2 101 2 container.1 with minecraft:coal 1',
-    'execute if data block 2 101 2 Items[{Slot:2b,id:"minecraft:tuff"}] run say CARPETLIR_RECIPE_ENABLED_PASS',
-    $InstallFixtureCommand,
-    'clear Notch minecraft:tuff',
+    "$ruleCommandRoot $controlledRecipeRule true",
+    $furnaceInputOneCommand,
+    $furnaceFuelCommand,
+    $controlledRecipeEnabledProbe
+)
+if ($hasTuffRecipe) {
+    $preTierGameplayCommands += $InstallFixtureCommand
+}
+$preTierGameplayCommands += @(
+    "clear Notch minecraft:$controlledRecipeResult",
     'clear Notch minecraft:cobblestone',
     'loot give Notch loot zzzz_carpetlir_smoke:direct_recipe_fallback',
-    'execute if entity @a[name=Notch,nbt={Inventory:[{id:"minecraft:tuff"}]}] run say CARPETLIR_RECIPE_DIRECT_ENABLED_PASS',
-    'clear Notch minecraft:tuff',
+    $controlledRecipeDirectProbe,
+    "clear Notch minecraft:$controlledRecipeResult",
     'clear Notch minecraft:cobblestone',
-    'item replace block 2 101 2 container.2 with minecraft:air',
-    'carpet renewableTuff false',
-    'item replace block 2 101 2 container.0 with minecraft:gravel 2',
-    'execute if data block 2 101 2 Items[{Slot:2b,id:"minecraft:cobblestone"}] run say CARPETLIR_RECIPE_CACHED_FALLBACK_PASS',
+    $furnaceOutputClearCommand,
+    "$ruleCommandRoot $controlledRecipeRule false",
+    $furnaceInputTwoCommand,
+    "execute if data block 2 101 2 Items[{Slot:2b,id:`"minecraft:cobblestone`"}] run say $recipeFallbackMarker",
     'clear Notch minecraft:cobblestone',
     'loot give Notch loot zzzz_carpetlir_smoke:direct_recipe_fallback',
     'execute if entity @a[name=Notch,nbt={Inventory:[{id:"minecraft:cobblestone"}]}] run say CARPETLIR_RECIPE_DIRECT_FALLBACK_PASS'
 )
-$postTierGameplayCommands = @(
+$postTierGameplayCommands = @()
+if ($hasPiston) {
+    $postTierGameplayCommands += @(
     'gamemode spectator Notch',
     'tp Notch 10.5 101 10.5',
     'execute as @e[type=minecraft:item] run kill @s',
-    'carpet pistonHarvestableAmethysts false',
+    "$ruleCommandRoot pistonHarvestableAmethysts false",
     'setblock -1 103 0 minecraft:air',
     'setblock 0 103 0 minecraft:piston[facing=east]',
     'setblock 1 103 0 minecraft:budding_amethyst',
@@ -294,7 +422,7 @@ $postTierGameplayCommands = @(
     'execute unless entity @e[type=minecraft:item,nbt={Item:{id:"minecraft:budding_amethyst"}}] run say CARPETLIR_PISTON_DISABLED_NO_DROP_PASS',
     'setblock 0 103 0 minecraft:air',
     'setblock 1 103 0 minecraft:air',
-    'carpet pistonHarvestableAmethysts true',
+    "$ruleCommandRoot pistonHarvestableAmethysts true",
     'setblock 0 103 0 minecraft:piston[facing=east]',
     'setblock 1 103 0 minecraft:budding_amethyst',
     'setblock -1 103 0 minecraft:redstone_block',
@@ -306,32 +434,39 @@ $postTierGameplayCommands = @(
     'setblock 0 103 0 minecraft:air',
     'setblock 1 103 0 minecraft:air',
     'execute as @e[type=minecraft:item] run kill @s',
-    'carpet pistonHarvestableAmethysts false',
+    "$ruleCommandRoot pistonHarvestableAmethysts false"
+    )
+}
+$postTierGameplayCommands += @(
     'gamemode survival Notch',
     'tp Notch 0.5 101 0.5',
     'player Notch kill',
     'say CARPETLIR_SMOKE_COMPLETE'
 )
-$gameplayCommands = @($preTierGameplayCommands + $tier119Commands + $postTierGameplayCommands)
-$extendedCommandDelays = @{
-    'item replace block 2 101 2 container.1 with minecraft:coal 1' = 12000
-    'item replace block 2 101 2 container.0 with minecraft:gravel 2' = 12000
-    'setblock -1 103 0 minecraft:redstone_block' = 1200
-    'player Notch attack continuous' = 2000
+$gameplayCommands = @($preTierGameplayCommands + $enhancedCommands + $postTierGameplayCommands)
+$extendedCommandDelays = @{}
+$extendedCommandDelays[$furnaceFuelCommand] = 12000
+$extendedCommandDelays[$furnaceInputTwoCommand] = 12000
+if ($hasPiston) {
+    $extendedCommandDelays['setblock -1 103 0 minecraft:redstone_block'] = 1200
 }
-$markerProbeCommands = @{
-    $PistonDisabledExtendedProbeCommand = 'CARPETLIR_PISTON_DISABLED_EXTENDED_PASS'
-    $PistonDisabledDestroyedProbeCommand = 'CARPETLIR_PISTON_DISABLED_DESTROYED_PASS'
-    $PistonEnabledExtendedProbeCommand = 'CARPETLIR_PISTON_ENABLED_EXTENDED_PASS'
-    $PistonEnabledDestroyedProbeCommand = 'CARPETLIR_PISTON_ENABLED_DESTROYED_PASS'
-    $PistonDropProbeCommand = 'CARPETLIR_PISTON_ENABLED_DROP_PASS'
+if ($runReinforcedChecks) {
+    $extendedCommandDelays['player Notch attack continuous'] = 2000
 }
-if ($isTier119) {
+$markerProbeCommands = @{}
+if ($hasPiston) {
+    $markerProbeCommands[$PistonDisabledExtendedProbeCommand] = 'CARPETLIR_PISTON_DISABLED_EXTENDED_PASS'
+    $markerProbeCommands[$PistonDisabledDestroyedProbeCommand] = 'CARPETLIR_PISTON_DISABLED_DESTROYED_PASS'
+    $markerProbeCommands[$PistonEnabledExtendedProbeCommand] = 'CARPETLIR_PISTON_ENABLED_EXTENDED_PASS'
+    $markerProbeCommands[$PistonEnabledDestroyedProbeCommand] = 'CARPETLIR_PISTON_ENABLED_DESTROYED_PASS'
+    $markerProbeCommands[$PistonDropProbeCommand] = 'CARPETLIR_PISTON_ENABLED_DROP_PASS'
+}
+if ($runReinforcedChecks) {
     $markerProbeCommands[$silkEnabledDropProbeCommand] = 'CARPETLIR_SILK_ENABLED_PASS'
     $markerProbeCommands[$wardenDropPresentProbeCommand] = 'CARPETLIR_WARDEN_DROP_PRESENT'
 }
 $commandOutputMarkers = @{}
-if ($isTier119) {
+if ($runReinforcedChecks) {
     $commandOutputMarkers[$mangroveRecipeGiveCommand] = 'Unlocked 1 recipes for Notch'
 }
 $requiredMarkers = @(
@@ -339,22 +474,33 @@ $requiredMarkers = @(
     'CARPETLIR_BONEMEAL_SNOWY_PASS',
     'CARPETLIR_BONEMEAL_DISABLED_PASS',
     'CARPETLIR_BONEMEAL_SPECTATOR_PASS',
-    'CARPETLIR_CALCITE_DISABLED_PASS',
-    'CARPETLIR_CALCITE_ENABLED_PASS',
     'CARPETLIR_RECIPE_ENABLED_PASS',
     'CARPETLIR_RECIPE_DIRECT_ENABLED_PASS',
-    'CARPETLIR_RECIPE_CACHED_FALLBACK_PASS',
+    $recipeFallbackMarker,
     'CARPETLIR_RECIPE_DIRECT_FALLBACK_PASS',
-    'CARPETLIR_PISTON_DISABLED_EXTENDED_PASS',
-    'CARPETLIR_PISTON_DISABLED_DESTROYED_PASS',
-    'CARPETLIR_PISTON_DISABLED_NO_DROP_PASS',
-    'CARPETLIR_PISTON_ENABLED_EXTENDED_PASS',
-    'CARPETLIR_PISTON_ENABLED_DESTROYED_PASS',
-    'CARPETLIR_PISTON_ENABLED_DROP_PASS',
     'Notch lost connection: Killed',
     'CARPETLIR_SMOKE_COMPLETE'
 )
-if ($isTier119) {
+if ($usesLegacyReplaceItem) {
+    $requiredMarkers += 'CARPETLIR_BONEMEAL_CONSUMED_PASS'
+}
+if ($hasCalcite) {
+    $requiredMarkers += @(
+        'CARPETLIR_CALCITE_DISABLED_PASS',
+        'CARPETLIR_CALCITE_ENABLED_PASS'
+    )
+}
+if ($hasPiston) {
+    $requiredMarkers += @(
+        'CARPETLIR_PISTON_DISABLED_EXTENDED_PASS',
+        'CARPETLIR_PISTON_DISABLED_DESTROYED_PASS',
+        'CARPETLIR_PISTON_DISABLED_NO_DROP_PASS',
+        'CARPETLIR_PISTON_ENABLED_EXTENDED_PASS',
+        'CARPETLIR_PISTON_ENABLED_DESTROYED_PASS',
+        'CARPETLIR_PISTON_ENABLED_DROP_PASS'
+    )
+}
+if ($runReinforcedChecks) {
     $requiredMarkers += @(
         'CARPETLIR_MANGROVE_RESOURCE_PASS',
         'CARPETLIR_HARDNESS_DISABLED_PASS',
@@ -374,6 +520,7 @@ if ($isTier119) {
 $forbiddenPatterns = @(
     'Mixin apply failed',
     'Could not execute entrypoint',
+    'Unknown rule:',
     'Unknown recipe',
     'Unknown or incomplete command',
     'Incorrect argument for command',
@@ -429,22 +576,29 @@ try {
     New-Item -ItemType Directory -Path $RunDirectory | Out-Null
     $runDirectoryCreated = $true
     Copy-Item -LiteralPath $resolvedEulaSource -Destination $eulaDestination
+    $serverProperties = @(
+        'online-mode=false',
+        'spawn-protection=0',
+        'view-distance=4'
+    )
+    if ($targetSemanticVersion -ge [version]'1.18') {
+        $serverProperties += 'simulation-distance=4'
+    }
     [System.IO.File]::WriteAllLines(
             (Join-Path $RunDirectory 'server.properties'),
-            @(
-                'online-mode=false',
-                'spawn-protection=0',
-                'view-distance=4',
-                'simulation-distance=4'
-            )
+            $serverProperties
     )
 
-    # Stage the fallback outside the world. It is installed only after the
-    # controlled tuff recipe has produced once and populated the furnace cache.
+    # Stage the fallback outside the world. Install it only after the enabled
+    # baseline so every RecipeManager generation proves the intended ordering.
     $fixtureRecipeDirectory = Join-Path $FixtureStagingRoot "data\$FixtureNamespace\$recipeDirectory"
+    $controlledFixtureRecipeDirectory = Join-Path $FixtureStagingRoot "data\carpetlir\$recipeDirectory"
     $lootDirectoryName = if ($recipeDirectory -eq 'recipe') { 'loot_table' } else { 'loot_tables' }
     $fixtureLootDirectory = Join-Path $FixtureStagingRoot "data\$FixtureNamespace\$lootDirectoryName"
     New-Item -ItemType Directory -Path $fixtureRecipeDirectory -Force | Out-Null
+    if (-not $hasTuffRecipe) {
+        New-Item -ItemType Directory -Path $controlledFixtureRecipeDirectory -Force | Out-Null
+    }
     New-Item -ItemType Directory -Path $fixtureLootDirectory -Force | Out-Null
 
     $fixtureIngredient = if ($recipeSchema -eq 'modern-shorthand-result-id') {
@@ -459,11 +613,13 @@ try {
     }
     $fixtureRecipe = [ordered]@{
         type = 'minecraft:smelting'
-        category = 'misc'
         ingredient = $fixtureIngredient
         result = $fixtureResult
         experience = 0.0
         cookingtime = 20
+    }
+    if ($targetSemanticVersion -ge [version]'1.19') {
+        $fixtureRecipe['category'] = 'misc'
     }
     $fixtureLootTable = [ordered]@{
         type = 'minecraft:command'
@@ -494,13 +650,26 @@ try {
             (Join-Path $FixtureStagingRoot 'pack.mcmeta'),
             ($fixturePackMetadata | ConvertTo-Json -Depth 20)
     )
-    # Keep the fallback after carpetlir:gravel_to_tuff_smelting in both the
+    # Keep the fallback after the controlled Carpet LIR recipe id in both the
     # audited HashMap bucket ranges and newer sorted recipe maps. The enabled
     # direct-query assertion below still fails closed if ordering ever changes.
     [System.IO.File]::WriteAllText(
             (Join-Path $fixtureRecipeDirectory "$FixtureFallbackRecipePath.json"),
             ($fixtureRecipe | ConvertTo-Json -Depth 20)
     )
+    if (-not $hasTuffRecipe) {
+        $controlledFixtureRecipe = [ordered]@{
+            type = 'minecraft:smelting'
+            ingredient = $fixtureIngredient
+            result = "minecraft:$controlledRecipeResult"
+            experience = 0.0
+            cookingtime = 20
+        }
+        [System.IO.File]::WriteAllText(
+                (Join-Path $controlledFixtureRecipeDirectory "$controlledRecipePath.json"),
+                ($controlledFixtureRecipe | ConvertTo-Json -Depth 20)
+        )
+    }
     [System.IO.File]::WriteAllText(
             (Join-Path $fixtureLootDirectory 'direct_recipe_fallback.json'),
             ($fixtureLootTable | ConvertTo-Json -Depth 20)
@@ -711,10 +880,28 @@ if ($combinedOutput -notmatch '(?:Gave|Unlocked) 1 recipe') {
     throw "Minecraft $TargetVersion did not confirm the renewable recipe was loaded. Evidence: $EvidencePath"
 }
 
-$coverageSummary = if ($isTier119) {
-    'dirt and calcite rule states, cached/direct recipe fallbacks, mangrove resource, hardness, real Silk Touch mining, Warden loot gates, piston negative/positive paths, and clean shutdown'
-} else {
-    'dirt and calcite rule states, cached/direct recipe fallbacks, piston negative/positive paths, and clean shutdown'
+$coverageParts = @(
+    'bone-meal enabled/snowy/disabled/spectator states',
+    "$controlledRecipeRule $recipeFallbackCoverage"
+)
+if ($usesLegacyReplaceItem) {
+    $coverageParts += 'survival bone-meal consumption'
 }
+if ($hasCalcite) {
+    $coverageParts += 'calcite disabled/enabled states'
+}
+if ($hasPiston) {
+    $coverageParts += 'piston negative/positive paths'
+}
+if ($runReinforcedChecks) {
+    $coverageParts += @(
+        'mangrove resource',
+        'reinforced-deepslate hardness',
+        'real Silk Touch mining',
+        'Warden loot gates'
+    )
+}
+$coverageParts += 'clean shutdown'
+$coverageSummary = $coverageParts -join ', '
 Write-Host "Minecraft $TargetVersion server smoke passed: $coverageSummary." -ForegroundColor Green
 Write-Host "Evidence: $EvidencePath" -ForegroundColor Green

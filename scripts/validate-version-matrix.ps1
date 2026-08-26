@@ -718,6 +718,13 @@ foreach ($profileFile in $profileFiles) {
     if ([string]$profile.archive_minecraft_label -ne $profileVersion) {
         Add-ValidationError "$context must use exact archive_minecraft_label '$profileVersion'."
     }
+    if ($profileVersion -eq '1.16') {
+        $expectedFabricDependency = "=$([string]$profile.fabric_api_version)"
+        if (-not $profile.ContainsKey('fabric_api_dependency') -or
+                [string]$profile.fabric_api_dependency -ne $expectedFabricDependency) {
+            Add-ValidationError "$context must pin fabric_api_dependency to '$expectedFabricDependency'; later nominal 1.16 aggregates link Minecraft 1.16.2-only classes."
+        }
+    }
 
     $profileSourceFamily = [string]$profile.source_family
     if ($profileSourceFamily -notin @('legacy-yarn', 'mojang-26')) {
@@ -758,6 +765,7 @@ foreach ($profileFile in $profileFiles) {
         Add-ValidationError "$context must use ingredient-objects-result-id in the plural recipes directory."
     }
     if ($profileVersion -in @(
+            '1.16', '1.16.1', '1.16.2', '1.16.3', '1.16.4', '1.16.5',
             '1.17', '1.17.1',
             '1.18', '1.18.1', '1.18.2',
             '1.19', '1.19.1', '1.19.2', '1.19.3', '1.19.4',
@@ -778,6 +786,11 @@ foreach ($profileFile in $profileFiles) {
     $profileSupportStatus = [string]$profile.support_status
     if ($profileSupportStatus -notin @('verified', 'build-only')) {
         Add-ValidationError "$context must be verified or build-only before entering the active build profile directory."
+    }
+    if ([string]$profile.capability_tier -eq 'tier-1.15' -and
+            (-not $profile.ContainsKey('rule_command_root') -or
+            [string]$profile.rule_command_root -ne 'carpetlir')) {
+        Add-ValidationError "$context tier-1.15 adapter must expose its extension-owned settings through rule_command_root 'carpetlir'."
     }
 
     if ($profileSourceFamily -eq 'legacy-yarn') {
