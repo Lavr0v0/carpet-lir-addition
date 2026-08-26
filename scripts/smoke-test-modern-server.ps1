@@ -41,13 +41,16 @@ $resolvedEulaSource = (Resolve-Path -LiteralPath $EulaSourcePath).Path
 $eulaDestination = [System.IO.Path]::GetFullPath((Join-Path $RunDirectory 'eula.txt'))
 New-Item -ItemType Directory -Path $EvidenceRoot -Force | Out-Null
 
-$commands = @(
+$startupCommands = @(
     'forceload add 0 0',
     'fill -2 100 -2 4 104 4 minecraft:air',
     'setblock 0 100 0 minecraft:stone',
     'setblock 0 101 2 minecraft:dirt',
     'carpet boneMealGrassifyDirt true',
-    'player Notch spawn at 0.5 101 0.5',
+    'player Notch spawn'
+)
+$gameplayCommands = @(
+    'tp Notch 0.5 101 0.5',
     'player Notch look at 0.5 101.5 2.5',
     'item replace entity Notch weapon.mainhand with minecraft:bone_meal 3',
     'player Notch use once',
@@ -117,6 +120,7 @@ $process.StartInfo = $startInfo
 $output = New-Object 'System.Collections.Generic.List[string]'
 $serverOutput = New-Object 'System.Collections.Generic.List[string]'
 $serverReady = $false
+$gameplayCommandsSent = $false
 $processStarted = $false
 $runDirectoryCreated = $false
 $cleanupErrorMessage = $null
@@ -169,7 +173,15 @@ try {
 
         if (-not $serverReady -and $line -match '\bDone \(') {
             $serverReady = $true
-            foreach ($command in $commands) {
+            foreach ($command in $startupCommands) {
+                $output.Add(">>> $command")
+                Write-Host ">>> $command" -ForegroundColor Cyan
+                $process.StandardInput.WriteLine($command)
+                Start-Sleep -Milliseconds $CommandDelayMilliseconds
+            }
+        } elseif ($serverReady -and -not $gameplayCommandsSent -and $line -match '\bNotch joined the game\b') {
+            $gameplayCommandsSent = $true
+            foreach ($command in $gameplayCommands) {
                 $output.Add(">>> $command")
                 Write-Host ">>> $command" -ForegroundColor Cyan
                 $process.StandardInput.WriteLine($command)

@@ -355,6 +355,13 @@ try {
     $mixinConfigs = @($metadata.mixins | ForEach-Object {
         if ($_ -is [string]) { $_ } else { $_.config }
     })
+    $packagedMixinConfigs = @($zip.Entries | Where-Object {
+        $_.FullName -match '(^|/)[^/]+\.mixins\.json$'
+    } | ForEach-Object FullName)
+    $unexpectedMixinConfigs = @($packagedMixinConfigs | Where-Object { $mixinConfigs -notcontains $_ })
+    if ($unexpectedMixinConfigs.Count -ne 0) {
+        throw "Release JAR contains undeclared mixin config(s): $($unexpectedMixinConfigs -join ', ')."
+    }
     foreach ($mixinConfigPath in $mixinConfigs) {
         $mixinConfigEntry = $zip.GetEntry([string]$mixinConfigPath)
         if ($null -eq $mixinConfigEntry) {
