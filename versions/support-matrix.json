@@ -484,9 +484,9 @@
       "profile": "mc_1_20_5",
       "java": 21,
       "sourceFamily": "yarn-1.20.2-plus",
-      "status": "planned",
+      "status": "build-only",
       "capabilityTier": "tier-1.20",
-      "notes": "Stable Java 21 Carpet coordinate; the legacy range artifact was compiled against 1.20.6 instead."
+      "notes": "Exact Java 21 profile with a dedicated Carpet coordinate and audited 1.20.5/1.20.6 API adapter; pending final cross-version release verification."
     },
     {
       "target": "1.20.6",
@@ -495,9 +495,9 @@
       "profile": "mc_1_20_6",
       "java": 21,
       "sourceFamily": "yarn-1.20.2-plus",
-      "status": "released-legacy",
+      "status": "build-only",
       "capabilityTier": "tier-1.20",
-      "notes": "Compile target for the published v1.0.1 1.20.5-1.20.6 range artifact."
+      "notes": "Exact Java 21 profile replacing the flawed legacy range artifact with corrected recipe resources and rule filtering; pending final cross-version release verification."
     },
     {
       "target": "1.21",

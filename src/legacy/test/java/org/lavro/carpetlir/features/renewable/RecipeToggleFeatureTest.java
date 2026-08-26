@@ -55,7 +55,7 @@ class RecipeToggleFeatureTest {
         RecipeToggleFeature.controlledRecipeIds()
                 .forEach(id -> assertFalse(RecipeToggleFeature.isEnabled(id), id.toString()));
 
-        assertTrue(RecipeToggleFeature.isEnabled(Identifier.ofVanilla("crafting_table")));
+        assertTrue(RecipeToggleFeature.isEnabled(Identifier.of("minecraft", "crafting_table")));
     }
 
     @Test
@@ -97,8 +97,14 @@ class RecipeToggleFeatureTest {
     }
 
     private static boolean isBundledRecipe(String path) {
-        String resourcePath = "data/" + CarpetLIRAddition.MOD_ID + "/recipe/" + path + ".json";
-        return RecipeToggleFeatureTest.class.getClassLoader().getResource(resourcePath) != null;
+        ClassLoader classLoader = RecipeToggleFeatureTest.class.getClassLoader();
+        for (String directory : new String[]{"recipe", "recipes"}) {
+            String resourcePath = "data/" + CarpetLIRAddition.MOD_ID + "/" + directory + "/" + path + ".json";
+            if (classLoader.getResource(resourcePath) != null) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static void resetAllRules() {

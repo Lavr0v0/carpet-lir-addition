@@ -11,7 +11,7 @@ Some stable Carpet coordinates cover adjacent Minecraft patch releases. In those
 ## Status meanings
 
 - `verified`: built and exercised with the current audited implementation and a behavior regression suite. Minecraft 1.14.4 and the 26.1 line (including 26.1.1 and 26.1.2) plus 26.2 have this status today. The classic target uses real Java 8 server/fake-player checks because its generation has no modern Fabric GameTest framework.
-- `build-only`: current sources compile and pass focused unit, packaging, and server-startup checks, but behavior automation is not yet sufficient for a release claim. Minecraft 1.21 through 1.21.11 have this status today.
+- `build-only`: current sources compile and pass focused unit, packaging, and server-startup checks, but behavior automation is not yet sufficient for a release claim. Fourteen exact targets—Minecraft 1.20.5, 1.20.6, and 1.21 through 1.21.11—have this status today.
 - `released-legacy`: an artifact was published in v1.0.1, but it predates the current audit fixes and automated tests. It must be ported and revalidated before another release.
 - `planned`: a stable Fabric Carpet target with no currently accepted audited build. Local drafts do not count as releases or verification.
 
@@ -71,6 +71,7 @@ The validator checks:
 - unique target and profile identifiers
 - known statuses, source families, rules, and leaf variants
 - Java version transitions
+- allowed recipe JSON schemas and resource directories, including the 1.20.5/1.20.6 plural-directory boundary
 - version prerequisites for every feature and leaf recipe
 - monotonic capabilities, so later targets cannot silently lose an earlier feature
 - exact Minecraft-version coverage, including patch releases that share one Carpet coordinate
@@ -78,13 +79,15 @@ The validator checks:
 
 ## Current build-ready targets
 
-The root Gradle build supports `1.21`, `1.21.1`, `1.21.2`, `1.21.3`, `1.21.4`, `1.21.5`, `1.21.6`, `1.21.7`, `1.21.8`, `1.21.9`, `1.21.10`, `1.21.11`, `26.1`, `26.1.1`, `26.1.2`, and `26.2` as independent targets. The Java 8 `1.14.4` target is isolated under `classic/1.14.4` so its old Loom, Carpet rule API, Fabric API mod id, and source set cannot leak into modern artifacts. Each build pins Minecraft, Fabric Loader, Fabric API, Carpet's Maven artifact, Carpet's runtime mod version, mappings, Java bytecode, recipe schema, and exact packaged dependency metadata.
+The root Gradle build supports `1.20.5`, `1.20.6`, `1.21`, `1.21.1`, `1.21.2`, `1.21.3`, `1.21.4`, `1.21.5`, `1.21.6`, `1.21.7`, `1.21.8`, `1.21.9`, `1.21.10`, `1.21.11`, `26.1`, `26.1.1`, `26.1.2`, and `26.2` as independent targets. The Java 8 `1.14.4` target is isolated under `classic/1.14.4` so its old Loom, Carpet rule API, Fabric API mod id, and source set cannot leak into modern artifacts. Each build pins Minecraft, Fabric Loader, Fabric API, Carpet's Maven artifact, Carpet's runtime mod version, mappings, Java bytecode, recipe schema, recipe resource directory, and exact packaged dependency metadata.
 
 Every root target also receives a separate `run/<target>` directory. Never reuse a generated world across source families: newer Minecraft data can make an otherwise valid older server fail before mod initialization.
 The disposable smoke harness only copies an EULA file whose `eula=true` acceptance already exists; provide that file with `-EulaSourcePath` on a fresh checkout.
 
 ```powershell
 .\gradlew.bat -p classic\1.14.4 clean build
+.\gradlew.bat build '-PtargetVersion=1.20.5'
+.\gradlew.bat build '-PtargetVersion=1.20.6'
 .\gradlew.bat build '-PtargetVersion=1.21'
 .\gradlew.bat build '-PtargetVersion=1.21.1'
 .\gradlew.bat build '-PtargetVersion=1.21.2'
@@ -103,6 +106,6 @@ powershell -ExecutionPolicy Bypass -File .\scripts\build-26-targets.ps1
 powershell -ExecutionPolicy Bypass -File .\scripts\smoke-test-modern-server.ps1 -TargetVersion 1.21.9 -EulaSourcePath .\run\1.21.11\eula.txt -CleanRunDirectory
 ```
 
-The audited batch command runs every target's available checks, opens each final remapped JAR, and collects seventeen exact artifacts under `build\multiversion`. For 26.x, the configured Gradle `build` lifecycle invokes the full unit and 16-test server GameTest suite, including dedicated Silk Touch loot-context and snowy-grass checks. The 1.14.4 target runs its focused tests and capability-boundary audit; its release acceptance also includes a Java 8 server and fake-player check. Minecraft 1.21 through 1.21.10 additionally pass uniquely isolated real-server smokes covering enabled and snowy dirt conversion, disabled behavior, spectator denial, live furnace-cache invalidation, and clean shutdown. The twelve 1.21–1.21.11 targets remain `build-only` until equivalent full gameplay automation is ported. Other source families remain explicitly unverified until their audited adapters and tests land.
+The audited batch command runs every target's available checks, opens each final remapped JAR, and collects nineteen exact artifacts under `build\multiversion`. For 26.x, the configured Gradle `build` lifecycle invokes the full unit and 16-test server GameTest suite, including dedicated Silk Touch loot-context and snowy-grass checks. The 1.14.4 target runs its focused tests and capability-boundary audit; its release acceptance also includes a Java 8 server and fake-player check. Minecraft 1.20.5, 1.20.6, and 1.21 through 1.21.10 additionally pass uniquely isolated real-server smokes covering enabled and snowy dirt conversion, disabled behavior, spectator denial, live furnace-cache invalidation, and clean shutdown. The fourteen 1.20.5–1.20.6 and 1.21–1.21.11 targets remain `build-only` until equivalent full gameplay automation is ported. Other target rows remain explicitly unverified until their audited adapters and tests land.
 
-Every collected artifact is checked against its selected capability tier and build profile. `scripts/validate-built-jar.ps1` rejects wrong rule fields, rule translations, recipe resources or schemas, Mixin references, Java bytecode levels, test code, unresolved versions, wildcard or mismatched dependencies, wrong Fabric API generation ids, misnamed artifacts, and classes that do not exist in the target's Minecraft generation. Recipe control maps register only resources actually bundled for that tier, so an omitted low-version variant cannot survive as a no-op mapping.
+Every collected artifact is checked against its selected capability tier and build profile. `scripts/validate-built-jar.ps1` rejects wrong rule fields, rule translations, recipe resources, schemas or singular/plural directories, Mixin references, Java bytecode levels, test code, unresolved versions, wildcard or mismatched dependencies, wrong Fabric API generation ids, misnamed artifacts, and classes that do not exist in the target's Minecraft generation. Recipe control maps register only resources actually bundled for that tier, so an omitted low-version variant cannot survive as a no-op mapping.

@@ -4,6 +4,8 @@
 
 ### Added
 - Added a server GameTest proving that reinforced deepslate drops exactly one block with Silk Touch only while its Carpet rule is enabled.
+- Added exact Minecraft 1.20.5 and 1.20.6 build profiles with their own Carpet, Fabric API, Yarn, metadata, and release JARs.
+- Added target-selected singular/plural recipe-directory packaging and audit coverage for the 1.20.5/1.20.6 data-pack layout.
 - Added exact, audited build profiles for Minecraft 1.21, 1.21.1, 1.21.2, and 1.21.3 using two API-accurate source families and one exact JAR per release.
 - Added target-selected recipe schema normalization and JAR-level schema validation so pre-1.21.2 releases receive ingredient objects instead of unsupported string shorthand.
 - Added snowy-grass state coverage to both the 26.x GameTest suite and disposable Yarn server smoke harness.
@@ -13,6 +15,8 @@
 - Added a uniquely isolated real-server smoke harness covering enabled dirt conversion, disabled behavior, spectator denial, live furnace-cache invalidation, clean shutdown, and optional test-world cleanup.
 
 ### Fixed
+- Replaced the flawed legacy 1.20.5–1.20.6 range implementation with an API-accurate adapter that rejects spectators, preserves snowy grass, respects `mob_drops`, and filters both direct and cached recipe lookups.
+- Made old-schema ingredient normalization preserve `#tag` ingredients as tag objects instead of misclassifying them as item ids.
 - Added Minecraft 1.16.1 to the support catalog because Carpet's stable 1.16 artifact declares compatibility with the full 1.16.x line.
 - Fixed all Carpet LIR recipes failing to parse on Minecraft 1.21 and 1.21.1, while keeping pale oak absent from those JARs and their runtime recipe control maps.
 - Preserved the grass block's `snowy` state when bone meal converts dirt beneath a snow layer.

@@ -733,6 +733,27 @@ foreach ($profileFile in $profileFiles) {
         Add-ValidationError "$context uses Yarn mappings but has no yarn_mappings coordinate."
     }
 
+    $profileRecipeSchema = if ($profile.ContainsKey('recipe_schema')) {
+        [string]$profile.recipe_schema
+    } else {
+        'modern-shorthand-result-id'
+    }
+    if ($profileRecipeSchema -notin @('modern-shorthand-result-id', 'ingredient-objects-result-id')) {
+        Add-ValidationError "$context has unsupported recipe_schema '$profileRecipeSchema'."
+    }
+    $profileRecipeDirectory = if ($profile.ContainsKey('recipe_directory')) {
+        [string]$profile.recipe_directory
+    } else {
+        'recipe'
+    }
+    if ($profileRecipeDirectory -notin @('recipe', 'recipes')) {
+        Add-ValidationError "$context has unsupported recipe_directory '$profileRecipeDirectory'."
+    }
+    if ($profileVersion -in @('1.20.5', '1.20.6') -and
+            ($profileRecipeSchema -ne 'ingredient-objects-result-id' -or $profileRecipeDirectory -ne 'recipes')) {
+        Add-ValidationError "$context must use ingredient-objects-result-id in the plural recipes directory."
+    }
+
     $profileSupportStatus = [string]$profile.support_status
     if ($profileSupportStatus -notin @('verified', 'build-only')) {
         Add-ValidationError "$context must be verified or build-only before entering the active build profile directory."

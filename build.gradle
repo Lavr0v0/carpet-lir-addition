@@ -48,6 +48,7 @@ def sourceOverlay = targetProfile.getProperty('source_overlay', targetVersion).t
 def mixinConfig = targetProfile.getProperty('mixin_config', 'carpet-lir-addition.mixins.json').trim()
 def supportStatus = targetProfile.getProperty('support_status', 'verified').trim()
 def recipeSchema = targetProfile.getProperty('recipe_schema', 'modern-shorthand-result-id').trim()
+def recipeDirectory = targetProfile.getProperty('recipe_directory', 'recipe').trim()
 def runDirectoryName = providers.gradleProperty('runDirectoryName').orElse(targetVersion).get().trim()
 def excludedSources = targetProfile.getProperty('excluded_sources', '')
         .split(',')
@@ -67,6 +68,12 @@ def buildTargetNames = file('versions/targets')
 if (!(recipeSchema in ['modern-shorthand-result-id', 'ingredient-objects-result-id'])) {
     throw new GradleException(
             "Target '${targetVersion}' has unsupported recipe schema '${recipeSchema}'."
+    )
+}
+
+if (!(recipeDirectory in ['recipe', 'recipes'])) {
+    throw new GradleException(
+            "Target '${targetVersion}' has unsupported recipe directory '${recipeDirectory}'."
     )
 }
 
@@ -187,6 +194,13 @@ loom {
 processResources {
     inputs.properties resourceProperties
     inputs.property('recipe_schema', recipeSchema)
+    inputs.property('recipe_directory', recipeDirectory)
+
+    eachFile { details ->
+        if (recipeDirectory == 'recipes' && details.path.startsWith('data/carpetlir/recipe/')) {
+            details.path = details.path.replaceFirst('^data/carpetlir/recipe/', 'data/carpetlir/recipes/')
+        }
+    }
 
     filesMatching('fabric.mod.json') {
         expand resourceProperties
@@ -197,7 +211,8 @@ processResources {
             Closure<Object> toIngredientObject
             toIngredientObject = { Object ingredient ->
                 if (ingredient instanceof CharSequence) {
-                    return [item: ingredient.toString()]
+                    String id = ingredient.toString()
+                    return id.startsWith('#') ? [tag: id.substring(1)] : [item: id]
                 }
                 if (ingredient instanceof List) {
                     return ingredient.collect { toIngredientObject(it) }
@@ -206,7 +221,7 @@ processResources {
             }
 
             fileTree(destinationDir) {
-                include 'data/carpetlir/recipe/*.json'
+                include "data/carpetlir/${recipeDirectory}/*.json"
             }.each { File recipeFile ->
                 def recipe = new JsonSlurper().parse(recipeFile)
                 if (recipe.key instanceof Map) {

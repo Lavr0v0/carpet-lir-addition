@@ -158,6 +158,14 @@ $recipeSchema = if ($null -ne $profile -and $profile.ContainsKey('recipe_schema'
 if ($recipeSchema -notin @('modern-shorthand-result-id', 'ingredient-objects-result-id')) {
     throw "Unsupported recipe schema '$recipeSchema' in profile '$resolvedProfile'."
 }
+$recipeDirectory = if ($null -ne $profile -and $profile.ContainsKey('recipe_directory')) {
+    [string]$profile.recipe_directory
+} else {
+    'recipe'
+}
+if ($recipeDirectory -notin @('recipe', 'recipes')) {
+    throw "Unsupported recipe directory '$recipeDirectory' in profile '$resolvedProfile'."
+}
 
 $forbiddenBefore = @{
     'org/lavro/carpetlir/features/renewable/CalciteGeneratorFeature.class' = '1.17'
@@ -319,6 +327,13 @@ try {
     $recipeEntries = @($zip.Entries | Where-Object {
         $_.FullName -match '^data/carpetlir/recipes?/[^/]+\.json$'
     })
+    $expectedRecipePrefix = "data/carpetlir/$recipeDirectory/"
+    $wrongDirectoryEntries = @($recipeEntries | Where-Object {
+        -not $_.FullName.StartsWith($expectedRecipePrefix, [System.StringComparison]::Ordinal)
+    })
+    if ($wrongDirectoryEntries.Count -ne 0) {
+        throw "Recipe resources must use '$expectedRecipePrefix'; found: $($wrongDirectoryEntries.FullName -join ', ')."
+    }
     $actualRecipes = @($recipeEntries | ForEach-Object {
         [System.IO.Path]::GetFileNameWithoutExtension($_.Name)
     } | Sort-Object)
@@ -350,10 +365,13 @@ try {
                 throw "Recipe '$($recipeEntry.FullName)' must use modern string ingredient shorthand."
             }
             if ($recipeSchema -eq 'ingredient-objects-result-id') {
-                if ($isStringIngredient -or
-                        $ingredient.PSObject.Properties.Name -notcontains 'item' -or
-                        [string]::IsNullOrWhiteSpace([string]$ingredient.item)) {
-                    throw "Recipe '$($recipeEntry.FullName)' must use legacy ingredient objects with an item id."
+                $propertyNames = @($ingredient.PSObject.Properties.Name)
+                $hasItem = $propertyNames -contains 'item' -and
+                        -not [string]::IsNullOrWhiteSpace([string]$ingredient.item)
+                $hasTag = $propertyNames -contains 'tag' -and
+                        -not [string]::IsNullOrWhiteSpace([string]$ingredient.tag)
+                if ($isStringIngredient -or $hasItem -eq $hasTag) {
+                    throw "Recipe '$($recipeEntry.FullName)' must use an ingredient object with exactly one non-empty item or tag id."
                 }
             }
         }

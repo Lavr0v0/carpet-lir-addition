@@ -47,10 +47,20 @@ public final class RecipeToggleFeature {
             String path,
             BooleanSupplier rule
     ) {
-        String resourcePath = "data/" + CarpetLIRAddition.MOD_ID + "/recipe/" + path + ".json";
-        if (RecipeToggleFeature.class.getClassLoader().getResource(resourcePath) != null) {
+        if (isBundled(path)) {
             rules.put(recipeId(path), rule);
         }
+    }
+
+    private static boolean isBundled(String path) {
+        ClassLoader classLoader = RecipeToggleFeature.class.getClassLoader();
+        for (String directory : new String[]{"recipe", "recipes"}) {
+            String resourcePath = "data/" + CarpetLIRAddition.MOD_ID + "/" + directory + "/" + path + ".json";
+            if (classLoader.getResource(resourcePath) != null) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static boolean isEnabled(RecipeEntry<?> recipeEntry) {
