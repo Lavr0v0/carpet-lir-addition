@@ -16,13 +16,61 @@ $RunDirectoryName = "$TargetVersion-smoke-$([guid]::NewGuid().ToString('N'))"
 $RunDirectory = Join-Path $RunRoot $RunDirectoryName
 $EvidenceRoot = Join-Path $ProjectRoot 'build\server-smoke'
 $EvidencePath = Join-Path $EvidenceRoot "minecraft-$TargetVersion.log"
+$FixtureNamespace = 'zzzz_carpetlir_smoke'
+$FixtureStagingRoot = Join-Path $RunDirectory 'smoke-fixture-datapack'
+$FixtureInstallRoot = Join-Path $RunDirectory 'world\datapacks\carpetlir-smoke'
+$InstallFixtureCommand = '__INSTALL_RECIPE_FALLBACK_FIXTURE__'
 
 if (-not (Test-Path -LiteralPath $ProfilePath -PathType Leaf)) {
     throw "Unknown or non-build-ready target '$TargetVersion'."
 }
 $profile = ConvertFrom-StringData (Get-Content -LiteralPath $ProfilePath -Raw)
-if ([string]$profile.source_family -ne 'legacy-yarn' -or [int]$profile.java_version -lt 21) {
-    throw "Target '$TargetVersion' is not supported by the modern Yarn server smoke harness."
+if ([string]$profile.source_family -ne 'legacy-yarn' -or [int]$profile.java_version -lt 17) {
+    throw "Target '$TargetVersion' is not supported by the audited Yarn server smoke harness."
+}
+$recipeSchema = if ($profile.ContainsKey('recipe_schema')) {
+    [string]$profile.recipe_schema
+} else {
+    'modern-shorthand-result-id'
+}
+$recipeDirectory = if ($profile.ContainsKey('recipe_directory')) {
+    [string]$profile.recipe_directory
+} else {
+    'recipe'
+}
+if ($recipeSchema -notin @(
+        'modern-shorthand-result-id',
+        'ingredient-objects-result-id',
+        'ingredient-objects-legacy-result'
+)) {
+    throw "Target '$TargetVersion' has unsupported recipe schema '$recipeSchema'."
+}
+if ($recipeDirectory -notin @('recipe', 'recipes')) {
+    throw "Target '$TargetVersion' has unsupported recipe directory '$recipeDirectory'."
+}
+$dataPackFormats = @{
+    '1.20' = 15
+    '1.20.1' = 15
+    '1.20.2' = 18
+    '1.20.3' = 26
+    '1.20.4' = 26
+    '1.20.5' = 41
+    '1.20.6' = 41
+    '1.21' = 48
+    '1.21.1' = 48
+    '1.21.2' = 57
+    '1.21.3' = 57
+    '1.21.4' = 61
+    '1.21.5' = 71
+    '1.21.6' = 80
+    '1.21.7' = 81
+    '1.21.8' = 81
+    '1.21.9' = 88
+    '1.21.10' = 88
+    '1.21.11' = 94
+}
+if (-not $dataPackFormats.ContainsKey($TargetVersion)) {
+    throw "Target '$TargetVersion' has no audited data-pack format for the recipe fallback fixture."
 }
 
 if ([string]::IsNullOrWhiteSpace($EulaSourcePath)) {
@@ -77,18 +125,23 @@ $gameplayCommands = @(
     'carpet renewableLeavesCrafting false',
     'setblock 2 101 2 minecraft:furnace',
     'carpet renewableTuff true',
-    'item replace block 2 101 2 container.0 with minecraft:gravel 2',
+    'item replace block 2 101 2 container.0 with minecraft:gravel 1',
     'item replace block 2 101 2 container.1 with minecraft:coal 1',
-    'execute if items block 2 101 2 container.2 minecraft:tuff run say CARPETLIR_RECIPE_ENABLED_PASS',
+    'execute if data block 2 101 2 Items[{Slot:2b,id:"minecraft:tuff"}] run say CARPETLIR_RECIPE_ENABLED_PASS',
+    $InstallFixtureCommand,
     'item replace block 2 101 2 container.2 with minecraft:air',
     'carpet renewableTuff false',
-    'execute unless items block 2 101 2 container.2 minecraft:tuff run say CARPETLIR_RECIPE_CACHED_DISABLED_PASS',
+    'item replace block 2 101 2 container.0 with minecraft:gravel 2',
+    'execute if data block 2 101 2 Items[{Slot:2b,id:"minecraft:cobblestone"}] run say CARPETLIR_RECIPE_CACHED_FALLBACK_PASS',
+    'clear Notch minecraft:cobblestone',
+    'loot give Notch loot zzzz_carpetlir_smoke:direct_recipe_fallback',
+    'execute if entity @a[name=Notch,nbt={Inventory:[{id:"minecraft:cobblestone"}]}] run say CARPETLIR_RECIPE_DIRECT_FALLBACK_PASS',
     'player Notch kill',
     'say CARPETLIR_SMOKE_COMPLETE'
 )
 $extendedCommandDelays = @{
     'item replace block 2 101 2 container.1 with minecraft:coal 1' = 12000
-    'carpet renewableTuff false' = 12000
+    'item replace block 2 101 2 container.0 with minecraft:gravel 2' = 12000
 }
 $requiredMarkers = @(
     'CARPETLIR_BONEMEAL_ENABLED_PASS',
@@ -96,7 +149,8 @@ $requiredMarkers = @(
     'CARPETLIR_BONEMEAL_DISABLED_PASS',
     'CARPETLIR_BONEMEAL_SPECTATOR_PASS',
     'CARPETLIR_RECIPE_ENABLED_PASS',
-    'CARPETLIR_RECIPE_CACHED_DISABLED_PASS',
+    'CARPETLIR_RECIPE_CACHED_FALLBACK_PASS',
+    'CARPETLIR_RECIPE_DIRECT_FALLBACK_PASS',
     'Notch lost connection: Killed',
     'CARPETLIR_SMOKE_COMPLETE'
 )
@@ -110,6 +164,10 @@ $forbiddenPatterns = @(
     'No entity was found',
     'No player was found',
     'Can only manipulate existing players',
+    'Unknown loot table',
+    "Can't find element",
+    "Couldn't parse data file",
+    'pack metadata:',
     'Notch drowned'
 )
 
@@ -153,6 +211,70 @@ try {
             )
     )
 
+    # Stage the fallback outside the world. It is installed only after the
+    # controlled tuff recipe has produced once and populated the furnace cache.
+    $fixtureRecipeDirectory = Join-Path $FixtureStagingRoot "data\$FixtureNamespace\$recipeDirectory"
+    $lootDirectoryName = if ($recipeDirectory -eq 'recipe') { 'loot_table' } else { 'loot_tables' }
+    $fixtureLootDirectory = Join-Path $FixtureStagingRoot "data\$FixtureNamespace\$lootDirectoryName"
+    New-Item -ItemType Directory -Path $fixtureRecipeDirectory -Force | Out-Null
+    New-Item -ItemType Directory -Path $fixtureLootDirectory -Force | Out-Null
+
+    $fixtureIngredient = if ($recipeSchema -eq 'modern-shorthand-result-id') {
+        'minecraft:gravel'
+    } else {
+        [ordered]@{ item = 'minecraft:gravel' }
+    }
+    $fixtureResult = if ($recipeSchema -eq 'ingredient-objects-legacy-result') {
+        'minecraft:cobblestone'
+    } else {
+        [ordered]@{ id = 'minecraft:cobblestone' }
+    }
+    $fixtureRecipe = [ordered]@{
+        type = 'minecraft:smelting'
+        category = 'misc'
+        ingredient = $fixtureIngredient
+        result = $fixtureResult
+        experience = 0.0
+        cookingtime = 20
+    }
+    $fixtureLootTable = [ordered]@{
+        type = 'minecraft:command'
+        pools = @(
+            [ordered]@{
+                rolls = 1
+                entries = @(
+                    [ordered]@{
+                        type = 'minecraft:item'
+                        name = 'minecraft:gravel'
+                        functions = @([ordered]@{ function = 'minecraft:furnace_smelt' })
+                    }
+                )
+            }
+        )
+    }
+    $fixturePack = [ordered]@{
+        description = 'Disposable Carpet LIR recipe fallback smoke fixture'
+    }
+    if ($dataPackFormats[$TargetVersion] -le 81) {
+        $fixturePack['pack_format'] = $dataPackFormats[$TargetVersion]
+    } else {
+        $fixturePack['min_format'] = $dataPackFormats[$TargetVersion]
+        $fixturePack['max_format'] = $dataPackFormats[$TargetVersion]
+    }
+    $fixturePackMetadata = [ordered]@{ pack = $fixturePack }
+    [System.IO.File]::WriteAllText(
+            (Join-Path $FixtureStagingRoot 'pack.mcmeta'),
+            ($fixturePackMetadata | ConvertTo-Json -Depth 20)
+    )
+    [System.IO.File]::WriteAllText(
+            (Join-Path $fixtureRecipeDirectory 'gravel_to_cobblestone_smelting.json'),
+            ($fixtureRecipe | ConvertTo-Json -Depth 20)
+    )
+    [System.IO.File]::WriteAllText(
+            (Join-Path $fixtureLootDirectory 'direct_recipe_fallback.json'),
+            ($fixtureLootTable | ConvertTo-Json -Depth 20)
+    )
+
     if (-not $process.Start()) {
         throw "Unable to start the Minecraft $TargetVersion server smoke test."
     }
@@ -190,6 +312,19 @@ try {
         } elseif ($serverReady -and -not $gameplayCommandsSent -and $line -match '\bNotch joined the game\b') {
             $gameplayCommandsSent = $true
             foreach ($command in $gameplayCommands) {
+                if ($command -eq $InstallFixtureCommand) {
+                    if (Test-Path -LiteralPath $FixtureInstallRoot) {
+                        throw "Refusing to overwrite existing smoke fixture '$FixtureInstallRoot'."
+                    }
+                    Copy-Item -LiteralPath $FixtureStagingRoot -Destination $FixtureInstallRoot -Recurse
+                    $output.Add('>>> [installed fallback fixture]')
+                    Write-Host '>>> [installed fallback fixture]' -ForegroundColor Cyan
+                    $output.Add('>>> reload')
+                    Write-Host '>>> reload' -ForegroundColor Cyan
+                    $process.StandardInput.WriteLine('reload')
+                    Start-Sleep -Milliseconds 10000
+                    continue
+                }
                 $output.Add(">>> $command")
                 Write-Host ">>> $command" -ForegroundColor Cyan
                 $process.StandardInput.WriteLine($command)
@@ -234,8 +369,13 @@ try {
             Remove-Item -LiteralPath $resolvedRunDirectory -Recurse -Force
             Write-Host "Removed generated test server directory: $resolvedRunDirectory" -ForegroundColor Green
         } catch {
-            $cleanupErrorMessage = "Unable to remove generated smoke directory '$RunDirectory': $($_.Exception.Message)"
-            Write-Warning $cleanupErrorMessage
+            $runCleanupError = "Unable to remove generated smoke directory '$RunDirectory': $($_.Exception.Message)"
+            $cleanupErrorMessage = if ($null -eq $cleanupErrorMessage) {
+                $runCleanupError
+            } else {
+                "$cleanupErrorMessage $runCleanupError"
+            }
+            Write-Warning $runCleanupError
         }
     }
 }
@@ -265,5 +405,5 @@ if ($combinedOutput -notmatch '(?:Gave|Unlocked) 1 recipe') {
     throw "Minecraft $TargetVersion did not confirm the renewable recipe was loaded. Evidence: $EvidencePath"
 }
 
-Write-Host "Minecraft $TargetVersion server smoke passed: rule-on, rule-off, spectator, recipe cache invalidation, and clean shutdown." -ForegroundColor Green
+Write-Host "Minecraft $TargetVersion server smoke passed: rule-on, rule-off, spectator, cached/direct recipe fallbacks, and clean shutdown." -ForegroundColor Green
 Write-Host "Evidence: $EvidencePath" -ForegroundColor Green

@@ -738,7 +738,11 @@ foreach ($profileFile in $profileFiles) {
     } else {
         'modern-shorthand-result-id'
     }
-    if ($profileRecipeSchema -notin @('modern-shorthand-result-id', 'ingredient-objects-result-id')) {
+    if ($profileRecipeSchema -notin @(
+            'modern-shorthand-result-id',
+            'ingredient-objects-result-id',
+            'ingredient-objects-legacy-result'
+    )) {
         Add-ValidationError "$context has unsupported recipe_schema '$profileRecipeSchema'."
     }
     $profileRecipeDirectory = if ($profile.ContainsKey('recipe_directory')) {
@@ -752,6 +756,10 @@ foreach ($profileFile in $profileFiles) {
     if ($profileVersion -in @('1.20.5', '1.20.6') -and
             ($profileRecipeSchema -ne 'ingredient-objects-result-id' -or $profileRecipeDirectory -ne 'recipes')) {
         Add-ValidationError "$context must use ingredient-objects-result-id in the plural recipes directory."
+    }
+    if ($profileVersion -in @('1.20.2', '1.20.3', '1.20.4') -and
+            ($profileRecipeSchema -ne 'ingredient-objects-legacy-result' -or $profileRecipeDirectory -ne 'recipes')) {
+        Add-ValidationError "$context must use ingredient-objects-legacy-result in the plural recipes directory."
     }
 
     $profileSupportStatus = [string]$profile.support_status
@@ -769,6 +777,17 @@ foreach ($profileFile in $profileFiles) {
             }
             if (-not (Test-Path -LiteralPath (Join-Path $overlayRoot "resources\$([string]$profile.mixin_config)") -PathType Leaf)) {
                 Add-ValidationError "$context mixin config does not exist in its overlay resources."
+            }
+        }
+        if ($profile.ContainsKey('shared_source_overlays')) {
+            $sharedSourceOverlayNames = @([string]$profile.shared_source_overlays -split ',' | ForEach-Object {
+                $_.Trim()
+            } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+            foreach ($sharedSourceOverlayName in $sharedSourceOverlayNames) {
+                $sharedSourceOverlayRoot = Join-Path $projectRoot "src\legacy\versioned\$sharedSourceOverlayName\java"
+                if (-not (Test-Path -LiteralPath $sharedSourceOverlayRoot -PathType Container)) {
+                    Add-ValidationError "$context shared source overlay does not exist: '$sharedSourceOverlayRoot'."
+                }
             }
         }
     } elseif ($profileSourceFamily -eq 'mojang-26') {

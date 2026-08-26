@@ -66,6 +66,47 @@ function Get-ZipEntryBytes {
     }
 }
 
+function Assert-RecipeIngredientSchema {
+    param(
+        [AllowNull()]
+        [object]$Ingredient,
+        [string]$RecipeSchema,
+        [string]$RecipePath
+    )
+
+    if ($Ingredient -is [System.Collections.IList]) {
+        if ($Ingredient.Count -eq 0) {
+            throw "Recipe '$RecipePath' must not use an empty ingredient alternative list."
+        }
+        foreach ($alternative in $Ingredient) {
+            Assert-RecipeIngredientSchema `
+                    -Ingredient $alternative `
+                    -RecipeSchema $RecipeSchema `
+                    -RecipePath $RecipePath
+        }
+        return
+    }
+
+    $isStringIngredient = $Ingredient -is [string]
+    if ($RecipeSchema -eq 'modern-shorthand-result-id' -and -not $isStringIngredient) {
+        throw "Recipe '$RecipePath' must use modern string ingredient shorthand."
+    }
+    if ($RecipeSchema -in @('ingredient-objects-result-id', 'ingredient-objects-legacy-result')) {
+        $propertyNames = if ($null -eq $Ingredient) {
+            @()
+        } else {
+            @($Ingredient.PSObject.Properties.Name)
+        }
+        $hasItem = $propertyNames -contains 'item' -and
+                -not [string]::IsNullOrWhiteSpace([string]$Ingredient.item)
+        $hasTag = $propertyNames -contains 'tag' -and
+                -not [string]::IsNullOrWhiteSpace([string]$Ingredient.tag)
+        if ($isStringIngredient -or $hasItem -eq $hasTag) {
+            throw "Recipe '$RecipePath' must use an ingredient object with exactly one non-empty item or tag id."
+        }
+    }
+}
+
 function Test-VersionPredicate {
     param(
         [string]$Predicate,
@@ -155,7 +196,11 @@ $recipeSchema = if ($null -ne $profile -and $profile.ContainsKey('recipe_schema'
 } else {
     'modern-shorthand-result-id'
 }
-if ($recipeSchema -notin @('modern-shorthand-result-id', 'ingredient-objects-result-id')) {
+if ($recipeSchema -notin @(
+        'modern-shorthand-result-id',
+        'ingredient-objects-result-id',
+        'ingredient-objects-legacy-result'
+)) {
     throw "Unsupported recipe schema '$recipeSchema' in profile '$resolvedProfile'."
 }
 $recipeDirectory = if ($null -ne $profile -and $profile.ContainsKey('recipe_directory')) {
@@ -360,22 +405,31 @@ try {
             }
         }
         foreach ($ingredient in $ingredientValues) {
-            $isStringIngredient = $ingredient -is [string]
-            if ($recipeSchema -eq 'modern-shorthand-result-id' -and -not $isStringIngredient) {
-                throw "Recipe '$($recipeEntry.FullName)' must use modern string ingredient shorthand."
-            }
-            if ($recipeSchema -eq 'ingredient-objects-result-id') {
-                $propertyNames = @($ingredient.PSObject.Properties.Name)
-                $hasItem = $propertyNames -contains 'item' -and
-                        -not [string]::IsNullOrWhiteSpace([string]$ingredient.item)
-                $hasTag = $propertyNames -contains 'tag' -and
-                        -not [string]::IsNullOrWhiteSpace([string]$ingredient.tag)
-                if ($isStringIngredient -or $hasItem -eq $hasTag) {
-                    throw "Recipe '$($recipeEntry.FullName)' must use an ingredient object with exactly one non-empty item or tag id."
-                }
-            }
+            Assert-RecipeIngredientSchema `
+                    -Ingredient $ingredient `
+                    -RecipeSchema $recipeSchema `
+                    -RecipePath $recipeEntry.FullName
         }
-        if ($recipe.PSObject.Properties.Name -notcontains 'result' -or
+        if ($recipe.PSObject.Properties.Name -notcontains 'result') {
+            throw "Recipe '$($recipeEntry.FullName)' has no result."
+        }
+        if ($recipeSchema -eq 'ingredient-objects-legacy-result') {
+            $cookingRecipeTypes = @(
+                'minecraft:smelting',
+                'minecraft:blasting',
+                'minecraft:smoking',
+                'minecraft:campfire_cooking'
+            )
+            if ($cookingRecipeTypes -contains [string]$recipe.type) {
+                if ($recipe.result -isnot [string] -or [string]::IsNullOrWhiteSpace([string]$recipe.result)) {
+                    throw "Cooking recipe '$($recipeEntry.FullName)' must use a legacy string result."
+                }
+            } elseif ($recipe.result -is [string] -or
+                    $recipe.result.PSObject.Properties.Name -notcontains 'item' -or
+                    [string]::IsNullOrWhiteSpace([string]$recipe.result.item)) {
+                throw "Crafting recipe '$($recipeEntry.FullName)' must use a legacy object result with an item id."
+            }
+        } elseif ($recipe.result -is [string] -or
                 $recipe.result.PSObject.Properties.Name -notcontains 'id' -or
                 [string]::IsNullOrWhiteSpace([string]$recipe.result.id)) {
             throw "Recipe '$($recipeEntry.FullName)' must use an object result with an id."

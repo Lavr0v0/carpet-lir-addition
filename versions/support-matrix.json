@@ -458,9 +458,9 @@
       "profile": "mc_1_20_2",
       "java": 17,
       "sourceFamily": "yarn-1.20.2-plus",
-      "status": "released-legacy",
+      "status": "build-only",
       "capabilityTier": "tier-1.20",
-      "notes": "Published as a standalone v1.0.1 artifact; current regression suite has not yet been ported."
+      "notes": "Exact audited profile replacing the legacy artifact with corrected recipe schema, grass survival, loot, and direct/cached recipe filtering; pending final release verification."
     },
     {
       "target": "1.20.3",
@@ -473,9 +473,9 @@
       "profile": "mc_1_20_3",
       "java": 17,
       "sourceFamily": "yarn-1.20.2-plus",
-      "status": "released-legacy",
+      "status": "build-only",
       "capabilityTier": "tier-1.20",
-      "notes": "Carpet coordinate used by the published v1.0.1 1.20.3-1.20.4 range artifact."
+      "notes": "Exact 1.20.3 and 1.20.4 profiles share the stable Carpet coordinate but build independent JARs with corrected legacy recipe and runtime behavior; pending final release verification."
     },
     {
       "target": "1.20.5",
