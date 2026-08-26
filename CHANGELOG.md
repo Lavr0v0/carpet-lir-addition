@@ -6,6 +6,7 @@
 - Added a server GameTest proving that reinforced deepslate drops exactly one block with Silk Touch only while its Carpet rule is enabled.
 - Added exact, audited build profiles and a dedicated API adapter for Minecraft 1.21.9 and 1.21.10.
 - Added exact, audited build profiles and a shared API adapter for Minecraft 1.21.6, 1.21.7, and 1.21.8 while keeping one exact JAR per release.
+- Added exact, audited Minecraft 1.21.4 and 1.21.5 profiles, reusing the compatible audited adapter without duplicating source code.
 - Added a uniquely isolated real-server smoke harness covering enabled dirt conversion, disabled behavior, spectator denial, live furnace-cache invalidation, clean shutdown, and optional test-world cleanup.
 
 ### Fixed

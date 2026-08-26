@@ -536,9 +536,9 @@
       "profile": "mc_1_21_4",
       "java": 21,
       "sourceFamily": "yarn-1.21.2-plus",
-      "status": "released-legacy",
+      "status": "build-only",
       "capabilityTier": "tier-1.21.4",
-      "notes": "Published as a standalone v1.0.1 artifact and first target with pale oak leaf recipes."
+      "notes": "First pale-oak target; its exact current adapter passes compilation, unit tests, packaging, JAR capability audit, and an isolated real-server rule-on/rule-off/spectator/furnace-cache smoke."
     },
     {
       "target": "1.21.5",
@@ -547,9 +547,9 @@
       "profile": "mc_1_21_5",
       "java": 21,
       "sourceFamily": "yarn-1.21.2-plus",
-      "status": "released-legacy",
+      "status": "build-only",
       "capabilityTier": "tier-1.21.4",
-      "notes": "Published as a standalone v1.0.1 artifact; requires fresh audited validation."
+      "notes": "Exact current adapter passes compilation, unit tests, packaging, JAR capability audit, and an isolated real-server rule-on/rule-off/spectator/furnace-cache smoke; full gameplay automation is still pending."
     },
     {
       "target": "1.21.6",
