@@ -447,9 +447,9 @@
       "profile": "mc_1_20",
       "java": 17,
       "sourceFamily": "yarn-1.20.1",
-      "status": "released-legacy",
+      "status": "build-only",
       "capabilityTier": "tier-1.20",
-      "notes": "Published in the v1.0.1 1.20-1.20.1 range artifact; must be rebuilt from audited code before renewed release."
+      "notes": "Exact 1.20 and 1.20.1 profiles replace the legacy range artifact with a pre-RecipeEntry direct/cached fallback adapter and independent JAR metadata; pending final release verification."
     },
     {
       "target": "1.20.2",

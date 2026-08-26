@@ -4,6 +4,8 @@
 
 ### Added
 - Added a server GameTest proving that reinforced deepslate drops exactly one block with Silk Touch only while its Carpet rule is enabled.
+- Added independent Minecraft 1.20 and 1.20.1 profiles using the shared stable Carpet coordinate but exact Yarn, Fabric API, Minecraft dependency metadata, Java 17 bytecode, and one JAR per release.
+- Added a pre-`RecipeEntry` source layer so old `Recipe` and cached `Pair<Identifier, Recipe>` lookups can coexist with later entry-based adapters without duplicate or unavailable classes.
 - Added exact Minecraft 1.20.2, 1.20.3, and 1.20.4 build profiles with Java 17 bytecode, exact dependency metadata, version-correct recipe resources, and one JAR per release.
 - Added a shared 1.20 source layer for mechanics that remain API-compatible while keeping recipe lookup and Mixin configuration in version-specific adapters.
 - Added exact Minecraft 1.20.5 and 1.20.6 build profiles with their own Carpet, Fabric API, Yarn, metadata, and release JARs.
@@ -15,9 +17,10 @@
 - Added exact, audited build profiles and a shared API adapter for Minecraft 1.21.6, 1.21.7, and 1.21.8 while keeping one exact JAR per release.
 - Added exact, audited Minecraft 1.21.4 and 1.21.5 profiles, reusing the compatible audited adapter without duplicating source code.
 - Added a uniquely isolated real-server smoke harness covering enabled dirt conversion, disabled behavior, spectator denial, live furnace-cache invalidation, clean shutdown, and optional test-world cleanup.
-- Extended basic real-server smoke coverage through Minecraft 1.20.2–1.20.6 and 1.21–1.21.10. The enhanced disposable-data-pack checks use an enabled direct-query baseline before asserting cached and direct recipe fallbacks at the representative 1.20.2, 1.20.6, and 1.21.10 API boundaries; acceptance runs use `-CleanRunDirectory` to remove their GUID worlds and temporary data packs.
+- Extended basic real-server smoke coverage through Minecraft 1.20–1.20.6 and 1.21–1.21.10. The enhanced disposable-data-pack checks use an enabled direct-query baseline before asserting cached and direct recipe fallbacks on exact 1.20/1.20.1 and representative 1.20.2, 1.20.6, and 1.21.10 API boundaries; acceptance runs use `-CleanRunDirectory` to remove their GUID worlds and temporary data packs.
 
 ### Fixed
+- Replaced the legacy 1.20–1.20.1 direct-only recipe filter with direct and cached fallbacks that return the valid fallback recipe identifier instead of preserving a disabled cache hint.
 - Added the Minecraft 1.20.2–1.20.4 `RecipeManager` Pair-cache adapter so disabling a Carpet LIR recipe rejects a stale cached tuff match and returns the identifier and entry of the valid fallback recipe.
 - Added legacy recipe-result normalization and JAR validation for the 1.20.2–1.20.4 split between crafting `result.item` objects and string cooking results.
 - Replaced the flawed legacy 1.20.5–1.20.6 range implementation with an API-accurate adapter that rejects spectators, preserves snowy grass, respects `mob_drops`, and filters both direct and cached recipe lookups.

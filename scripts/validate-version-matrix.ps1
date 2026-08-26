@@ -792,10 +792,27 @@ foreach ($profileFile in $profileFiles) {
                 $_.Trim()
             } | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
             foreach ($sharedSourceOverlayName in $sharedSourceOverlayNames) {
+                if ($sharedSourceOverlayName -notmatch '^[A-Za-z0-9][A-Za-z0-9._-]*$') {
+                    Add-ValidationError "$context has unsafe shared source overlay '$sharedSourceOverlayName'."
+                    continue
+                }
                 $sharedSourceOverlayRoot = Join-Path $projectRoot "src\legacy\versioned\$sharedSourceOverlayName\java"
                 if (-not (Test-Path -LiteralPath $sharedSourceOverlayRoot -PathType Container)) {
                     Add-ValidationError "$context shared source overlay does not exist: '$sharedSourceOverlayRoot'."
                 }
+            }
+        }
+        $recipeApiOverlayName = if ($profile.ContainsKey('recipe_api_overlay')) {
+            [string]$profile.recipe_api_overlay
+        } else {
+            'shared-modern'
+        }
+        if ($recipeApiOverlayName -notmatch '^[A-Za-z0-9][A-Za-z0-9._-]*$') {
+            Add-ValidationError "$context has unsafe recipe API overlay '$recipeApiOverlayName'."
+        } else {
+            $recipeApiOverlayRoot = Join-Path $projectRoot "src\legacy\versioned\$recipeApiOverlayName\java"
+            if (-not (Test-Path -LiteralPath $recipeApiOverlayRoot -PathType Container)) {
+                Add-ValidationError "$context recipe API overlay does not exist: '$recipeApiOverlayRoot'."
             }
         }
     } elseif ($profileSourceFamily -eq 'mojang-26') {
