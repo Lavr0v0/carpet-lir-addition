@@ -271,12 +271,16 @@
       "target": "1.16",
       "carpetArtifact": "1.16-1.4.0+v200623",
       "carpetModVersion": "1.4.0",
+      "minecraftVersions": [
+        "1.16",
+        "1.16.1"
+      ],
       "profile": "mc_1_16",
       "java": 8,
       "sourceFamily": "yarn-1.16",
       "status": "planned",
       "capabilityTier": "tier-1.15",
-      "notes": "Stable Fabric Carpet target; keeps the 1.15 capability tier."
+      "notes": "Stable Fabric Carpet target covering both 1.16 and 1.16.1; the official artifact declares Minecraft 1.16.x compatibility and keeps the 1.15 capability tier."
     },
     {
       "target": "1.16.2",
@@ -287,7 +291,7 @@
       "sourceFamily": "yarn-1.16",
       "status": "planned",
       "capabilityTier": "tier-1.15",
-      "notes": "Fabric Carpet has no stable 1.16.1 coordinate, so the catalog advances directly to 1.16.2."
+      "notes": "The next distinct Carpet coordinate after the shared 1.16/1.16.1 artifact."
     },
     {
       "target": "1.16.3",

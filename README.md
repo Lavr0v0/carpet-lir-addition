@@ -4,7 +4,7 @@ Carpet LIR Addition is a server-authoritative Fabric Carpet extension focused on
 
 Six exact Minecraft targets now have current build paths. Minecraft 1.14.4 is a runtime-verified Java 8 classic build containing only its two available rules. Minecraft 1.21.11 has an audited build and unit/server-startup coverage but remains `build-only` until gameplay GameTests are ported. Minecraft 26.1, 26.1.1, 26.1.2, and 26.2 pass the full current unit and server GameTest suite. Every target receives its own JAR with exact dependency metadata; there is no fake all-version JAR.
 
-The broader support catalog covers all 35 stable Fabric Carpet coordinates from Minecraft 1.14.4 through 26.2, representing 42 Minecraft releases. Older lines are being ported by capability tier: unavailable rules, classes, mixins, recipes, and translations are removed rather than registered as no-op features. See [the multi-version support model](docs/MULTIVERSION.md) for the verified/legacy/planned distinction.
+The broader support catalog covers all 35 stable Fabric Carpet coordinates from Minecraft 1.14.4 through 26.2, representing 43 Minecraft releases. Older lines are being ported by capability tier: unavailable rules, classes, mixins, recipes, and translations are removed rather than registered as no-op features. See [the multi-version support model](docs/MULTIVERSION.md) for the verified/legacy/planned distinction.
 
 ## Installation
 

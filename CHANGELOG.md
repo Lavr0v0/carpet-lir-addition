@@ -5,6 +5,9 @@
 ### Added
 - Added a server GameTest proving that reinforced deepslate drops exactly one block with Silk Touch only while its Carpet rule is enabled.
 
+### Fixed
+- Added Minecraft 1.16.1 to the support catalog because Carpet's stable 1.16 artifact declares compatibility with the full 1.16.x line.
+
 ## [1.1.0-beta.1] - 2026-08-22
 
 ### Added
