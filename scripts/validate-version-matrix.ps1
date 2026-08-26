@@ -1,5 +1,6 @@
 param(
     [string]$MatrixPath = (Join-Path $PSScriptRoot '..\versions\support-matrix.json'),
+    [string]$ProfilesPath,
     [switch]$VerifyMaven,
     [switch]$VerifyArtifactMetadata,
     [string]$CarpetMavenMetadataUrl = 'https://masa.dy.fi/maven/carpet/fabric-carpet/maven-metadata.xml'
@@ -165,6 +166,7 @@ $ExpectedMinecraftVersions = @(
     '1.15.1',
     '1.15.2',
     '1.16',
+    '1.16.1',
     '1.16.2',
     '1.16.3',
     '1.16.4',
@@ -265,6 +267,16 @@ try {
     $matrix = Get-Content -LiteralPath $resolvedMatrixPath -Raw | ConvertFrom-Json
 } catch {
     Write-Error "Unable to parse version matrix '$MatrixPath': $($_.Exception.Message)"
+    exit 1
+}
+
+if ([string]::IsNullOrWhiteSpace($ProfilesPath)) {
+    $ProfilesPath = Join-Path (Split-Path -Parent $resolvedMatrixPath) 'targets'
+}
+try {
+    $resolvedProfilesPath = (Resolve-Path -LiteralPath $ProfilesPath).Path
+} catch {
+    Write-Error "Unable to resolve active profile directory '$ProfilesPath': $($_.Exception.Message)"
     exit 1
 }
 
@@ -636,6 +648,194 @@ if ($targets.Count -gt 0) {
     }
 }
 
+$targetByName = @{}
+$targetByMinecraftVersion = @{}
+foreach ($target in $targets) {
+    $targetName = [string]$target.target
+    $targetByName[$targetName] = $target
+    $coveredVersions = @(
+        if ($target.PSObject.Properties.Name -contains 'minecraftVersions') {
+            $target.minecraftVersions | ForEach-Object { [string]$_ }
+        } else {
+            $targetName
+        }
+    )
+    foreach ($coveredVersion in $coveredVersions) {
+        $targetByMinecraftVersion[$coveredVersion] = $target
+    }
+}
+
+$projectRoot = Split-Path -Parent (Split-Path -Parent $resolvedMatrixPath)
+$profileFiles = @(Get-ChildItem -LiteralPath $resolvedProfilesPath -Filter '*.properties' -File)
+$profileByMinecraftVersion = @{}
+$requiredProfileKeys = @(
+    'minecraft_version',
+    'minecraft_dependency',
+    'archive_minecraft_label',
+    'loader_version',
+    'fabric_api_version',
+    'carpet_core_version',
+    'loom_version',
+    'source_family',
+    'matrix_source_family',
+    'java_version',
+    'mappings_mode',
+    'mixin_config',
+    'matrix_target',
+    'capability_tier',
+    'support_status'
+)
+foreach ($profileFile in $profileFiles) {
+    try {
+        $profile = ConvertFrom-StringData (Get-Content -LiteralPath $profileFile.FullName -Raw)
+    } catch {
+        Add-ValidationError "Unable to parse active profile '$($profileFile.Name)': $($_.Exception.Message)"
+        continue
+    }
+
+    $profileVersion = [string]$profile.minecraft_version
+    $context = "Active profile '$($profileFile.Name)'"
+    foreach ($key in $requiredProfileKeys) {
+        if (-not $profile.ContainsKey($key) -or [string]::IsNullOrWhiteSpace([string]$profile[$key])) {
+            Add-ValidationError "$context requires '$key'."
+        }
+    }
+    if ([string]::IsNullOrWhiteSpace($profileVersion)) {
+        continue
+    }
+    if ($profileFile.BaseName -ne $profileVersion) {
+        Add-ValidationError "$context filename must match minecraft_version '$profileVersion'."
+    }
+    if ($profileByMinecraftVersion.ContainsKey($profileVersion)) {
+        Add-ValidationError "Minecraft $profileVersion has more than one active profile."
+    } else {
+        $profileByMinecraftVersion[$profileVersion] = $profile
+    }
+    if ([string]$profile.minecraft_dependency -ne $profileVersion) {
+        Add-ValidationError "$context must declare an exact minecraft_dependency of '$profileVersion'."
+    }
+    if ([string]$profile.archive_minecraft_label -ne $profileVersion) {
+        Add-ValidationError "$context must use exact archive_minecraft_label '$profileVersion'."
+    }
+
+    $profileSourceFamily = [string]$profile.source_family
+    if ($profileSourceFamily -notin @('legacy-yarn', 'mojang-26')) {
+        Add-ValidationError "$context has unsupported source_family '$profileSourceFamily'."
+    }
+    $profileMappingsMode = [string]$profile.mappings_mode
+    if (($profileSourceFamily -eq 'legacy-yarn' -and $profileMappingsMode -ne 'yarn') -or
+            ($profileSourceFamily -eq 'mojang-26' -and $profileMappingsMode -ne 'mojang')) {
+        Add-ValidationError "$context source_family '$profileSourceFamily' is incompatible with mappings_mode '$profileMappingsMode'."
+    }
+    if ($profileMappingsMode -eq 'yarn' -and
+            (-not $profile.ContainsKey('yarn_mappings') -or [string]::IsNullOrWhiteSpace([string]$profile.yarn_mappings))) {
+        Add-ValidationError "$context uses Yarn mappings but has no yarn_mappings coordinate."
+    }
+
+    $profileSupportStatus = [string]$profile.support_status
+    if ($profileSupportStatus -notin @('verified', 'build-only')) {
+        Add-ValidationError "$context must be verified or build-only before entering the active build profile directory."
+    }
+
+    if ($profileSourceFamily -eq 'legacy-yarn') {
+        if (-not $profile.ContainsKey('source_overlay') -or [string]::IsNullOrWhiteSpace([string]$profile.source_overlay)) {
+            Add-ValidationError "$context requires source_overlay for legacy-yarn."
+        } else {
+            $overlayRoot = Join-Path $projectRoot "src\legacy\versioned\$([string]$profile.source_overlay)"
+            if (-not (Test-Path -LiteralPath (Join-Path $overlayRoot 'java') -PathType Container)) {
+                Add-ValidationError "$context source overlay Java directory does not exist: '$overlayRoot\java'."
+            }
+            if (-not (Test-Path -LiteralPath (Join-Path $overlayRoot "resources\$([string]$profile.mixin_config)") -PathType Leaf)) {
+                Add-ValidationError "$context mixin config does not exist in its overlay resources."
+            }
+        }
+    } elseif ($profileSourceFamily -eq 'mojang-26') {
+        if (-not (Test-Path -LiteralPath (Join-Path $projectRoot "src\main\resources\$([string]$profile.mixin_config)") -PathType Leaf)) {
+            Add-ValidationError "$context mixin config does not exist in the main resources."
+        }
+    }
+
+    $matrixTargetName = [string]$profile.matrix_target
+    if (-not $targetByName.ContainsKey($matrixTargetName)) {
+        Add-ValidationError "$context references unknown matrix_target '$matrixTargetName'."
+        continue
+    }
+    $matrixTarget = $targetByName[$matrixTargetName]
+    if (-not $targetByMinecraftVersion.ContainsKey($profileVersion) -or
+            [string]$targetByMinecraftVersion[$profileVersion].target -ne $matrixTargetName) {
+        Add-ValidationError "$context maps Minecraft $profileVersion to '$matrixTargetName', but the matrix does not."
+    }
+    if ([int]$profile.java_version -ne [int]$matrixTarget.java) {
+        Add-ValidationError "$context Java $($profile.java_version) does not match matrix Java $($matrixTarget.java)."
+    }
+    if ([string]$profile.capability_tier -ne [string]$matrixTarget.capabilityTier) {
+        Add-ValidationError "$context capability tier '$($profile.capability_tier)' does not match matrix '$($matrixTarget.capabilityTier)'."
+    }
+    if ([string]$profile.matrix_source_family -ne [string]$matrixTarget.sourceFamily) {
+        Add-ValidationError "$context matrix source family '$($profile.matrix_source_family)' does not match matrix '$($matrixTarget.sourceFamily)'."
+    }
+    if ($profileSupportStatus -ne [string]$matrixTarget.status) {
+        Add-ValidationError "$context status '$profileSupportStatus' does not match matrix '$($matrixTarget.status)'."
+    }
+    if ([string]$profile.carpet_core_version -ne [string]$matrixTarget.carpetArtifact) {
+        Add-ValidationError "$context Carpet artifact '$($profile.carpet_core_version)' does not match matrix '$($matrixTarget.carpetArtifact)'."
+    }
+    $profileCarpetModVersion = if ($profile.ContainsKey('carpet_mod_version')) {
+        [string]$profile.carpet_mod_version
+    } else {
+        [string]$profile.carpet_core_version
+    }
+    if ($profileCarpetModVersion -ne [string]$matrixTarget.carpetModVersion) {
+        Add-ValidationError "$context Carpet mod version '$profileCarpetModVersion' does not match matrix '$($matrixTarget.carpetModVersion)'."
+    }
+}
+
+$classicRoot = Join-Path $projectRoot 'classic\1.14.4'
+$classicProfilePath = Join-Path $classicRoot 'gradle.properties'
+if (-not (Test-Path -LiteralPath $classicProfilePath -PathType Leaf)) {
+    Add-ValidationError 'Verified classic target 1.14.4 has no isolated build profile.'
+} else {
+    $classicProfile = ConvertFrom-StringData (Get-Content -LiteralPath $classicProfilePath -Raw)
+    $classicMatrixTarget = $targetByName['1.14.4']
+    $classicChecks = @{
+        minecraft_version = '1.14.4'
+        minecraft_dependency = '1.14.4'
+        archive_minecraft_label = '1.14.4'
+        carpet_core_version = [string]$classicMatrixTarget.carpetArtifact
+        carpet_mod_version = [string]$classicMatrixTarget.carpetModVersion
+        java_version = [string]$classicMatrixTarget.java
+        matrix_target = '1.14.4'
+        matrix_source_family = [string]$classicMatrixTarget.sourceFamily
+        capability_tier = [string]$classicMatrixTarget.capabilityTier
+        support_status = [string]$classicMatrixTarget.status
+    }
+    foreach ($check in $classicChecks.GetEnumerator()) {
+        if ([string]$classicProfile[$check.Key] -ne [string]$check.Value) {
+            Add-ValidationError "Classic profile '$($check.Key)' is '$($classicProfile[$check.Key])', expected '$($check.Value)'."
+        }
+    }
+}
+foreach ($target in $targets) {
+    if ([string]$target.status -notin @('verified', 'build-only')) {
+        continue
+    }
+    $coveredVersions = @(
+        if ($target.PSObject.Properties.Name -contains 'minecraftVersions') {
+            $target.minecraftVersions | ForEach-Object { [string]$_ }
+        } else {
+            [string]$target.target
+        }
+    )
+    foreach ($coveredVersion in $coveredVersions) {
+        if ($coveredVersion -eq '1.14.4') {
+            continue
+        }
+        if (-not $profileByMinecraftVersion.ContainsKey($coveredVersion)) {
+            Add-ValidationError "Current $($target.status) Minecraft target '$coveredVersion' has no active exact build profile."
+        }
+    }
+}
+
 if ($VerifyMaven -or $VerifyArtifactMetadata) {
     try {
         $mavenResponse = Invoke-WebRequest -UseBasicParsing -Uri $CarpetMavenMetadataUrl
@@ -729,5 +929,5 @@ if ($Errors.Count -gt 0) {
     exit 1
 }
 
-Write-Host "Version matrix is valid: $($targets.Count) stable Carpet targets, $($actualMinecraftVersions.Count) Minecraft versions, $($tiers.Count) capability tiers." -ForegroundColor Green
+Write-Host "Version matrix is valid: $($targets.Count) stable Carpet targets, $($actualMinecraftVersions.Count) Minecraft versions, $($tiers.Count) capability tiers, $($profileFiles.Count + 1) active exact build profiles." -ForegroundColor Green
 exit 0

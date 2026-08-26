@@ -1,17 +1,59 @@
 param(
-    [string[]]$RootTargets = @('1.21.11', '26.1', '26.1.1', '26.1.2', '26.2'),
+    [string[]]$RootTargets = @(),
     [switch]$SkipClassic,
-    [switch]$SkipTests
+    [switch]$SkipTests,
+    [switch]$ListTargets
 )
 
 $ErrorActionPreference = 'Stop'
 $ProjectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $Wrapper = Join-Path $ProjectRoot 'gradlew.bat'
 $Validator = Join-Path $PSScriptRoot 'validate-built-jar.ps1'
+$MatrixValidator = Join-Path $PSScriptRoot 'validate-version-matrix.ps1'
 $ClassicRoot = Join-Path $ProjectRoot 'classic\1.14.4'
 $CollectionRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("carpetlir-audited-build-" + [guid]::NewGuid())
 $OutputRoot = Join-Path $ProjectRoot 'build\multiversion'
 $BuiltTargets = New-Object 'System.Collections.Generic.List[string]'
+
+function Convert-ToTargetVersion {
+    param([string]$Target)
+
+    $parts = @($Target.Split('.') | ForEach-Object { [int]$_ })
+    while ($parts.Count -lt 3) {
+        $parts += 0
+    }
+    return [version]("{0}.{1}.{2}" -f $parts[0], $parts[1], $parts[2])
+}
+
+if ($RootTargets.Count -eq 0) {
+    $RootTargets = @(Get-ChildItem -LiteralPath (Join-Path $ProjectRoot 'versions\targets') -Filter '*.properties' -File |
+            Sort-Object { Convert-ToTargetVersion $_.BaseName } |
+            ForEach-Object { $_.BaseName })
+}
+
+$duplicateTargets = @($RootTargets | Group-Object | Where-Object Count -gt 1 | ForEach-Object Name)
+if ($duplicateTargets.Count -gt 0) {
+    throw "Duplicate root target(s): $($duplicateTargets -join ', ')."
+}
+foreach ($target in $RootTargets) {
+    $profile = Join-Path $ProjectRoot "versions\targets\$target.properties"
+    if (-not (Test-Path -LiteralPath $profile -PathType Leaf)) {
+        throw "Unknown or non-build-ready root target '$target'."
+    }
+}
+
+& $MatrixValidator
+if ($LASTEXITCODE -ne 0) {
+    throw "Version matrix/profile validation failed with exit code $LASTEXITCODE."
+}
+
+if ($ListTargets) {
+    if (-not $SkipClassic) {
+        Write-Output '1.14.4'
+    }
+    $RootTargets | ForEach-Object { Write-Output $_ }
+    return
+}
 
 function Get-ReleaseJar {
     param(
@@ -48,9 +90,6 @@ try {
     $task = if ($SkipTests) { 'assemble' } else { 'build' }
     foreach ($target in $RootTargets) {
         $profile = Join-Path $ProjectRoot "versions\targets\$target.properties"
-        if (-not (Test-Path -LiteralPath $profile -PathType Leaf)) {
-            throw "Unknown or non-build-ready root target '$target'."
-        }
 
         Write-Host "Building Carpet LIR Addition for Minecraft $target..." -ForegroundColor Cyan
         & $Wrapper clean $task "-PtargetVersion=$target" --no-daemon --console=plain
