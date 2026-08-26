@@ -34,7 +34,8 @@ if (-not (Test-Path -LiteralPath $ProfilePath -PathType Leaf)) {
     throw "Unknown or non-build-ready target '$TargetVersion'."
 }
 $profile = ConvertFrom-StringData (Get-Content -LiteralPath $ProfilePath -Raw)
-if ([string]$profile.source_family -ne 'legacy-yarn' -or [int]$profile.java_version -lt 17) {
+$expectedJavaVersion = [int]$profile.java_version
+if ([string]$profile.source_family -ne 'legacy-yarn' -or $expectedJavaVersion -lt 16) {
     throw "Target '$TargetVersion' is not supported by the audited Yarn server smoke harness."
 }
 $recipeSchema = if ($profile.ContainsKey('recipe_schema')) {
@@ -59,6 +60,8 @@ if ($recipeDirectory -notin @('recipe', 'recipes')) {
 }
 $isTier119 = [string]$profile.capability_tier -eq 'tier-1.19'
 $dataPackFormats = @{
+    '1.17' = 7
+    '1.17.1' = 7
     '1.18' = 8
     '1.18.1' = 8
     '1.18.2' = 9
@@ -691,6 +694,9 @@ if ($exitCode -ne 0) {
 }
 
 $combinedOutput = $serverOutput -join "`n"
+if ($combinedOutput -notmatch "(?m)^\s*-\s+java\s+$expectedJavaVersion\s*$") {
+    throw "Minecraft $TargetVersion server did not run on its declared Java $expectedJavaVersion toolchain. Evidence: $EvidencePath"
+}
 foreach ($marker in $requiredMarkers) {
     if ($combinedOutput -notmatch [regex]::Escape($marker)) {
         throw "Minecraft $TargetVersion did not produce required marker '$marker'. Evidence: $EvidencePath"

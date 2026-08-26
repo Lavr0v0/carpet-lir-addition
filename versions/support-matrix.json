@@ -333,9 +333,9 @@
       "profile": "mc_1_17",
       "java": 16,
       "sourceFamily": "yarn-1.17",
-      "status": "planned",
+      "status": "build-only",
       "capabilityTier": "tier-1.17",
-      "notes": "Adds calcite, tuff, lapis, raw-ore, and amethyst mechanics."
+      "notes": "Audited exact Java 16 adapter for Carpet 1.4.40 and the legacy fabric id; unit, JAR, and full Java 16 disposable dirt/calcite/recipe/piston server checks passed."
     },
     {
       "target": "1.17.1",
@@ -344,9 +344,9 @@
       "profile": "mc_1_17_1",
       "java": 16,
       "sourceFamily": "yarn-1.17",
-      "status": "planned",
+      "status": "build-only",
       "capabilityTier": "tier-1.17",
-      "notes": "Final Java 16 target; requires feature-level GameTest alternatives for this API generation."
+      "notes": "Audited exact final Java 16 adapter for Carpet 1.4.57 and the legacy fabric id; unit, JAR, and full Java 16 disposable dirt/calcite/recipe/piston server checks passed."
     },
     {
       "target": "1.18",

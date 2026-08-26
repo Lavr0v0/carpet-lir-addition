@@ -758,6 +758,7 @@ foreach ($profileFile in $profileFiles) {
         Add-ValidationError "$context must use ingredient-objects-result-id in the plural recipes directory."
     }
     if ($profileVersion -in @(
+            '1.17', '1.17.1',
             '1.18', '1.18.1', '1.18.2',
             '1.19', '1.19.1', '1.19.2', '1.19.3', '1.19.4',
             '1.20', '1.20.1', '1.20.2', '1.20.3', '1.20.4'
@@ -780,15 +781,33 @@ foreach ($profileFile in $profileFiles) {
     }
 
     if ($profileSourceFamily -eq 'legacy-yarn') {
+        $sourceOverlayName = if ($profile.ContainsKey('source_overlay')) {
+            [string]$profile.source_overlay
+        } else {
+            ''
+        }
         if (-not $profile.ContainsKey('source_overlay') -or [string]::IsNullOrWhiteSpace([string]$profile.source_overlay)) {
             Add-ValidationError "$context requires source_overlay for legacy-yarn."
+        } elseif ($sourceOverlayName -notmatch '^[A-Za-z0-9][A-Za-z0-9._-]*$') {
+            Add-ValidationError "$context has unsafe source overlay '$sourceOverlayName'."
         } else {
-            $overlayRoot = Join-Path $projectRoot "src\legacy\versioned\$([string]$profile.source_overlay)"
+            $overlayRoot = Join-Path $projectRoot "src\legacy\versioned\$sourceOverlayName"
             if (-not (Test-Path -LiteralPath (Join-Path $overlayRoot 'java') -PathType Container)) {
                 Add-ValidationError "$context source overlay Java directory does not exist: '$overlayRoot\java'."
             }
-            if (-not (Test-Path -LiteralPath (Join-Path $overlayRoot "resources\$([string]$profile.mixin_config)") -PathType Leaf)) {
-                Add-ValidationError "$context mixin config does not exist in its overlay resources."
+        }
+        $resourceOverlayName = if ($profile.ContainsKey('resource_overlay')) {
+            [string]$profile.resource_overlay
+        } else {
+            $sourceOverlayName
+        }
+        if ([string]::IsNullOrWhiteSpace($resourceOverlayName) -or
+                $resourceOverlayName -notmatch '^[A-Za-z0-9][A-Za-z0-9._-]*$') {
+            Add-ValidationError "$context has unsafe or missing resource overlay '$resourceOverlayName'."
+        } else {
+            $resourceOverlayRoot = Join-Path $projectRoot "src\legacy\versioned\$resourceOverlayName\resources"
+            if (-not (Test-Path -LiteralPath (Join-Path $resourceOverlayRoot ([string]$profile.mixin_config)) -PathType Leaf)) {
+                Add-ValidationError "$context mixin config does not exist in resource overlay '$resourceOverlayName'."
             }
         }
         if ($profile.ContainsKey('shared_source_overlays')) {

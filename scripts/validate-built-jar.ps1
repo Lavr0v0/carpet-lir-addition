@@ -546,15 +546,15 @@ try {
     }
 
     if ($isLegacyYarnProfile -and
-            $targetVersion -ge (Convert-ToTargetVersion '1.18') -and
+            $targetVersion -ge (Convert-ToTargetVersion '1.17') -and
             $targetVersion -lt (Convert-ToTargetVersion '1.19')) {
         $recipeMixinEntry = $zip.GetEntry('org/lavro/carpetlir/mixins/RecipeManagerMixin.class')
         if ($null -eq $recipeMixinEntry) {
-            throw 'Minecraft 1.18 JAR is missing RecipeManagerMixin.'
+            throw 'Minecraft 1.17-1.18 JAR is missing RecipeManagerMixin.'
         }
         $recipeMixinText = [System.Text.Encoding]::UTF8.GetString((Get-ZipEntryBytes $recipeMixinEntry))
         if ($recipeMixinText.Contains('com/mojang/datafixers/util/Pair')) {
-            throw 'Minecraft 1.18 RecipeManagerMixin incorrectly links the later cached Pair overload.'
+            throw 'Minecraft 1.17-1.18 RecipeManagerMixin incorrectly links the later cached Pair overload.'
         }
     }
 

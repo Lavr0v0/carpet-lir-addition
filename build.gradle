@@ -46,6 +46,7 @@ def javaVersion = Integer.parseInt(requiredTargetProperty('java_version'))
 def mappingsMode = requiredTargetProperty('mappings_mode')
 def yarnMappings = targetProfile.getProperty('yarn_mappings')?.trim()
 def sourceOverlay = targetProfile.getProperty('source_overlay', targetVersion).trim()
+def resourceOverlay = targetProfile.getProperty('resource_overlay', sourceOverlay).trim()
 def settingsSourceOverlay = targetProfile.getProperty('settings_source_overlay', 'rule-categories').trim()
 def fluidTagSourceOverlay = targetProfile.getProperty('fluid_tag_source_overlay', 'fluid-tags-registry').trim()
 def featureBootstrapOverlay = targetProfile.getProperty(
@@ -110,6 +111,7 @@ if (!(recipeDirectory in ['recipe', 'recipes'])) {
 }
 
 ([source_overlay: sourceOverlay,
+  resource_overlay: resourceOverlay,
   settings_source_overlay: settingsSourceOverlay,
   fluid_tag_source_overlay: fluidTagSourceOverlay,
   feature_bootstrap_overlay: featureBootstrapOverlay,
@@ -220,7 +222,7 @@ if (sourceFamily == 'mojang-26') {
             resources {
                 setSrcDirs([
                         'src/main/resources',
-                        "src/legacy/versioned/${sourceOverlay}/resources"
+                        "src/legacy/versioned/${resourceOverlay}/resources"
                 ])
                 excludedResources.each { pattern -> exclude pattern }
             }
@@ -341,10 +343,8 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 java {
-    if (sourceFamily == 'mojang-26') {
-        toolchain {
-            languageVersion = JavaLanguageVersion.of(javaVersion)
-        }
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(javaVersion)
     }
     withSourcesJar()
     sourceCompatibility = JavaVersion.toVersion(javaVersion)
@@ -355,12 +355,19 @@ test {
     useJUnitPlatform()
 }
 
+tasks.withType(JavaExec).configureEach {
+    javaLauncher = javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(javaVersion)
+    }
+}
+
 tasks.register('printBuildTarget') {
     group = 'help'
     description = 'Prints the selected build-ready Minecraft target.'
     doLast {
         println "Minecraft : ${minecraftVersion}"
         println "Sources   : ${sourceFamily}"
+        println "Resources : ${resourceOverlay}"
         println "Mappings  : ${mappingsMode}${yarnMappings ? " (${yarnMappings})" : ''}"
         println "Java      : ${javaVersion}"
         println "Tier      : ${capabilityTierId}"
