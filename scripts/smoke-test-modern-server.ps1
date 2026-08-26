@@ -21,28 +21,12 @@ $FixtureFallbackRecipePath = 'zzzz_gravel_to_cobblestone_smelting_fallback'
 $FixtureStagingRoot = Join-Path $RunDirectory 'smoke-fixture-datapack'
 $FixtureInstallRoot = Join-Path $RunDirectory 'world\datapacks\carpetlir-smoke'
 $InstallFixtureCommand = '__INSTALL_RECIPE_FALLBACK_FIXTURE__'
-$RuntimeLogPath = Join-Path $RunDirectory 'logs\latest.log'
-
-function Wait-ForNewLogMatch {
-    param(
-        [string]$Path,
-        [string]$Pattern,
-        [int]$ExistingMatchCount,
-        [int]$TimeoutSeconds = 60
-    )
-
-    $deadline = [DateTime]::UtcNow.AddSeconds($TimeoutSeconds)
-    while ([DateTime]::UtcNow -lt $deadline) {
-        if (Test-Path -LiteralPath $Path -PathType Leaf) {
-            $logMatches = @(Select-String -LiteralPath $Path -Pattern $Pattern -ErrorAction SilentlyContinue)
-            if ($logMatches.Count -gt $ExistingMatchCount) {
-                return $logMatches[-1].Line
-            }
-        }
-        Start-Sleep -Milliseconds 250
-    }
-    throw "Minecraft $TargetVersion did not report a completed recipe reload within $TimeoutSeconds seconds."
-}
+$WaitForPistonSettleCommand = '__WAIT_FOR_PISTON_SETTLE__'
+$PistonDisabledExtendedProbeCommand = 'execute if block 0 103 0 minecraft:piston[extended=true] run say CARPETLIR_PISTON_DISABLED_EXTENDED_PASS'
+$PistonDisabledDestroyedProbeCommand = 'execute unless block 1 103 0 minecraft:budding_amethyst run say CARPETLIR_PISTON_DISABLED_DESTROYED_PASS'
+$PistonEnabledExtendedProbeCommand = 'execute if block 0 103 0 minecraft:piston[extended=true] run say CARPETLIR_PISTON_ENABLED_EXTENDED_PASS'
+$PistonEnabledDestroyedProbeCommand = 'execute unless block 1 103 0 minecraft:budding_amethyst run say CARPETLIR_PISTON_ENABLED_DESTROYED_PASS'
+$PistonDropProbeCommand = 'execute if entity @e[type=minecraft:item,nbt={Item:{id:"minecraft:budding_amethyst"}}] run say CARPETLIR_PISTON_ENABLED_DROP_PASS'
 
 if (-not (Test-Path -LiteralPath $ProfilePath -PathType Leaf)) {
     throw "Unknown or non-build-ready target '$TargetVersion'."
@@ -122,7 +106,7 @@ $startupCommands = @(
 )
 $gameplayCommands = @(
     'tp Notch 0.5 101 0.5',
-    'effect give Notch minecraft:water_breathing infinite 0 true',
+    'effect give Notch minecraft:water_breathing 1000000 0 true',
     'player Notch look at 0.5 101.5 2.5',
     'item replace entity Notch weapon.mainhand with minecraft:bone_meal 3',
     'player Notch use once',
@@ -165,12 +149,50 @@ $gameplayCommands = @(
     'clear Notch minecraft:cobblestone',
     'loot give Notch loot zzzz_carpetlir_smoke:direct_recipe_fallback',
     'execute if entity @a[name=Notch,nbt={Inventory:[{id:"minecraft:cobblestone"}]}] run say CARPETLIR_RECIPE_DIRECT_FALLBACK_PASS',
+    'gamemode spectator Notch',
+    'tp Notch 10.5 101 10.5',
+    'execute as @e[type=minecraft:item] run kill @s',
+    'carpet pistonHarvestableAmethysts false',
+    'setblock -1 103 0 minecraft:air',
+    'setblock 0 103 0 minecraft:piston[facing=east]',
+    'setblock 1 103 0 minecraft:budding_amethyst',
+    'setblock -1 103 0 minecraft:redstone_block',
+    $PistonDisabledExtendedProbeCommand,
+    $PistonDisabledDestroyedProbeCommand,
+    'setblock -1 103 0 minecraft:air',
+    $WaitForPistonSettleCommand,
+    'execute unless entity @e[type=minecraft:item,nbt={Item:{id:"minecraft:budding_amethyst"}}] run say CARPETLIR_PISTON_DISABLED_NO_DROP_PASS',
+    'setblock 0 103 0 minecraft:air',
+    'setblock 1 103 0 minecraft:air',
+    'carpet pistonHarvestableAmethysts true',
+    'setblock 0 103 0 minecraft:piston[facing=east]',
+    'setblock 1 103 0 minecraft:budding_amethyst',
+    'setblock -1 103 0 minecraft:redstone_block',
+    $PistonEnabledExtendedProbeCommand,
+    $PistonEnabledDestroyedProbeCommand,
+    'setblock -1 103 0 minecraft:air',
+    $WaitForPistonSettleCommand,
+    $PistonDropProbeCommand,
+    'setblock 0 103 0 minecraft:air',
+    'setblock 1 103 0 minecraft:air',
+    'execute as @e[type=minecraft:item] run kill @s',
+    'carpet pistonHarvestableAmethysts false',
+    'gamemode survival Notch',
+    'tp Notch 0.5 101 0.5',
     'player Notch kill',
     'say CARPETLIR_SMOKE_COMPLETE'
 )
 $extendedCommandDelays = @{
     'item replace block 2 101 2 container.1 with minecraft:coal 1' = 12000
     'item replace block 2 101 2 container.0 with minecraft:gravel 2' = 12000
+    'setblock -1 103 0 minecraft:redstone_block' = 1200
+}
+$markerProbeCommands = @{
+    $PistonDisabledExtendedProbeCommand = 'CARPETLIR_PISTON_DISABLED_EXTENDED_PASS'
+    $PistonDisabledDestroyedProbeCommand = 'CARPETLIR_PISTON_DISABLED_DESTROYED_PASS'
+    $PistonEnabledExtendedProbeCommand = 'CARPETLIR_PISTON_ENABLED_EXTENDED_PASS'
+    $PistonEnabledDestroyedProbeCommand = 'CARPETLIR_PISTON_ENABLED_DESTROYED_PASS'
+    $PistonDropProbeCommand = 'CARPETLIR_PISTON_ENABLED_DROP_PASS'
 }
 $requiredMarkers = @(
     'CARPETLIR_BONEMEAL_ENABLED_PASS',
@@ -181,6 +203,12 @@ $requiredMarkers = @(
     'CARPETLIR_RECIPE_DIRECT_ENABLED_PASS',
     'CARPETLIR_RECIPE_CACHED_FALLBACK_PASS',
     'CARPETLIR_RECIPE_DIRECT_FALLBACK_PASS',
+    'CARPETLIR_PISTON_DISABLED_EXTENDED_PASS',
+    'CARPETLIR_PISTON_DISABLED_DESTROYED_PASS',
+    'CARPETLIR_PISTON_DISABLED_NO_DROP_PASS',
+    'CARPETLIR_PISTON_ENABLED_EXTENDED_PASS',
+    'CARPETLIR_PISTON_ENABLED_DESTROYED_PASS',
+    'CARPETLIR_PISTON_ENABLED_DROP_PASS',
     'Notch lost connection: Killed',
     'CARPETLIR_SMOKE_COMPLETE'
 )
@@ -216,7 +244,17 @@ $process.StartInfo = $startInfo
 $output = New-Object 'System.Collections.Generic.List[string]'
 $serverOutput = New-Object 'System.Collections.Generic.List[string]'
 $serverReady = $false
-$gameplayCommandsSent = $false
+$gameplayCommandsStarted = $false
+$gameplayCommandIndex = 0
+$nextGameplayCommandAt = [DateTime]::MaxValue
+$waitingForRecipeReload = $false
+$recipeReloadDeadline = [DateTime]::MaxValue
+$waitingForCommandMarker = $false
+$commandMarker = $null
+$commandMarkerProbe = $null
+$commandMarkerDeadline = [DateTime]::MaxValue
+$nextCommandMarkerProbeAt = [DateTime]::MaxValue
+$stopSent = $false
 $processStarted = $false
 $runDirectoryCreated = $false
 $cleanupErrorMessage = $null
@@ -315,14 +353,81 @@ try {
     $process.StandardInput.AutoFlush = $true
 
     while (-not $process.HasExited) {
-        if ([DateTime]::UtcNow -ge $deadline) {
+        $now = [DateTime]::UtcNow
+        if ($now -ge $deadline) {
             throw "Minecraft $TargetVersion did not finish its smoke test within $StartupTimeoutSeconds seconds."
+        }
+
+        if ($waitingForRecipeReload -and $now -ge $recipeReloadDeadline) {
+            throw "Minecraft $TargetVersion did not report a completed recipe reload within 60 seconds."
+        }
+
+        if ($waitingForCommandMarker) {
+            if ($now -ge $commandMarkerDeadline) {
+                throw "Minecraft $TargetVersion did not produce awaited marker '$commandMarker' within 10 seconds."
+            }
+            if ($now -ge $nextCommandMarkerProbeAt) {
+                $process.StandardInput.WriteLine($commandMarkerProbe)
+                $nextCommandMarkerProbeAt = $now.AddMilliseconds(250)
+            }
+        }
+
+        if ($gameplayCommandsStarted -and
+                -not $waitingForRecipeReload -and
+                -not $waitingForCommandMarker -and
+                -not $stopSent -and
+                $now -ge $nextGameplayCommandAt) {
+            if ($gameplayCommandIndex -lt $gameplayCommands.Count) {
+                $command = $gameplayCommands[$gameplayCommandIndex]
+                $gameplayCommandIndex++
+
+                if ($command -eq $InstallFixtureCommand) {
+                    if (Test-Path -LiteralPath $FixtureInstallRoot) {
+                        throw "Refusing to overwrite existing smoke fixture '$FixtureInstallRoot'."
+                    }
+                    Copy-Item -LiteralPath $FixtureStagingRoot -Destination $FixtureInstallRoot -Recurse
+                    $output.Add('>>> [installed fallback fixture]')
+                    Write-Host '>>> [installed fallback fixture]' -ForegroundColor Cyan
+                    $output.Add('>>> reload')
+                    Write-Host '>>> reload' -ForegroundColor Cyan
+                    $process.StandardInput.WriteLine('reload')
+                    $waitingForRecipeReload = $true
+                    $recipeReloadDeadline = $now.AddSeconds(60)
+                } elseif ($command -eq $WaitForPistonSettleCommand) {
+                    $output.Add('>>> [waiting for piston cycle to settle]')
+                    Write-Host '>>> [waiting for piston cycle to settle]' -ForegroundColor Cyan
+                    $nextGameplayCommandAt = $now.AddMilliseconds(2000)
+                } else {
+                    $output.Add(">>> $command")
+                    Write-Host ">>> $command" -ForegroundColor Cyan
+                    $process.StandardInput.WriteLine($command)
+                    if ($markerProbeCommands.ContainsKey($command)) {
+                        $waitingForCommandMarker = $true
+                        $commandMarker = [string]$markerProbeCommands[$command]
+                        $commandMarkerProbe = $command
+                        $commandMarkerDeadline = $now.AddSeconds(10)
+                        $nextCommandMarkerProbeAt = $now.AddMilliseconds(250)
+                    } else {
+                        $delay = if ($extendedCommandDelays.ContainsKey($command)) {
+                            [int]$extendedCommandDelays[$command]
+                        } else {
+                            $CommandDelayMilliseconds
+                        }
+                        $nextGameplayCommandAt = $now.AddMilliseconds($delay)
+                    }
+                }
+            } else {
+                $output.Add('>>> stop')
+                Write-Host '>>> stop' -ForegroundColor Cyan
+                $process.StandardInput.WriteLine('stop')
+                $stopSent = $true
+            }
         }
 
         if ($null -eq $readTask) {
             $readTask = $process.StandardOutput.ReadLineAsync()
         }
-        if (-not $readTask.Wait(1000)) {
+        if (-not $readTask.Wait(100)) {
             continue
         }
         $line = $readTask.Result
@@ -334,6 +439,20 @@ try {
         $serverOutput.Add($line)
         Write-Host $line
 
+        if ($waitingForRecipeReload -and $line -match '\bLoaded [0-9]+ recipes\b') {
+            $waitingForRecipeReload = $false
+            $reloadEvidence = $line
+            $output.Add(">>> [reload complete: $reloadEvidence]")
+            Write-Host ">>> [reload complete: $reloadEvidence]" -ForegroundColor Cyan
+            $nextGameplayCommandAt = [DateTime]::UtcNow.AddMilliseconds($CommandDelayMilliseconds)
+        }
+        if ($waitingForCommandMarker -and $line -match [regex]::Escape($commandMarker)) {
+            $waitingForCommandMarker = $false
+            $output.Add(">>> [marker observed: $commandMarker]")
+            Write-Host ">>> [marker observed: $commandMarker]" -ForegroundColor Cyan
+            $nextGameplayCommandAt = [DateTime]::UtcNow.AddMilliseconds($CommandDelayMilliseconds)
+        }
+
         if (-not $serverReady -and $line -match '\bDone \(') {
             $serverReady = $true
             foreach ($command in $startupCommands) {
@@ -342,45 +461,9 @@ try {
                 $process.StandardInput.WriteLine($command)
                 Start-Sleep -Milliseconds $CommandDelayMilliseconds
             }
-        } elseif ($serverReady -and -not $gameplayCommandsSent -and $line -match '\bNotch joined the game\b') {
-            $gameplayCommandsSent = $true
-            foreach ($command in $gameplayCommands) {
-                if ($command -eq $InstallFixtureCommand) {
-                    if (Test-Path -LiteralPath $FixtureInstallRoot) {
-                        throw "Refusing to overwrite existing smoke fixture '$FixtureInstallRoot'."
-                    }
-                    $existingRecipeLoadCount = if (Test-Path -LiteralPath $RuntimeLogPath -PathType Leaf) {
-                        @(Select-String -LiteralPath $RuntimeLogPath -Pattern 'Loaded [0-9]+ recipes' -ErrorAction SilentlyContinue).Count
-                    } else {
-                        0
-                    }
-                    Copy-Item -LiteralPath $FixtureStagingRoot -Destination $FixtureInstallRoot -Recurse
-                    $output.Add('>>> [installed fallback fixture]')
-                    Write-Host '>>> [installed fallback fixture]' -ForegroundColor Cyan
-                    $output.Add('>>> reload')
-                    Write-Host '>>> reload' -ForegroundColor Cyan
-                    $process.StandardInput.WriteLine('reload')
-                    $reloadEvidence = Wait-ForNewLogMatch `
-                            -Path $RuntimeLogPath `
-                            -Pattern 'Loaded [0-9]+ recipes' `
-                            -ExistingMatchCount $existingRecipeLoadCount
-                    $output.Add(">>> [reload complete: $reloadEvidence]")
-                    Write-Host ">>> [reload complete: $reloadEvidence]" -ForegroundColor Cyan
-                    continue
-                }
-                $output.Add(">>> $command")
-                Write-Host ">>> $command" -ForegroundColor Cyan
-                $process.StandardInput.WriteLine($command)
-                $delay = if ($extendedCommandDelays.ContainsKey($command)) {
-                    [int]$extendedCommandDelays[$command]
-                } else {
-                    $CommandDelayMilliseconds
-                }
-                Start-Sleep -Milliseconds $delay
-            }
-            $output.Add('>>> stop')
-            Write-Host '>>> stop' -ForegroundColor Cyan
-            $process.StandardInput.WriteLine('stop')
+        } elseif ($serverReady -and -not $gameplayCommandsStarted -and $line -match '\bNotch joined the game\b') {
+            $gameplayCommandsStarted = $true
+            $nextGameplayCommandAt = [DateTime]::UtcNow
         }
     }
 
@@ -448,5 +531,5 @@ if ($combinedOutput -notmatch '(?:Gave|Unlocked) 1 recipe') {
     throw "Minecraft $TargetVersion did not confirm the renewable recipe was loaded. Evidence: $EvidencePath"
 }
 
-Write-Host "Minecraft $TargetVersion server smoke passed: rule-on, rule-off, spectator, cached/direct recipe fallbacks, and clean shutdown." -ForegroundColor Green
+Write-Host "Minecraft $TargetVersion server smoke passed: dirt rule states, cached/direct recipe fallbacks, piston negative/positive paths, and clean shutdown." -ForegroundColor Green
 Write-Host "Evidence: $EvidencePath" -ForegroundColor Green

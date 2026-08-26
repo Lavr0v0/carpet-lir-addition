@@ -471,6 +471,44 @@ try {
         }
     }
 
+    $requiredPistonMixinClassPaths = @()
+    $isLegacyYarnProfile = $null -ne $profile -and [string]$profile.source_family -eq 'legacy-yarn'
+    if ($isLegacyYarnProfile -and $expectedRules -contains 'pistonHarvestableAmethysts') {
+        if ($targetVersion -ge (Convert-ToTargetVersion '1.21.11')) {
+            $requiredPistonMixinClassPaths = @('org/lavro/carpetlir/mixins/PistonMoveMixin.class')
+            $pistonMoveMixinEntry = $zip.GetEntry('org/lavro/carpetlir/mixins/PistonMoveMixin.class')
+            if ($null -eq $pistonMoveMixinEntry -or
+                    -not [System.Text.Encoding]::UTF8.GetString(
+                            (Get-ZipEntryBytes $pistonMoveMixinEntry)
+                    ).Contains('PistonHarvestableAmethystFeature')) {
+                throw 'PistonMoveMixin does not retain the budding-amethyst drop hook.'
+            }
+        } else {
+            $requiredPistonMixinClassPaths = @(
+                'org/lavro/carpetlir/mixins/BlockMixin.class',
+                'org/lavro/carpetlir/mixins/PistonBlockMixin.class'
+            )
+            $blockMixinEntry = $zip.GetEntry('org/lavro/carpetlir/mixins/BlockMixin.class')
+            $pistonBlockMixinEntry = $zip.GetEntry('org/lavro/carpetlir/mixins/PistonBlockMixin.class')
+            $pistonHarvestContextEntry = $zip.GetEntry('org/lavro/carpetlir/helpers/PistonHarvestContext.class')
+            if ($null -eq $blockMixinEntry -or
+                    -not [System.Text.Encoding]::UTF8.GetString(
+                            (Get-ZipEntryBytes $blockMixinEntry)
+                    ).Contains('PistonHarvestableAmethystFeature')) {
+                throw 'BlockMixin does not retain the budding-amethyst drop hook.'
+            }
+            if ($null -eq $pistonBlockMixinEntry -or
+                    -not [System.Text.Encoding]::UTF8.GetString(
+                            (Get-ZipEntryBytes $pistonBlockMixinEntry)
+                    ).Contains('PistonHarvestContext')) {
+                throw 'PistonBlockMixin does not retain the piston-only harvest context.'
+            }
+            if ($null -eq $pistonHarvestContextEntry) {
+                throw 'PistonHarvestContext is absent from the release JAR.'
+            }
+        }
+    }
+
     $mixinConfigs = @($metadata.mixins | ForEach-Object {
         if ($_ -is [string]) { $_ } else { $_.config }
     })
@@ -481,6 +519,7 @@ try {
     if ($unexpectedMixinConfigs.Count -ne 0) {
         throw "Release JAR contains undeclared mixin config(s): $($unexpectedMixinConfigs -join ', ')."
     }
+    $serverActiveMixinClassPaths = @()
     foreach ($mixinConfigPath in $mixinConfigs) {
         $mixinConfigEntry = $zip.GetEntry([string]$mixinConfigPath)
         if ($null -eq $mixinConfigEntry) {
@@ -489,6 +528,24 @@ try {
         $mixinConfig = Get-ZipEntryText $mixinConfigEntry | ConvertFrom-Json
         $mixinPackage = ([string]$mixinConfig.package).Replace('.', '/')
         $mixinNames = @($mixinConfig.mixins) + @($mixinConfig.server) + @($mixinConfig.client)
+        $mixinDeclaration = @($metadata.mixins | Where-Object {
+            $declaredPath = if ($_ -is [string]) { [string]$_ } else { [string]$_.config }
+            $declaredPath -eq [string]$mixinConfigPath
+        }) | Select-Object -First 1
+        $mixinEnvironment = if ($mixinDeclaration -is [string]) {
+            '*'
+        } elseif ($null -ne $mixinDeclaration -and
+                $mixinDeclaration.PSObject.Properties.Name -contains 'environment') {
+            [string]$mixinDeclaration.environment
+        } else {
+            '*'
+        }
+        if ($mixinEnvironment -ne 'client') {
+            $serverMixinNames = @($mixinConfig.mixins) + @($mixinConfig.server)
+            $serverActiveMixinClassPaths += @($serverMixinNames | Where-Object {
+                -not [string]::IsNullOrWhiteSpace([string]$_)
+            } | ForEach-Object { "$mixinPackage/$_.class" })
+        }
         foreach ($mixinName in $mixinNames) {
             if ([string]::IsNullOrWhiteSpace([string]$mixinName)) {
                 continue
@@ -497,6 +554,11 @@ try {
             if ($null -eq $zip.GetEntry($mixinClassPath)) {
                 throw "Mixin config '$mixinConfigPath' references absent class '$mixinClassPath'."
             }
+        }
+    }
+    foreach ($requiredPistonMixinClassPath in $requiredPistonMixinClassPaths) {
+        if ($serverActiveMixinClassPaths -notcontains $requiredPistonMixinClassPath) {
+            throw "Required piston adapter '$requiredPistonMixinClassPath' is not registered in a server-active mixin config."
         }
     }
 

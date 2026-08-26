@@ -20,6 +20,7 @@
 - Extended basic real-server smoke coverage through Minecraft 1.20–1.20.6 and 1.21–1.21.10. The enhanced disposable-data-pack checks use an enabled direct-query baseline before asserting cached and direct recipe fallbacks on exact 1.20/1.20.1 and representative 1.20.2, 1.20.6, and 1.21.10 API boundaries; acceptance runs use `-CleanRunDirectory` to remove their GUID worlds and temporary data packs.
 
 ### Fixed
+- Reworked the Yarn server smoke runner to drain output while pacing commands, preventing pipe backpressure from collapsing delayed interactions into one tick; added JAR guards and real piston no-drop/drop assertions for `pistonHarvestableAmethysts`.
 - Replaced the legacy 1.20–1.20.1 direct-only recipe filter with direct and cached fallbacks that return the valid fallback recipe identifier instead of preserving a disabled cache hint.
 - Added the Minecraft 1.20.2–1.20.4 `RecipeManager` Pair-cache adapter so disabling a Carpet LIR recipe rejects a stale cached tuff match and returns the identifier and entry of the valid fallback recipe.
 - Added legacy recipe-result normalization and JAR validation for the 1.20.2–1.20.4 split between crafting `result.item` objects and string cooking results.
