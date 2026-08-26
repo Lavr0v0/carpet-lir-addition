@@ -45,6 +45,8 @@ def javaVersion = Integer.parseInt(requiredTargetProperty('java_version'))
 def mappingsMode = requiredTargetProperty('mappings_mode')
 def yarnMappings = targetProfile.getProperty('yarn_mappings')?.trim()
 def sourceOverlay = targetProfile.getProperty('source_overlay', targetVersion).trim()
+def settingsSourceOverlay = targetProfile.getProperty('settings_source_overlay', 'rule-categories').trim()
+def fluidTagSourceOverlay = targetProfile.getProperty('fluid_tag_source_overlay', 'fluid-tags-registry').trim()
 def sharedSourceOverlays = targetProfile.getProperty('shared_source_overlays', '')
         .split(',')
         .collect { it.trim() }
@@ -86,7 +88,10 @@ if (!(recipeDirectory in ['recipe', 'recipes'])) {
     )
 }
 
-([source_overlay: sourceOverlay, recipe_api_overlay: recipeApiOverlay] +
+([source_overlay: sourceOverlay,
+  settings_source_overlay: settingsSourceOverlay,
+  fluid_tag_source_overlay: fluidTagSourceOverlay,
+  recipe_api_overlay: recipeApiOverlay] +
         sharedSourceOverlays.withIndex().collectEntries { name, index ->
             [("shared_source_overlays[${index}]".toString()): name]
         }).each { label, name ->
@@ -180,7 +185,9 @@ if (sourceFamily == 'mojang-26') {
             java {
                 setSrcDirs([
                         'src/legacy/main/java',
-                        "src/legacy/versioned/${sourceOverlay}/java"
+                        "src/legacy/versioned/${sourceOverlay}/java",
+                        "src/legacy/versioned/${settingsSourceOverlay}/java",
+                        "src/legacy/versioned/${fluidTagSourceOverlay}/java"
                 ] + sharedSourceOverlays.collect {
                     "src/legacy/versioned/${it}/java"
                 } + ["src/legacy/versioned/${recipeApiOverlay}/java"])

@@ -757,7 +757,10 @@ foreach ($profileFile in $profileFiles) {
             ($profileRecipeSchema -ne 'ingredient-objects-result-id' -or $profileRecipeDirectory -ne 'recipes')) {
         Add-ValidationError "$context must use ingredient-objects-result-id in the plural recipes directory."
     }
-    if ($profileVersion -in @('1.20', '1.20.1', '1.20.2', '1.20.3', '1.20.4') -and
+    if ($profileVersion -in @(
+            '1.19', '1.19.1', '1.19.2', '1.19.3', '1.19.4',
+            '1.20', '1.20.1', '1.20.2', '1.20.3', '1.20.4'
+    ) -and
             ($profileRecipeSchema -ne 'ingredient-objects-legacy-result' -or $profileRecipeDirectory -ne 'recipes')) {
         Add-ValidationError "$context must use ingredient-objects-legacy-result in the plural recipes directory."
     }
@@ -800,6 +803,25 @@ foreach ($profileFile in $profileFiles) {
                 if (-not (Test-Path -LiteralPath $sharedSourceOverlayRoot -PathType Container)) {
                     Add-ValidationError "$context shared source overlay does not exist: '$sharedSourceOverlayRoot'."
                 }
+            }
+        }
+        $compatibilityOverlayDefaults = @{
+            settings_source_overlay = 'rule-categories'
+            fluid_tag_source_overlay = 'fluid-tags-registry'
+        }
+        foreach ($compatibilityOverlay in $compatibilityOverlayDefaults.GetEnumerator()) {
+            $compatibilityOverlayName = if ($profile.ContainsKey($compatibilityOverlay.Key)) {
+                [string]$profile[$compatibilityOverlay.Key]
+            } else {
+                [string]$compatibilityOverlay.Value
+            }
+            if ($compatibilityOverlayName -notmatch '^[A-Za-z0-9][A-Za-z0-9._-]*$') {
+                Add-ValidationError "$context has unsafe $($compatibilityOverlay.Key) '$compatibilityOverlayName'."
+                continue
+            }
+            $compatibilityOverlayRoot = Join-Path $projectRoot "src\legacy\versioned\$compatibilityOverlayName\java"
+            if (-not (Test-Path -LiteralPath $compatibilityOverlayRoot -PathType Container)) {
+                Add-ValidationError "$context $($compatibilityOverlay.Key) does not exist: '$compatibilityOverlayRoot'."
             }
         }
         $recipeApiOverlayName = if ($profile.ContainsKey('recipe_api_overlay')) {

@@ -421,9 +421,9 @@
       "profile": "mc_1_19_3",
       "java": 17,
       "sourceFamily": "yarn-1.19",
-      "status": "planned",
+      "status": "build-only",
       "capabilityTier": "tier-1.19",
-      "notes": "Stable Fabric Carpet target requiring a fresh compile and server smoke test."
+      "notes": "Audited exact 1.19.3 profile with legacy LootContext.Builder, pre-RecipeEntry, and registry FluidTags adapters; real-server hardness, Silk Touch, Warden, recipe, and piston paths passed."
     },
     {
       "target": "1.19.4",
@@ -432,9 +432,9 @@
       "profile": "mc_1_19_4",
       "java": 17,
       "sourceFamily": "yarn-1.19",
-      "status": "planned",
+      "status": "build-only",
       "capabilityTier": "tier-1.19",
-      "notes": "Final 1.19 source-family target."
+      "notes": "Audited exact 1.19.4 profile with legacy LootContext.Builder, pre-RecipeEntry, and registry FluidTags adapters; real-server hardness, Silk Touch, Warden, recipe, and piston paths passed."
     },
     {
       "target": "1.20",

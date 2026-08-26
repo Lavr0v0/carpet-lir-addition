@@ -3,11 +3,13 @@
 ## [Unreleased]
 
 ### Added
+- Added exact Minecraft 1.19.3 and 1.19.4 profiles with Java 17 bytecode, one JAR per release, the 11-rule/13-recipe `tier-1.19` capability set, and version-correct legacy loot-context, pre-`RecipeEntry`, and registry-fluid-tag adapters.
+- Added real-server 1.19.3/1.19.4 coverage for reinforced-deepslate hardness, three Silk Touch mining paths, three Warden loot-gating paths, piston no-drop/drop behavior, and automatic GUID test-world cleanup.
 - Added a server GameTest proving that reinforced deepslate drops exactly one block with Silk Touch only while its Carpet rule is enabled.
 - Added independent Minecraft 1.20 and 1.20.1 profiles using the shared stable Carpet coordinate but exact Yarn, Fabric API, Minecraft dependency metadata, Java 17 bytecode, and one JAR per release.
 - Added a pre-`RecipeEntry` source layer so old `Recipe` and cached `Pair<Identifier, Recipe>` lookups can coexist with later entry-based adapters without duplicate or unavailable classes.
 - Added exact Minecraft 1.20.2, 1.20.3, and 1.20.4 build profiles with Java 17 bytecode, exact dependency metadata, version-correct recipe resources, and one JAR per release.
-- Added a shared 1.20 source layer for mechanics that remain API-compatible while keeping recipe lookup and Mixin configuration in version-specific adapters.
+- Added a shared 1.19–1.20 source layer for mechanics that remain API-compatible while keeping loot context, recipe lookup, fluid tags, and Mixin configuration in narrow version adapters.
 - Added exact Minecraft 1.20.5 and 1.20.6 build profiles with their own Carpet, Fabric API, Yarn, metadata, and release JARs.
 - Added target-selected singular/plural recipe-directory packaging and audit coverage for the 1.20.5/1.20.6 data-pack layout.
 - Added exact, audited build profiles for Minecraft 1.21, 1.21.1, 1.21.2, and 1.21.3 using two API-accurate source families and one exact JAR per release.
@@ -20,6 +22,7 @@
 - Extended basic real-server smoke coverage through Minecraft 1.20–1.20.6 and 1.21–1.21.10. The enhanced disposable-data-pack checks use an enabled direct-query baseline before asserting cached and direct recipe fallbacks on exact 1.20/1.20.1 and representative 1.20.2, 1.20.6, and 1.21.10 API boundaries; acceptance runs use `-CleanRunDirectory` to remove their GUID worlds and temporary data packs.
 
 ### Fixed
+- Made JAR validation require capability-critical fluid, reinforced-deepslate, recipe, and piston adapters to be registered in a server-active Mixin configuration, not merely present as unused classes.
 - Reworked the Yarn server smoke runner to drain output while pacing commands, preventing pipe backpressure from collapsing delayed interactions into one tick; added JAR guards and real piston no-drop/drop assertions for `pistonHarvestableAmethysts`.
 - Replaced the legacy 1.20–1.20.1 direct-only recipe filter with direct and cached fallbacks that return the valid fallback recipe identifier instead of preserving a disabled cache hint.
 - Added the Minecraft 1.20.2–1.20.4 `RecipeManager` Pair-cache adapter so disabling a Carpet LIR recipe rejects a stale cached tuff match and returns the identifier and entry of the valid fallback recipe.
