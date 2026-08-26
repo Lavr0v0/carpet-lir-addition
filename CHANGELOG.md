@@ -4,6 +4,9 @@
 
 ### Added
 - Added a server GameTest proving that reinforced deepslate drops exactly one block with Silk Touch only while its Carpet rule is enabled.
+- Added exact, audited build profiles for Minecraft 1.21, 1.21.1, 1.21.2, and 1.21.3 using two API-accurate source families and one exact JAR per release.
+- Added target-selected recipe schema normalization and JAR-level schema validation so pre-1.21.2 releases receive ingredient objects instead of unsupported string shorthand.
+- Added snowy-grass state coverage to both the 26.x GameTest suite and disposable Yarn server smoke harness.
 - Added exact, audited build profiles and a dedicated API adapter for Minecraft 1.21.9 and 1.21.10.
 - Added exact, audited build profiles and a shared API adapter for Minecraft 1.21.6, 1.21.7, and 1.21.8 while keeping one exact JAR per release.
 - Added exact, audited Minecraft 1.21.4 and 1.21.5 profiles, reusing the compatible audited adapter without duplicating source code.
@@ -11,6 +14,10 @@
 
 ### Fixed
 - Added Minecraft 1.16.1 to the support catalog because Carpet's stable 1.16 artifact declares compatibility with the full 1.16.x line.
+- Fixed all Carpet LIR recipes failing to parse on Minecraft 1.21 and 1.21.1, while keeping pale oak absent from those JARs and their runtime recipe control maps.
+- Preserved the grass block's `snowy` state when bone meal converts dirt beneath a snow layer.
+- Removed redundant budding-amethyst piston-behavior overrides; vanilla already marks the block destroyable, while the thin piston hook remains responsible only for the rule-gated item drop.
+- Stabilized disposable server tests against fake-player water, spectator fall-through, and asynchronous login state without relaxing gameplay assertions.
 - Replaced the legacy 1.21.6–1.21.8 grass survival and recipe-cache paths so opaque/full-water blocks, spectators, and disabled cached furnace recipes are handled correctly.
 - Made the real-server smoke harness wait for its fake player to finish logging in before interaction commands, removing a load-dependent cross-version race.
 - Made the JAR audit reject undeclared extra mixin configurations so a stale version overlay cannot be packaged silently.

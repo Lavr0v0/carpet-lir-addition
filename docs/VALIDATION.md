@@ -28,9 +28,9 @@ Run these checks in a disposable world matching the exact target JAR. Begin each
 ### `renewableLeavesCrafting`
 
 - **Trigger:** Put one matching log in the center and sticks above, below, left, and right.
-- **Happy path:** Enable the rule; the output is four matching leaves. Validate at least one normal tree and one special case such as pale oak or mangrove.
-- **Negative path:** Disable the rule; none of the nine Carpet LIR leaves recipes match.
-- **Edge case:** Mixing a log and leaves species must not produce a different species. Supported types are oak, spruce, birch, jungle, acacia, dark oak, mangrove, cherry, and pale oak.
+- **Happy path:** Enable the rule; the output is four matching leaves. Validate at least one normal tree and one special case available in that tier, such as mangrove, cherry, or pale oak.
+- **Negative path:** Disable the rule; none of that target's Carpet LIR leaves recipes match (six, seven, eight, or nine variants depending on the capability tier).
+- **Edge case:** Mixing a log and leaves species must not produce a different species. Oak, spruce, birch, jungle, acacia, and dark oak are always available; mangrove starts in 1.19, cherry in 1.20, and pale oak in 1.21.4.
 
 ### `renewableRawOresCrafting`
 
@@ -53,7 +53,7 @@ Run these checks in a disposable world matching the exact target JAR. Begin each
 - **Trigger:** Use bone meal on a dirt block where a grass block can survive.
 - **Happy path:** Enable the rule; dirt becomes grass, one bone meal is consumed in survival, and the vanilla success particles and game event fire.
 - **Negative path:** Disable the rule; the callback passes through without converting dirt or consuming bone meal.
-- **Edge case:** Full water or an opaque block above prevents conversion. A single snow layer above is valid, creative players do not consume bone meal, and spectators cannot convert the block even when the rule is enabled.
+- **Edge case:** Full water or an opaque block above prevents conversion. A single snow layer above is valid and the resulting grass must have `snowy=true`; creative players do not consume bone meal, and spectators cannot convert the block even when the rule is enabled.
 
 ### `obsidianHardnessReinforcedDeepslate`
 
@@ -85,4 +85,4 @@ Run these checks in a disposable world matching the exact target JAR. Begin each
 
 ## Automated coverage
 
-Use `./gradlew test` for fast rule/resource integrity tests and `./gradlew runGameTest` for actual 26.x server behavior. The 26.x GameTest suite covers the highest-risk positive, disabled, permission, environmental, and Silk Touch loot-context paths. Minecraft 1.14.4 must be smoke-tested on a Java 8 server. The `scripts/smoke-test-modern-server.ps1` harness uses a unique disposable run directory to exercise rule-on, rule-off, spectator, live furnace-cache invalidation, and shutdown behavior for current Yarn targets, waits for its fake player to finish logging in, then can remove only that generated directory with `-CleanRunDirectory`. Minecraft 1.21.4–1.21.11 stay `build-only` until equivalent full gameplay automation is ported. The remaining manual checks above are release acceptance checks, particularly recipe shapes and in-world interaction feel.
+Use `./gradlew test` for fast rule/resource integrity tests and `./gradlew runGameTest` for actual 26.x server behavior. The 26.x GameTest suite covers the highest-risk positive, disabled, permission, environmental, snowy-state, and Silk Touch loot-context paths. Minecraft 1.14.4 must be smoke-tested on a Java 8 server. The `scripts/smoke-test-modern-server.ps1` harness uses a unique disposable run directory to exercise rule-on, snowy-state, rule-off, spectator, live furnace-cache invalidation, and shutdown behavior for current Yarn targets, waits for its fake player to finish logging in, then can remove only that generated directory with `-CleanRunDirectory`. Minecraft 1.21–1.21.11 stay `build-only` until equivalent full gameplay automation is ported. The remaining manual checks above are release acceptance checks, particularly recipe shapes and in-world interaction feel.
