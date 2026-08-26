@@ -5,6 +5,7 @@
 ### Changed
 
 - Rebuilt the unchanged, runtime-verified Minecraft 1.14.4 adapter under the coherent 43-version beta.2 release identity.
+- Declared the classic plural recipe directory and legacy result schema for the unified release audit.
 
 ## [1.1.0-beta.1] - 2026-08-22
 

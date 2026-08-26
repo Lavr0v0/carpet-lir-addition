@@ -38,6 +38,7 @@
 - Extended basic real-server smoke coverage through Minecraft 1.19–1.20.6 and 1.21–1.21.11. The enhanced disposable-data-pack checks use an enabled direct-query baseline before asserting cached and direct recipe fallbacks on exact pre-entry 1.19–1.20.1 and representative 1.20.2, 1.20.6, and 1.21.10 API boundaries; acceptance runs use `-CleanRunDirectory` to remove their GUID worlds and temporary data packs.
 
 ### Fixed
+- Declared and matrix-validated the classic 1.14.4 plural recipe directory and legacy result schema so the unified release audit checks its actual data-pack format.
 - Converted modern `carpet.rule.*` and `carpet.category.*` asset keys to the legacy `rule.*` and `category.*` names consumed by the Minecraft 1.15.2–1.16 Carpet translation hook.
 - Removed translation-hook `@Override` annotations that do not exist in the Minecraft 1.15/1.15.1 CarpetExtension interface while retaining the method for 1.15.2 and later legacy releases.
 - Pinned Minecraft 1.16 to Fabric API `0.14.1+build.372-1.16`; the next nominal 1.16 aggregate includes a tag module that links a class introduced only in Minecraft 1.16.2.

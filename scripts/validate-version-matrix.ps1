@@ -938,6 +938,8 @@ if (-not (Test-Path -LiteralPath $classicProfilePath -PathType Leaf)) {
         matrix_source_family = [string]$classicMatrixTarget.sourceFamily
         capability_tier = [string]$classicMatrixTarget.capabilityTier
         support_status = [string]$classicMatrixTarget.status
+        recipe_schema = 'ingredient-objects-legacy-result'
+        recipe_directory = 'recipes'
     }
     foreach ($check in $classicChecks.GetEnumerator()) {
         if ([string]$classicProfile[$check.Key] -ne [string]$check.Value) {
