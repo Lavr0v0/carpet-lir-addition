@@ -85,7 +85,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\build-26-targets.ps1
 powershell -ExecutionPolicy Bypass -File .\scripts\validate-version-matrix.ps1 -VerifyMaven
 ```
 
-The automated suite checks rule visibility and conservative defaults, recipe-to-rule coverage, translation parity, live recipe toggling, calcite generation, dirt conversion (including snowy state and spectator denial), reinforced-deepslate hardness, Warden drops and `mob_drops`, and real piston activation. Basic disposable-server smokes cover Minecraft 1.20.2–1.20.6 and 1.21–1.21.10. Representative boundary runs on 1.20.2, 1.20.6, and 1.21.10 also verify both cached and direct furnace fallbacks using a temporary data pack; every run removes its GUID-isolated world afterward. See [docs/VALIDATION.md](docs/VALIDATION.md) for manual happy, negative, and edge-case checks for every rule.
+The automated suite checks rule visibility and conservative defaults, recipe-to-rule coverage, translation parity, live recipe toggling, calcite generation, dirt conversion (including snowy state and spectator denial), reinforced-deepslate hardness, Warden drops and `mob_drops`, and real piston activation. Basic disposable-server smokes cover Minecraft 1.20.2–1.20.6 and 1.21–1.21.10. Representative boundary runs on 1.20.2, 1.20.6, and 1.21.10 also verify both cached and direct furnace fallbacks using a temporary data pack; release acceptance invokes `-CleanRunDirectory` so each GUID-isolated world is removed afterward. See [docs/VALIDATION.md](docs/VALIDATION.md) for manual happy, negative, and edge-case checks for every rule.
 
 ## Known limitations
 

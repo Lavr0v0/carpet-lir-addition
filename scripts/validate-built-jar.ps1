@@ -88,7 +88,8 @@ function Assert-RecipeIngredientSchema {
     }
 
     $isStringIngredient = $Ingredient -is [string]
-    if ($RecipeSchema -eq 'modern-shorthand-result-id' -and -not $isStringIngredient) {
+    if ($RecipeSchema -eq 'modern-shorthand-result-id' -and
+            (-not $isStringIngredient -or [string]::IsNullOrWhiteSpace([string]$Ingredient))) {
         throw "Recipe '$RecipePath' must use modern string ingredient shorthand."
     }
     if ($RecipeSchema -in @('ingredient-objects-result-id', 'ingredient-objects-legacy-result')) {
@@ -403,6 +404,9 @@ try {
             foreach ($property in $recipe.key.PSObject.Properties) {
                 $ingredientValues.Add($property.Value)
             }
+        }
+        if ($ingredientValues.Count -eq 0) {
+            throw "Recipe '$($recipeEntry.FullName)' has no ingredient, ingredients, or key entries."
         }
         foreach ($ingredient in $ingredientValues) {
             Assert-RecipeIngredientSchema `

@@ -15,7 +15,7 @@
 - Added exact, audited build profiles and a shared API adapter for Minecraft 1.21.6, 1.21.7, and 1.21.8 while keeping one exact JAR per release.
 - Added exact, audited Minecraft 1.21.4 and 1.21.5 profiles, reusing the compatible audited adapter without duplicating source code.
 - Added a uniquely isolated real-server smoke harness covering enabled dirt conversion, disabled behavior, spectator denial, live furnace-cache invalidation, clean shutdown, and optional test-world cleanup.
-- Extended basic real-server smoke coverage through Minecraft 1.20.2–1.20.6 and 1.21–1.21.10. The enhanced disposable-data-pack checks for cached and direct recipe fallbacks were exercised at the representative 1.20.2, 1.20.6, and 1.21.10 API boundaries; every run cleans its GUID world and temporary data pack.
+- Extended basic real-server smoke coverage through Minecraft 1.20.2–1.20.6 and 1.21–1.21.10. The enhanced disposable-data-pack checks use an enabled direct-query baseline before asserting cached and direct recipe fallbacks at the representative 1.20.2, 1.20.6, and 1.21.10 API boundaries; acceptance runs use `-CleanRunDirectory` to remove their GUID worlds and temporary data packs.
 
 ### Fixed
 - Added the Minecraft 1.20.2–1.20.4 `RecipeManager` Pair-cache adapter so disabling a Carpet LIR recipe rejects a stale cached tuff match and returns the identifier and entry of the valid fallback recipe.

@@ -17,9 +17,32 @@ $RunDirectory = Join-Path $RunRoot $RunDirectoryName
 $EvidenceRoot = Join-Path $ProjectRoot 'build\server-smoke'
 $EvidencePath = Join-Path $EvidenceRoot "minecraft-$TargetVersion.log"
 $FixtureNamespace = 'zzzz_carpetlir_smoke'
+$FixtureFallbackRecipePath = 'zzzz_gravel_to_cobblestone_smelting_fallback'
 $FixtureStagingRoot = Join-Path $RunDirectory 'smoke-fixture-datapack'
 $FixtureInstallRoot = Join-Path $RunDirectory 'world\datapacks\carpetlir-smoke'
 $InstallFixtureCommand = '__INSTALL_RECIPE_FALLBACK_FIXTURE__'
+$RuntimeLogPath = Join-Path $RunDirectory 'logs\latest.log'
+
+function Wait-ForNewLogMatch {
+    param(
+        [string]$Path,
+        [string]$Pattern,
+        [int]$ExistingMatchCount,
+        [int]$TimeoutSeconds = 60
+    )
+
+    $deadline = [DateTime]::UtcNow.AddSeconds($TimeoutSeconds)
+    while ([DateTime]::UtcNow -lt $deadline) {
+        if (Test-Path -LiteralPath $Path -PathType Leaf) {
+            $logMatches = @(Select-String -LiteralPath $Path -Pattern $Pattern -ErrorAction SilentlyContinue)
+            if ($logMatches.Count -gt $ExistingMatchCount) {
+                return $logMatches[-1].Line
+            }
+        }
+        Start-Sleep -Milliseconds 250
+    }
+    throw "Minecraft $TargetVersion did not report a completed recipe reload within $TimeoutSeconds seconds."
+}
 
 if (-not (Test-Path -LiteralPath $ProfilePath -PathType Leaf)) {
     throw "Unknown or non-build-ready target '$TargetVersion'."
@@ -129,6 +152,12 @@ $gameplayCommands = @(
     'item replace block 2 101 2 container.1 with minecraft:coal 1',
     'execute if data block 2 101 2 Items[{Slot:2b,id:"minecraft:tuff"}] run say CARPETLIR_RECIPE_ENABLED_PASS',
     $InstallFixtureCommand,
+    'clear Notch minecraft:tuff',
+    'clear Notch minecraft:cobblestone',
+    'loot give Notch loot zzzz_carpetlir_smoke:direct_recipe_fallback',
+    'execute if entity @a[name=Notch,nbt={Inventory:[{id:"minecraft:tuff"}]}] run say CARPETLIR_RECIPE_DIRECT_ENABLED_PASS',
+    'clear Notch minecraft:tuff',
+    'clear Notch minecraft:cobblestone',
     'item replace block 2 101 2 container.2 with minecraft:air',
     'carpet renewableTuff false',
     'item replace block 2 101 2 container.0 with minecraft:gravel 2',
@@ -149,6 +178,7 @@ $requiredMarkers = @(
     'CARPETLIR_BONEMEAL_DISABLED_PASS',
     'CARPETLIR_BONEMEAL_SPECTATOR_PASS',
     'CARPETLIR_RECIPE_ENABLED_PASS',
+    'CARPETLIR_RECIPE_DIRECT_ENABLED_PASS',
     'CARPETLIR_RECIPE_CACHED_FALLBACK_PASS',
     'CARPETLIR_RECIPE_DIRECT_FALLBACK_PASS',
     'Notch lost connection: Killed',
@@ -266,8 +296,11 @@ try {
             (Join-Path $FixtureStagingRoot 'pack.mcmeta'),
             ($fixturePackMetadata | ConvertTo-Json -Depth 20)
     )
+    # Keep the fallback after carpetlir:gravel_to_tuff_smelting in both the
+    # audited HashMap bucket ranges and newer sorted recipe maps. The enabled
+    # direct-query assertion below still fails closed if ordering ever changes.
     [System.IO.File]::WriteAllText(
-            (Join-Path $fixtureRecipeDirectory 'gravel_to_cobblestone_smelting.json'),
+            (Join-Path $fixtureRecipeDirectory "$FixtureFallbackRecipePath.json"),
             ($fixtureRecipe | ConvertTo-Json -Depth 20)
     )
     [System.IO.File]::WriteAllText(
@@ -316,13 +349,23 @@ try {
                     if (Test-Path -LiteralPath $FixtureInstallRoot) {
                         throw "Refusing to overwrite existing smoke fixture '$FixtureInstallRoot'."
                     }
+                    $existingRecipeLoadCount = if (Test-Path -LiteralPath $RuntimeLogPath -PathType Leaf) {
+                        @(Select-String -LiteralPath $RuntimeLogPath -Pattern 'Loaded [0-9]+ recipes' -ErrorAction SilentlyContinue).Count
+                    } else {
+                        0
+                    }
                     Copy-Item -LiteralPath $FixtureStagingRoot -Destination $FixtureInstallRoot -Recurse
                     $output.Add('>>> [installed fallback fixture]')
                     Write-Host '>>> [installed fallback fixture]' -ForegroundColor Cyan
                     $output.Add('>>> reload')
                     Write-Host '>>> reload' -ForegroundColor Cyan
                     $process.StandardInput.WriteLine('reload')
-                    Start-Sleep -Milliseconds 10000
+                    $reloadEvidence = Wait-ForNewLogMatch `
+                            -Path $RuntimeLogPath `
+                            -Pattern 'Loaded [0-9]+ recipes' `
+                            -ExistingMatchCount $existingRecipeLoadCount
+                    $output.Add(">>> [reload complete: $reloadEvidence]")
+                    Write-Host ">>> [reload complete: $reloadEvidence]" -ForegroundColor Cyan
                     continue
                 }
                 $output.Add(">>> $command")

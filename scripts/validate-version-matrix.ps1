@@ -757,9 +757,17 @@ foreach ($profileFile in $profileFiles) {
             ($profileRecipeSchema -ne 'ingredient-objects-result-id' -or $profileRecipeDirectory -ne 'recipes')) {
         Add-ValidationError "$context must use ingredient-objects-result-id in the plural recipes directory."
     }
-    if ($profileVersion -in @('1.20.2', '1.20.3', '1.20.4') -and
+    if ($profileVersion -in @('1.20', '1.20.1', '1.20.2', '1.20.3', '1.20.4') -and
             ($profileRecipeSchema -ne 'ingredient-objects-legacy-result' -or $profileRecipeDirectory -ne 'recipes')) {
         Add-ValidationError "$context must use ingredient-objects-legacy-result in the plural recipes directory."
+    }
+    if ($profileVersion -in @('1.21', '1.21.1') -and
+            ($profileRecipeSchema -ne 'ingredient-objects-result-id' -or $profileRecipeDirectory -ne 'recipe')) {
+        Add-ValidationError "$context must use ingredient-objects-result-id in the singular recipe directory."
+    }
+    if ((Convert-ToTargetVersion $profileVersion) -ge [version]'1.21.2' -and
+            ($profileRecipeSchema -ne 'modern-shorthand-result-id' -or $profileRecipeDirectory -ne 'recipe')) {
+        Add-ValidationError "$context must use modern-shorthand-result-id in the singular recipe directory."
     }
 
     $profileSupportStatus = [string]$profile.support_status
