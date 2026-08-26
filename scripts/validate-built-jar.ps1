@@ -150,6 +150,14 @@ $allRules = @($tiers[-1].availableRules | ForEach-Object { [string]$_ })
 $expectedRules = @($tier.availableRules | ForEach-Object { [string]$_ })
 $expectedRecipes = @($tier.availableRecipes | ForEach-Object { [string]$_ } | Sort-Object)
 $targetVersion = Convert-ToTargetVersion $MinecraftVersion
+$recipeSchema = if ($null -ne $profile -and $profile.ContainsKey('recipe_schema')) {
+    [string]$profile.recipe_schema
+} else {
+    'modern-shorthand-result-id'
+}
+if ($recipeSchema -notin @('modern-shorthand-result-id', 'ingredient-objects-result-id')) {
+    throw "Unsupported recipe schema '$recipeSchema' in profile '$resolvedProfile'."
+}
 
 $forbiddenBefore = @{
     'org/lavro/carpetlir/features/renewable/CalciteGeneratorFeature.class' = '1.17'
@@ -319,6 +327,41 @@ try {
         $missingRecipes = @($expectedRecipes | Where-Object { $actualRecipes -notcontains $_ })
         $unexpectedRecipes = @($actualRecipes | Where-Object { $expectedRecipes -notcontains $_ })
         throw "Recipe capability mismatch. Missing: [$($missingRecipes -join ', ')]. Unexpected: [$($unexpectedRecipes -join ', ')]."
+    }
+    foreach ($recipeEntry in $recipeEntries) {
+        $recipe = Get-ZipEntryText $recipeEntry | ConvertFrom-Json
+        $ingredientValues = [System.Collections.Generic.List[object]]::new()
+        if ($recipe.PSObject.Properties.Name -contains 'ingredient') {
+            $ingredientValues.Add($recipe.ingredient)
+        }
+        if ($recipe.PSObject.Properties.Name -contains 'ingredients') {
+            foreach ($ingredient in @($recipe.ingredients)) {
+                $ingredientValues.Add($ingredient)
+            }
+        }
+        if ($recipe.PSObject.Properties.Name -contains 'key') {
+            foreach ($property in $recipe.key.PSObject.Properties) {
+                $ingredientValues.Add($property.Value)
+            }
+        }
+        foreach ($ingredient in $ingredientValues) {
+            $isStringIngredient = $ingredient -is [string]
+            if ($recipeSchema -eq 'modern-shorthand-result-id' -and -not $isStringIngredient) {
+                throw "Recipe '$($recipeEntry.FullName)' must use modern string ingredient shorthand."
+            }
+            if ($recipeSchema -eq 'ingredient-objects-result-id') {
+                if ($isStringIngredient -or
+                        $ingredient.PSObject.Properties.Name -notcontains 'item' -or
+                        [string]::IsNullOrWhiteSpace([string]$ingredient.item)) {
+                    throw "Recipe '$($recipeEntry.FullName)' must use legacy ingredient objects with an item id."
+                }
+            }
+        }
+        if ($recipe.PSObject.Properties.Name -notcontains 'result' -or
+                $recipe.result.PSObject.Properties.Name -notcontains 'id' -or
+                [string]::IsNullOrWhiteSpace([string]$recipe.result.id)) {
+            throw "Recipe '$($recipeEntry.FullName)' must use an object result with an id."
+        }
     }
 
     $languageEntries = @($zip.Entries | Where-Object {

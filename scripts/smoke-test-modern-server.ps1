@@ -51,10 +51,16 @@ $startupCommands = @(
 )
 $gameplayCommands = @(
     'tp Notch 0.5 101 0.5',
+    'effect give Notch minecraft:water_breathing infinite 0 true',
     'player Notch look at 0.5 101.5 2.5',
     'item replace entity Notch weapon.mainhand with minecraft:bone_meal 3',
     'player Notch use once',
     'execute if block 0 101 2 minecraft:grass_block run say CARPETLIR_BONEMEAL_ENABLED_PASS',
+    'setblock 0 101 2 minecraft:dirt',
+    'setblock 0 102 2 minecraft:snow[layers=1]',
+    'player Notch use once',
+    'execute if block 0 101 2 minecraft:grass_block[snowy=true] run say CARPETLIR_BONEMEAL_SNOWY_PASS',
+    'setblock 0 102 2 minecraft:air',
     'carpet boneMealGrassifyDirt false',
     'setblock 0 101 2 minecraft:dirt',
     'player Notch use once',
@@ -65,6 +71,7 @@ $gameplayCommands = @(
     'player Notch use once',
     'execute if block 0 101 2 minecraft:dirt run say CARPETLIR_BONEMEAL_SPECTATOR_PASS',
     'gamemode survival Notch',
+    'tp Notch 0.5 101 0.5',
     'carpet renewableLeavesCrafting true',
     'recipe give Notch carpetlir:oak_leaves_from_oak_log_and_sticks',
     'carpet renewableLeavesCrafting false',
@@ -85,6 +92,7 @@ $extendedCommandDelays = @{
 }
 $requiredMarkers = @(
     'CARPETLIR_BONEMEAL_ENABLED_PASS',
+    'CARPETLIR_BONEMEAL_SNOWY_PASS',
     'CARPETLIR_BONEMEAL_DISABLED_PASS',
     'CARPETLIR_BONEMEAL_SPECTATOR_PASS',
     'CARPETLIR_RECIPE_ENABLED_PASS',

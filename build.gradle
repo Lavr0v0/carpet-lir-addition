@@ -1,4 +1,6 @@
 import java.util.Properties
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
 
 plugins {
     id 'fabric-loom' apply false
@@ -45,6 +47,7 @@ def yarnMappings = targetProfile.getProperty('yarn_mappings')?.trim()
 def sourceOverlay = targetProfile.getProperty('source_overlay', targetVersion).trim()
 def mixinConfig = targetProfile.getProperty('mixin_config', 'carpet-lir-addition.mixins.json').trim()
 def supportStatus = targetProfile.getProperty('support_status', 'verified').trim()
+def recipeSchema = targetProfile.getProperty('recipe_schema', 'modern-shorthand-result-id').trim()
 def runDirectoryName = providers.gradleProperty('runDirectoryName').orElse(targetVersion).get().trim()
 def excludedSources = targetProfile.getProperty('excluded_sources', '')
         .split(',')
@@ -60,6 +63,12 @@ def buildTargetNames = file('versions/targets')
         .findAll { it.name.endsWith('.properties') }
         .collect { it.name.replace('.properties', '') }
         .sort()
+
+if (!(recipeSchema in ['modern-shorthand-result-id', 'ingredient-objects-result-id'])) {
+    throw new GradleException(
+            "Target '${targetVersion}' has unsupported recipe schema '${recipeSchema}'."
+    )
+}
 
 if (!(targetFabricModId in ['fabric', 'fabric-api'])) {
     throw new GradleException(
@@ -177,9 +186,46 @@ loom {
 
 processResources {
     inputs.properties resourceProperties
+    inputs.property('recipe_schema', recipeSchema)
 
     filesMatching('fabric.mod.json') {
         expand resourceProperties
+    }
+
+    doLast {
+        if (recipeSchema == 'ingredient-objects-result-id') {
+            Closure<Object> toIngredientObject
+            toIngredientObject = { Object ingredient ->
+                if (ingredient instanceof CharSequence) {
+                    return [item: ingredient.toString()]
+                }
+                if (ingredient instanceof List) {
+                    return ingredient.collect { toIngredientObject(it) }
+                }
+                return ingredient
+            }
+
+            fileTree(destinationDir) {
+                include 'data/carpetlir/recipe/*.json'
+            }.each { File recipeFile ->
+                def recipe = new JsonSlurper().parse(recipeFile)
+                if (recipe.key instanceof Map) {
+                    recipe.key = recipe.key.collectEntries { key, ingredient ->
+                        [(key): toIngredientObject(ingredient)]
+                    }
+                }
+                if (recipe.ingredients instanceof List) {
+                    recipe.ingredients = recipe.ingredients.collect { toIngredientObject(it) }
+                }
+                if (recipe.containsKey('ingredient')) {
+                    recipe.ingredient = toIngredientObject(recipe.ingredient)
+                }
+                recipeFile.setText(
+                        JsonOutput.prettyPrint(JsonOutput.toJson(recipe)) + System.lineSeparator(),
+                        'UTF-8'
+                )
+            }
+        }
     }
 }
 

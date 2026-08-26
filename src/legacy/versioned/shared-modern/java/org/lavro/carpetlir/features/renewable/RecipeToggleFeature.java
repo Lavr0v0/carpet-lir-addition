@@ -6,34 +6,51 @@ import net.minecraft.util.Identifier;
 import org.lavro.carpetlir.CarpetLIRAddition;
 import org.lavro.carpetlir.LIRSettings;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BooleanSupplier;
 
 public final class RecipeToggleFeature {
-    private static final Map<Identifier, BooleanSupplier> RULE_BY_RECIPE = Map.ofEntries(
-            Map.entry(recipeId("gravel_to_tuff_smelting"), () -> LIRSettings.renewableTuff),
-            Map.entry(recipeId("lapis_ore_from_calcite_and_amethyst_shard"), () -> LIRSettings.renewableLapisOre),
-            Map.entry(recipeId("oak_leaves_from_oak_log_and_sticks"), () -> LIRSettings.renewableLeavesCrafting),
-            Map.entry(recipeId("spruce_leaves_from_spruce_log_and_sticks"), () -> LIRSettings.renewableLeavesCrafting),
-            Map.entry(recipeId("birch_leaves_from_birch_log_and_sticks"), () -> LIRSettings.renewableLeavesCrafting),
-            Map.entry(recipeId("jungle_leaves_from_jungle_log_and_sticks"), () -> LIRSettings.renewableLeavesCrafting),
-            Map.entry(recipeId("acacia_leaves_from_acacia_log_and_sticks"), () -> LIRSettings.renewableLeavesCrafting),
-            Map.entry(recipeId("dark_oak_leaves_from_dark_oak_log_and_sticks"), () -> LIRSettings.renewableLeavesCrafting),
-            Map.entry(recipeId("mangrove_leaves_from_mangrove_log_and_sticks"), () -> LIRSettings.renewableLeavesCrafting),
-            Map.entry(recipeId("cherry_leaves_from_cherry_log_and_sticks"), () -> LIRSettings.renewableLeavesCrafting),
-            Map.entry(recipeId("pale_oak_leaves_from_pale_oak_log_and_sticks"), () -> LIRSettings.renewableLeavesCrafting),
-            Map.entry(recipeId("honeycomb_from_honeycomb_block"), () -> LIRSettings.renewableHoneycombCrafting),
-            Map.entry(recipeId("raw_iron_from_cobblestone_and_iron_ingot"), () -> LIRSettings.renewableRawOresCrafting),
-            Map.entry(recipeId("raw_copper_from_cobblestone_and_copper_ingot"), () -> LIRSettings.renewableRawOresCrafting),
-            Map.entry(recipeId("raw_gold_from_cobblestone_and_gold_ingot"), () -> LIRSettings.renewableRawOresCrafting)
-    );
+    private static final Map<Identifier, BooleanSupplier> RULE_BY_RECIPE = createRuleMap();
 
     private RecipeToggleFeature() {
     }
 
     private static Identifier recipeId(String path) {
         return Identifier.of(CarpetLIRAddition.MOD_ID, path);
+    }
+
+    private static Map<Identifier, BooleanSupplier> createRuleMap() {
+        Map<Identifier, BooleanSupplier> rules = new HashMap<>();
+        registerIfBundled(rules, "gravel_to_tuff_smelting", () -> LIRSettings.renewableTuff);
+        registerIfBundled(rules, "lapis_ore_from_calcite_and_amethyst_shard", () -> LIRSettings.renewableLapisOre);
+        registerIfBundled(rules, "oak_leaves_from_oak_log_and_sticks", () -> LIRSettings.renewableLeavesCrafting);
+        registerIfBundled(rules, "spruce_leaves_from_spruce_log_and_sticks", () -> LIRSettings.renewableLeavesCrafting);
+        registerIfBundled(rules, "birch_leaves_from_birch_log_and_sticks", () -> LIRSettings.renewableLeavesCrafting);
+        registerIfBundled(rules, "jungle_leaves_from_jungle_log_and_sticks", () -> LIRSettings.renewableLeavesCrafting);
+        registerIfBundled(rules, "acacia_leaves_from_acacia_log_and_sticks", () -> LIRSettings.renewableLeavesCrafting);
+        registerIfBundled(rules, "dark_oak_leaves_from_dark_oak_log_and_sticks", () -> LIRSettings.renewableLeavesCrafting);
+        registerIfBundled(rules, "mangrove_leaves_from_mangrove_log_and_sticks", () -> LIRSettings.renewableLeavesCrafting);
+        registerIfBundled(rules, "cherry_leaves_from_cherry_log_and_sticks", () -> LIRSettings.renewableLeavesCrafting);
+        registerIfBundled(rules, "pale_oak_leaves_from_pale_oak_log_and_sticks", () -> LIRSettings.renewableLeavesCrafting);
+        registerIfBundled(rules, "honeycomb_from_honeycomb_block", () -> LIRSettings.renewableHoneycombCrafting);
+        registerIfBundled(rules, "raw_iron_from_cobblestone_and_iron_ingot", () -> LIRSettings.renewableRawOresCrafting);
+        registerIfBundled(rules, "raw_copper_from_cobblestone_and_copper_ingot", () -> LIRSettings.renewableRawOresCrafting);
+        registerIfBundled(rules, "raw_gold_from_cobblestone_and_gold_ingot", () -> LIRSettings.renewableRawOresCrafting);
+        return Collections.unmodifiableMap(rules);
+    }
+
+    private static void registerIfBundled(
+            Map<Identifier, BooleanSupplier> rules,
+            String path,
+            BooleanSupplier rule
+    ) {
+        String resourcePath = "data/" + CarpetLIRAddition.MOD_ID + "/recipe/" + path + ".json";
+        if (RecipeToggleFeature.class.getClassLoader().getResource(resourcePath) != null) {
+            rules.put(recipeId(path), rule);
+        }
     }
 
     public static boolean isEnabled(RecipeEntry<?> recipeEntry) {

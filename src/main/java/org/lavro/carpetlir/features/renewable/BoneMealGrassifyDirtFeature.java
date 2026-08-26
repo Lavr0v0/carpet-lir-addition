@@ -6,6 +6,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.SnowLayerBlock;
+import net.minecraft.world.level.block.SnowyBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionHand;
@@ -40,7 +41,8 @@ public final class BoneMealGrassifyDirtFeature {
             return InteractionResult.PASS;
         }
 
-        if (!canGrassSurvive(world, pos)) {
+        BlockState above = world.getBlockState(pos.above());
+        if (!canGrassSurvive(world, pos, above)) {
             return InteractionResult.PASS;
         }
 
@@ -48,7 +50,10 @@ public final class BoneMealGrassifyDirtFeature {
             return InteractionResult.SUCCESS;
         }
 
-        world.setBlockAndUpdate(pos, Blocks.GRASS_BLOCK.defaultBlockState());
+        world.setBlockAndUpdate(
+                pos,
+                Blocks.GRASS_BLOCK.defaultBlockState().setValue(SnowyBlock.SNOWY, above.is(Blocks.SNOW))
+        );
         if (!player.isCreative()) {
             stack.shrink(1);
         }
@@ -66,9 +71,8 @@ public final class BoneMealGrassifyDirtFeature {
      * contain this random-tick rule, so using it would create grass under water or opaque blocks
      * only for the grass to decay back into dirt later.
      */
-    private static boolean canGrassSurvive(Level world, BlockPos pos) {
+    private static boolean canGrassSurvive(Level world, BlockPos pos, BlockState above) {
         BlockState grass = Blocks.GRASS_BLOCK.defaultBlockState();
-        BlockState above = world.getBlockState(pos.above());
         if (above.is(Blocks.SNOW) && above.getValue(SnowLayerBlock.LAYERS) == 1) {
             return true;
         }

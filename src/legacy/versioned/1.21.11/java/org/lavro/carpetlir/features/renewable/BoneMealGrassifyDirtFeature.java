@@ -4,6 +4,7 @@ import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.SnowBlock;
+import net.minecraft.block.SnowyBlock;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -40,7 +41,8 @@ public final class BoneMealGrassifyDirtFeature {
             return ActionResult.PASS;
         }
 
-        if (!canGrassSurvive(world, pos)) {
+        BlockState above = world.getBlockState(pos.up());
+        if (!canGrassSurvive(world, pos, above)) {
             return ActionResult.PASS;
         }
 
@@ -48,7 +50,10 @@ public final class BoneMealGrassifyDirtFeature {
             return ActionResult.SUCCESS;
         }
 
-        world.setBlockState(pos, Blocks.GRASS_BLOCK.getDefaultState());
+        world.setBlockState(
+                pos,
+                Blocks.GRASS_BLOCK.getDefaultState().with(SnowyBlock.SNOWY, above.isOf(Blocks.SNOW))
+        );
         if (!player.getAbilities().creativeMode) {
             stack.decrement(1);
         }
@@ -61,9 +66,8 @@ public final class BoneMealGrassifyDirtFeature {
         return ruleEnabled && !spectator;
     }
 
-    private static boolean canGrassSurvive(World world, BlockPos pos) {
+    private static boolean canGrassSurvive(World world, BlockPos pos, BlockState above) {
         BlockState grass = Blocks.GRASS_BLOCK.getDefaultState();
-        BlockState above = world.getBlockState(pos.up());
         if (above.isOf(Blocks.SNOW) && above.get(SnowBlock.LAYERS) == 1) {
             return true;
         }

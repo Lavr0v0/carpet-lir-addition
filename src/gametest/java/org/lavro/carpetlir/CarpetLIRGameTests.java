@@ -19,6 +19,7 @@ import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SnowyBlock;
 import net.minecraft.world.level.block.piston.PistonBaseBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gamerules.GameRules;
@@ -76,6 +77,26 @@ public final class CarpetLIRGameTests {
             helper.assertTrue(result == InteractionResult.SUCCESS_SERVER, "Expected server success result");
             helper.assertBlockPresent(Blocks.GRASS_BLOCK, TEST_POS);
             helper.assertTrue(player.getMainHandItem().getCount() == 1, "Expected one bone meal to be consumed");
+            helper.succeed();
+        } finally {
+            LIRSettings.boneMealGrassifyDirt = false;
+        }
+    }
+
+    @GameTest
+    public void boneMealPreservesSnowyGrassState(GameTestHelper helper) {
+        try {
+            LIRSettings.boneMealGrassifyDirt = true;
+            helper.setBlock(TEST_POS, Blocks.DIRT);
+            helper.setBlock(TEST_POS.above(), Blocks.SNOW);
+            Player player = boneMealPlayer(helper, 2);
+
+            InteractionResult result = useBoneMealCallback(helper, player);
+            BlockState grass = helper.getBlockState(TEST_POS);
+
+            helper.assertTrue(result == InteractionResult.SUCCESS_SERVER, "Expected server success result");
+            helper.assertTrue(grass.is(Blocks.GRASS_BLOCK), "Expected dirt to become grass");
+            helper.assertTrue(grass.getValue(SnowyBlock.SNOWY), "Expected grass under snow to use its snowy state");
             helper.succeed();
         } finally {
             LIRSettings.boneMealGrassifyDirt = false;
