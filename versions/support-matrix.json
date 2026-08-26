@@ -583,10 +583,10 @@
       "carpetModVersion": "1.4.185+v250930",
       "profile": "mc_1_21_9",
       "java": 21,
-      "sourceFamily": "yarn-1.21.11",
-      "status": "planned",
+      "sourceFamily": "yarn-1.21.9-1.21.10",
+      "status": "build-only",
       "capabilityTier": "tier-1.21.4",
-      "notes": "Stable Carpet coordinate; the legacy grouped artifact was compiled with 1.21.10."
+      "notes": "Exact current adapter passes compilation, unit tests, packaging, JAR audit, and an isolated real-server rule-on/rule-off/spectator/furnace-cache smoke; full gameplay automation is still pending."
     },
     {
       "target": "1.21.10",
@@ -594,10 +594,10 @@
       "carpetModVersion": "1.4.188+v251016",
       "profile": "mc_1_21_10",
       "java": 21,
-      "sourceFamily": "yarn-1.21.11",
-      "status": "released-legacy",
+      "sourceFamily": "yarn-1.21.9-1.21.10",
+      "status": "build-only",
       "capabilityTier": "tier-1.21.4",
-      "notes": "Compile target for the published v1.0.1 1.21.9-1.21.10 range artifact."
+      "notes": "Exact current adapter passes compilation, unit tests, packaging, JAR audit, and an isolated real-server rule-on/rule-off/spectator/furnace-cache smoke; full gameplay automation is still pending."
     },
     {
       "target": "1.21.11",

@@ -120,6 +120,7 @@ $KnownSourceFamilies = @(
     'yarn-1.21.1',
     'yarn-1.21.2-plus',
     'yarn-1.21.8',
+    'yarn-1.21.9-1.21.10',
     'yarn-1.21.11',
     'mojang-26'
 )
