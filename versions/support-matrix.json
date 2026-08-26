@@ -241,9 +241,9 @@
       "profile": "mc_1_15",
       "java": 8,
       "sourceFamily": "yarn-1.15",
-      "status": "planned",
+      "status": "build-only",
       "capabilityTier": "tier-1.15",
-      "notes": "First honeycomb-capable tier; no prior Carpet LIR release exists for this target."
+      "notes": "Audited exact Java 8 adapter for the first honeycomb-capable tier, using an extension-owned /carpetlir settings manager and physically omitting every 1.17+ capability; unit, JAR, and focused disposable-server checks passed."
     },
     {
       "target": "1.15.1",
@@ -252,9 +252,9 @@
       "profile": "mc_1_15_1",
       "java": 8,
       "sourceFamily": "yarn-1.15",
-      "status": "planned",
+      "status": "build-only",
       "capabilityTier": "tier-1.15",
-      "notes": "Stable Fabric Carpet target requiring a fresh compile and server smoke test."
+      "notes": "Audited exact Java 8 adapter for Carpet 1.3.4 with only the three tier-1.15 rules and seven recipes; unit, JAR, and focused disposable-server checks passed."
     },
     {
       "target": "1.15.2",
@@ -263,9 +263,9 @@
       "profile": "mc_1_15_2",
       "java": 8,
       "sourceFamily": "yarn-1.15",
-      "status": "planned",
+      "status": "build-only",
       "capabilityTier": "tier-1.15",
-      "notes": "Final 1.15 source-family target; no prior Carpet LIR release exists."
+      "notes": "Audited exact Java 8 adapter for the final 1.15 source-family release with its own dependency metadata and JAR; unit, legacy-translation, JAR, and focused disposable-server checks passed."
     },
     {
       "target": "1.16",

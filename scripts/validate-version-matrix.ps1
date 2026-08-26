@@ -725,6 +725,13 @@ foreach ($profileFile in $profileFiles) {
             Add-ValidationError "$context must pin fabric_api_dependency to '$expectedFabricDependency'; later nominal 1.16 aggregates link Minecraft 1.16.2-only classes."
         }
     }
+    if ($profileVersion -in @('1.15', '1.15.1', '1.15.2')) {
+        $expectedFabricDependency = "=$([string]$profile.fabric_api_version)"
+        if (-not $profile.ContainsKey('fabric_api_dependency') -or
+                [string]$profile.fabric_api_dependency -ne $expectedFabricDependency) {
+            Add-ValidationError "$context must pin fabric_api_dependency to '$expectedFabricDependency'; 1.15 Fabric API module suffixes are mapping-generation-specific."
+        }
+    }
 
     $profileSourceFamily = [string]$profile.source_family
     if ($profileSourceFamily -notin @('legacy-yarn', 'mojang-26')) {
@@ -765,6 +772,7 @@ foreach ($profileFile in $profileFiles) {
         Add-ValidationError "$context must use ingredient-objects-result-id in the plural recipes directory."
     }
     if ($profileVersion -in @(
+            '1.15', '1.15.1', '1.15.2',
             '1.16', '1.16.1', '1.16.2', '1.16.3', '1.16.4', '1.16.5',
             '1.17', '1.17.1',
             '1.18', '1.18.1', '1.18.2',

@@ -29,7 +29,7 @@ public final class LegacyCarpetLIRAddition implements CarpetExtension, ModInitia
                 CarpetLIRAddition.MOD_ID,
                 CarpetLIRAddition.MOD_NAME
         );
-        // Carpet 1.16 can register extension commands before it invokes onGameStarted.
+        // Early Carpet releases can register extension commands before onGameStarted.
         settingsManager.parseSettingsClass(LIRSettings.class);
     }
 
@@ -63,7 +63,6 @@ public final class LegacyCarpetLIRAddition implements CarpetExtension, ModInitia
                 .orElse("unknown");
     }
 
-    @Override
     public Map<String, String> canHasTranslations(String lang) {
         Map<String, String> translations = new HashMap<>(loadTranslations("en_us"));
         if (!"en_us".equals(lang)) {
@@ -81,10 +80,23 @@ public final class LegacyCarpetLIRAddition implements CarpetExtension, ModInitia
             Type mapType = new TypeToken<Map<String, String>>() { }.getType();
             try (InputStreamReader reader = new InputStreamReader(stream, StandardCharsets.UTF_8)) {
                 Map<String, String> loaded = new Gson().fromJson(reader, mapType);
-                return loaded == null ? Collections.emptyMap() : loaded;
+                return loaded == null ? Collections.emptyMap() : toLegacyTranslationKeys(loaded);
             }
         } catch (IOException | JsonParseException exception) {
             throw new IllegalStateException("Unable to read Carpet LIR translations from " + resourcePath, exception);
         }
+    }
+
+    /** Carpet 1.15.2-1.16 predates the modern carpet.rule/carpet.category key prefixes. */
+    static Map<String, String> toLegacyTranslationKeys(Map<String, String> translations) {
+        Map<String, String> legacyTranslations = new HashMap<>();
+        for (Map.Entry<String, String> entry : translations.entrySet()) {
+            String key = entry.getKey();
+            if (key.startsWith("carpet.rule.") || key.startsWith("carpet.category.")) {
+                key = key.substring("carpet.".length());
+            }
+            legacyTranslations.put(key, entry.getValue());
+        }
+        return legacyTranslations;
     }
 }

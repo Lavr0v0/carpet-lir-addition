@@ -239,7 +239,9 @@ if (sourceFamily == 'mojang-26') {
         }
         test {
             java {
-                setSrcDirs(['src/legacy/test/java'])
+                setSrcDirs(['src/legacy/test/java'] + sharedSourceOverlays.collect {
+                    "src/legacy/versioned/${it}/test"
+                })
                 if (!availableRuleNames.contains('pistonHarvestableAmethysts')) {
                     exclude '**/PistonHarvestableAmethystFeatureTest.java'
                 }

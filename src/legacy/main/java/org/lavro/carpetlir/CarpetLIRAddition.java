@@ -40,7 +40,6 @@ public class CarpetLIRAddition implements CarpetExtension, ModInitializer {
                 .orElse("unknown");
     }
 
-    @Override
     public Map<String, String> canHasTranslations(String lang) {
         Map<String, String> translations = new HashMap<>(loadTranslations("en_us"));
         if (!"en_us".equals(lang)) {

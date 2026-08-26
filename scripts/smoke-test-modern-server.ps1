@@ -282,7 +282,7 @@ $boneMealHandCommand = if ($usesLegacyReplaceItem) {
     'item replace entity Notch weapon.mainhand with minecraft:bone_meal 3'
 }
 $boneMealLookCommand = if ($usesLegacyReplaceItem) {
-    # Carpet 1.16's numeric look command feeds RotationArgumentType's
+    # Carpet 1.15-1.16 numeric look commands feed RotationArgumentType's
     # pitch/yaw Vec2f directly into an action-pack yaw/pitch method.
     'player Notch look 37 0'
 } else {

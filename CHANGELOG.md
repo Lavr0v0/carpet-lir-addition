@@ -3,6 +3,9 @@
 ## [Unreleased]
 
 ### Added
+- Added exact Minecraft 1.15, 1.15.1, and 1.15.2 Java 8 profiles with official Carpet, Yarn, and exact mapping-bound Fabric API coordinates, producing one independently constrained JAR per release.
+- Added the 1.15 bone-meal interaction overlay and Java 8 RecipeManager Mixin resource while reusing the capability-pruned tier-1.15 settings, feature bootstrap, legacy entrypoint, and direct recipe filter.
+- Added a focused legacy translation-key test and disposable real-server coverage for all three 1.15 releases, including `/carpetlir`, bone-meal consumption and interaction gates, same-furnace/direct recipe fallback, clean shutdown, and automatic world cleanup.
 - Added six exact Minecraft 1.16–1.16.5 Java 8 profiles with version-specific Carpet, Yarn, Fabric API, dependency metadata, and one JAR per exact Minecraft release.
 - Added the first root-project `tier-1.15` source layer, exposing only `boneMealGrassifyDirt`, `renewableLeavesCrafting`, `renewableHoneycombCrafting`, and their seven valid recipes while physically omitting every 1.17+ rule, feature, Mixin, resource, and translation.
 - Added an extension-owned legacy `SettingsManager`, `carpet.settings.Rule` adapter, `/carpetlir` command root, 1.16 interaction implementation, and order-preserving recipe-stream filter for the Java 8 line.
@@ -34,6 +37,8 @@
 - Extended basic real-server smoke coverage through Minecraft 1.19–1.20.6 and 1.21–1.21.11. The enhanced disposable-data-pack checks use an enabled direct-query baseline before asserting cached and direct recipe fallbacks on exact pre-entry 1.19–1.20.1 and representative 1.20.2, 1.20.6, and 1.21.10 API boundaries; acceptance runs use `-CleanRunDirectory` to remove their GUID worlds and temporary data packs.
 
 ### Fixed
+- Converted modern `carpet.rule.*` and `carpet.category.*` asset keys to the legacy `rule.*` and `category.*` names consumed by the Minecraft 1.15.2–1.16 Carpet translation hook.
+- Removed translation-hook `@Override` annotations that do not exist in the Minecraft 1.15/1.15.1 CarpetExtension interface while retaining the method for 1.15.2 and later legacy releases.
 - Pinned Minecraft 1.16 to Fabric API `0.14.1+build.372-1.16`; the next nominal 1.16 aggregate includes a tag module that links a class introduced only in Minecraft 1.16.2.
 - Parsed extension-owned settings before Carpet registers legacy commands, detached that manager on server close, and corrected the Java 8 smoke harness for Carpet's swapped numeric look arguments and the controlled recipe fixture's namespace.
 - Filtered disabled 1.16 recipes before vanilla's first-match selection, preserving data-pack iteration priority and avoiding a second sorted recipe scan on each furnace lookup.
