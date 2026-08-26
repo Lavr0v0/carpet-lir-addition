@@ -58,6 +58,9 @@ if ($recipeDirectory -notin @('recipe', 'recipes')) {
 }
 $isTier119 = [string]$profile.capability_tier -eq 'tier-1.19'
 $dataPackFormats = @{
+    '1.19' = 10
+    '1.19.1' = 10
+    '1.19.2' = 10
     '1.19.3' = 10
     '1.19.4' = 12
     '1.20' = 15

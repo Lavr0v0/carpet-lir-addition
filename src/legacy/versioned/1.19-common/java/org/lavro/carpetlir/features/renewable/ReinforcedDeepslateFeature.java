@@ -1,13 +1,11 @@
 package org.lavro.carpetlir.features.renewable;
 
-import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.WardenEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.loot.context.LootContext;
@@ -25,7 +23,7 @@ public final class ReinforcedDeepslateFeature {
     }
 
     public static void register() {
-        ServerLivingEntityEvents.AFTER_DEATH.register(ReinforcedDeepslateFeature::dropFromWarden);
+        WardenDeathCompatibility.register();
     }
 
     public static boolean shouldUseObsidianHardness(AbstractBlock.AbstractBlockState state) {
@@ -55,13 +53,13 @@ public final class ReinforcedDeepslateFeature {
         return List.of(new ItemStack(Blocks.REINFORCED_DEEPSLATE));
     }
 
-    private static void dropFromWarden(LivingEntity entity, DamageSource damageSource) {
+    /** Called by exactly one target-selected death adapter. */
+    public static void handleWardenDeath(LivingEntity entity) {
         if (!LIRSettings.wardensDropReinforcedDeepslate || !(entity instanceof WardenEntity)) {
             return;
         }
-
-        ServerWorld world = (ServerWorld) entity.getEntityWorld();
-        if (!world.getGameRules().getBoolean(GameRules.DO_MOB_LOOT)) {
+        if (!(entity.getEntityWorld() instanceof ServerWorld world)
+                || !world.getGameRules().getBoolean(GameRules.DO_MOB_LOOT)) {
             return;
         }
 

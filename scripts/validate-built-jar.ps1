@@ -502,6 +502,7 @@ try {
         }
     }
 
+    $requiresLegacyDeathMixin = $false
     if ($isLegacyYarnProfile -and
             $targetVersion -ge (Convert-ToTargetVersion '1.19') -and
             $targetVersion -lt (Convert-ToTargetVersion '1.20')) {
@@ -533,6 +534,46 @@ try {
                 $legacyRecipeMixinText.Contains('net/minecraft/class_8786')) {
             throw 'Minecraft 1.19 RecipeManagerMixin does not use the pre-RecipeEntry Pair API.'
         }
+
+        $wardenDeathCompatibilityEntry = $zip.GetEntry(
+                'org/lavro/carpetlir/features/renewable/WardenDeathCompatibility.class'
+        )
+        if ($null -eq $wardenDeathCompatibilityEntry) {
+            throw 'Minecraft 1.19 JAR is missing WardenDeathCompatibility.'
+        }
+        $wardenDeathCompatibilityText = [System.Text.Encoding]::UTF8.GetString(
+                (Get-ZipEntryBytes $wardenDeathCompatibilityEntry)
+        )
+        $selectedSourceOverlay = [string]$profile.source_overlay
+        if ($selectedSourceOverlay -eq '1.19-legacy-death') {
+            $requiresLegacyDeathMixin = $true
+            if ($wardenDeathCompatibilityText.Contains('ServerLivingEntityEvents')) {
+                throw 'Legacy Fabric API death adapter must not reference unavailable ServerLivingEntityEvents.'
+            }
+            $legacyDeathMixinEntry = $zip.GetEntry(
+                    'org/lavro/carpetlir/mixins/LivingEntityDeathMixin.class'
+            )
+            if ($null -eq $legacyDeathMixinEntry) {
+                throw 'Legacy Fabric API death adapter is missing LivingEntityDeathMixin.'
+            }
+            $legacyDeathMixinText = [System.Text.Encoding]::UTF8.GetString(
+                    (Get-ZipEntryBytes $legacyDeathMixinEntry)
+            )
+            if (-not $legacyDeathMixinText.Contains('ReinforcedDeepslateFeature') -or
+                    -not $legacyDeathMixinText.Contains('net/minecraft/class_1937') -or
+                    -not $legacyDeathMixinText.Contains('method_8421')) {
+                throw 'LivingEntityDeathMixin does not mirror the server death-event injection.'
+            }
+        } elseif ($selectedSourceOverlay -eq '1.19') {
+            if (-not $wardenDeathCompatibilityText.Contains('ServerLivingEntityEvents')) {
+                throw 'Modern Minecraft 1.19 death adapter does not register ServerLivingEntityEvents.'
+            }
+            if ($null -ne $zip.GetEntry('org/lavro/carpetlir/mixins/LivingEntityDeathMixin.class')) {
+                throw 'Modern Minecraft 1.19 JAR contains the legacy death Mixin and could double-drop.'
+            }
+        } else {
+            throw "Minecraft 1.19 profile selects unsupported source overlay '$selectedSourceOverlay'."
+        }
     }
 
     $requiredServerMixinClassPaths = @()
@@ -547,6 +588,9 @@ try {
         }
         if ($expectedRecipes.Count -gt 0) {
             $requiredServerMixinClassPaths += 'org/lavro/carpetlir/mixins/RecipeManagerMixin.class'
+        }
+        if ($requiresLegacyDeathMixin) {
+            $requiredServerMixinClassPaths += 'org/lavro/carpetlir/mixins/LivingEntityDeathMixin.class'
         }
     }
 

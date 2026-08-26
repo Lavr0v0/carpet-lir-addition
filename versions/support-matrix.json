@@ -388,9 +388,9 @@
       "profile": "mc_1_19",
       "java": 17,
       "sourceFamily": "yarn-1.19",
-      "status": "planned",
+      "status": "build-only",
       "capabilityTier": "tier-1.19",
-      "notes": "Adds reinforced-deepslate rules, Warden drops, and mangrove leaf recipes."
+      "notes": "Audited exact 1.19 profile with the required legacy Rule description/category API, old Fabric mod id, and server-only death Mixin; real-server hardness, Silk Touch, Warden, recipe, and piston paths passed."
     },
     {
       "target": "1.19.1",
@@ -399,9 +399,9 @@
       "profile": "mc_1_19_1",
       "java": 17,
       "sourceFamily": "yarn-1.19",
-      "status": "planned",
+      "status": "build-only",
       "capabilityTier": "tier-1.19",
-      "notes": "Stable Fabric Carpet target requiring a fresh compile and server smoke test."
+      "notes": "Audited exact 1.19.1 profile with the new Rule categories API, old Fabric mod id, and server-only death Mixin; real-server hardness, Silk Touch, Warden, recipe, and piston paths passed."
     },
     {
       "target": "1.19.2",
@@ -410,9 +410,9 @@
       "profile": "mc_1_19_2",
       "java": 17,
       "sourceFamily": "yarn-1.19",
-      "status": "planned",
+      "status": "build-only",
       "capabilityTier": "tier-1.19",
-      "notes": "Stable Fabric Carpet target requiring a fresh compile and server smoke test."
+      "notes": "Audited exact 1.19.2 profile using Fabric API ServerLivingEntityEvents and the fabric-api mod id; real-server hardness, Silk Touch, Warden, recipe, and piston paths passed."
     },
     {
       "target": "1.19.3",

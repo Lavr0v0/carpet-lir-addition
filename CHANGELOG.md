@@ -3,13 +3,15 @@
 ## [Unreleased]
 
 ### Added
+- Added exact Minecraft 1.19, 1.19.1, and 1.19.2 profiles with Java 17 bytecode, exact Carpet/Yarn/Fabric API dependencies, version-correct `fabric` versus `fabric-api` ids, and one audited JAR per release.
+- Added an old `carpet.settings.Rule` adapter with required descriptions for Minecraft 1.19, plus a server-only Warden death Mixin for Fabric API 0.58.x and a shared event adapter for 1.19.2–1.19.4.
+- Extended full tier-1.19 real-server coverage through all five exact Minecraft 1.19 releases, including cached/direct recipe fallback, real Silk Touch mining, `/kill` Warden loot gates and count, piston no-drop/drop behavior, and automatic world cleanup.
 - Added exact Minecraft 1.19.3 and 1.19.4 profiles with Java 17 bytecode, one JAR per release, the 11-rule/13-recipe `tier-1.19` capability set, and version-correct legacy loot-context, pre-`RecipeEntry`, and registry-fluid-tag adapters.
-- Added real-server 1.19.3/1.19.4 coverage for reinforced-deepslate hardness, three Silk Touch mining paths, three Warden loot-gating paths, piston no-drop/drop behavior, and automatic GUID test-world cleanup.
 - Added a server GameTest proving that reinforced deepslate drops exactly one block with Silk Touch only while its Carpet rule is enabled.
 - Added independent Minecraft 1.20 and 1.20.1 profiles using the shared stable Carpet coordinate but exact Yarn, Fabric API, Minecraft dependency metadata, Java 17 bytecode, and one JAR per release.
 - Added a pre-`RecipeEntry` source layer so old `Recipe` and cached `Pair<Identifier, Recipe>` lookups can coexist with later entry-based adapters without duplicate or unavailable classes.
 - Added exact Minecraft 1.20.2, 1.20.3, and 1.20.4 build profiles with Java 17 bytecode, exact dependency metadata, version-correct recipe resources, and one JAR per release.
-- Added a shared 1.19–1.20 source layer for mechanics that remain API-compatible while keeping loot context, recipe lookup, fluid tags, and Mixin configuration in narrow version adapters.
+- Added shared 1.19–1.20 source layers for mechanics that remain API-compatible while keeping rule annotations, death hooks, loot context, recipe lookup, fluid tags, and Mixin configuration in narrow version adapters.
 - Added exact Minecraft 1.20.5 and 1.20.6 build profiles with their own Carpet, Fabric API, Yarn, metadata, and release JARs.
 - Added target-selected singular/plural recipe-directory packaging and audit coverage for the 1.20.5/1.20.6 data-pack layout.
 - Added exact, audited build profiles for Minecraft 1.21, 1.21.1, 1.21.2, and 1.21.3 using two API-accurate source families and one exact JAR per release.
@@ -19,7 +21,7 @@
 - Added exact, audited build profiles and a shared API adapter for Minecraft 1.21.6, 1.21.7, and 1.21.8 while keeping one exact JAR per release.
 - Added exact, audited Minecraft 1.21.4 and 1.21.5 profiles, reusing the compatible audited adapter without duplicating source code.
 - Added a uniquely isolated real-server smoke harness covering enabled dirt conversion, disabled behavior, spectator denial, live furnace-cache invalidation, clean shutdown, and optional test-world cleanup.
-- Extended basic real-server smoke coverage through Minecraft 1.20–1.20.6 and 1.21–1.21.10. The enhanced disposable-data-pack checks use an enabled direct-query baseline before asserting cached and direct recipe fallbacks on exact 1.20/1.20.1 and representative 1.20.2, 1.20.6, and 1.21.10 API boundaries; acceptance runs use `-CleanRunDirectory` to remove their GUID worlds and temporary data packs.
+- Extended basic real-server smoke coverage through Minecraft 1.19–1.20.6 and 1.21–1.21.11. The enhanced disposable-data-pack checks use an enabled direct-query baseline before asserting cached and direct recipe fallbacks on exact pre-entry 1.19–1.20.1 and representative 1.20.2, 1.20.6, and 1.21.10 API boundaries; acceptance runs use `-CleanRunDirectory` to remove their GUID worlds and temporary data packs.
 
 ### Fixed
 - Made JAR validation require capability-critical fluid, reinforced-deepslate, recipe, and piston adapters to be registered in a server-active Mixin configuration, not merely present as unused classes.
