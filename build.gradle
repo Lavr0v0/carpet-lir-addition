@@ -1,4 +1,6 @@
 import java.util.Properties
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
 
 plugins {
     id 'fabric-loom' apply false
@@ -33,18 +35,38 @@ def targetLoaderVersion = requiredTargetProperty('loader_version')
 def targetFabricVersion = requiredTargetProperty('fabric_api_version')
 def targetCarpetVersion = requiredTargetProperty('carpet_core_version')
 def targetCarpetModVersion = targetProfile.getProperty('carpet_mod_version', targetCarpetVersion).trim()
+def targetEntrypointClass = targetProfile.getProperty(
+        'entrypoint_class',
+        'org.lavro.carpetlir.CarpetLIRAddition'
+).trim()
 def targetFabricModId = targetProfile.getProperty('fabric_api_mod_id', 'fabric-api').trim()
 def targetLoaderDependency = targetProfile.getProperty('loader_dependency', ">=${targetLoaderVersion}").trim()
 def targetFabricDependency = targetProfile.getProperty('fabric_api_dependency', ">=${targetFabricVersion}").trim()
 def targetCarpetDependency = targetProfile.getProperty('carpet_dependency', ">=${targetCarpetModVersion}").trim()
 def archiveMinecraftLabel = requiredTargetProperty('archive_minecraft_label')
 def sourceFamily = requiredTargetProperty('source_family')
+def capabilityTierId = requiredTargetProperty('capability_tier')
 def javaVersion = Integer.parseInt(requiredTargetProperty('java_version'))
 def mappingsMode = requiredTargetProperty('mappings_mode')
 def yarnMappings = targetProfile.getProperty('yarn_mappings')?.trim()
 def sourceOverlay = targetProfile.getProperty('source_overlay', targetVersion).trim()
+def resourceOverlay = targetProfile.getProperty('resource_overlay', sourceOverlay).trim()
+def settingsSourceOverlay = targetProfile.getProperty('settings_source_overlay', 'rule-categories').trim()
+def fluidTagSourceOverlay = targetProfile.getProperty('fluid_tag_source_overlay', 'fluid-tags-registry').trim()
+def featureBootstrapOverlay = targetProfile.getProperty(
+        'feature_bootstrap_overlay',
+        'feature-bootstrap-reinforced'
+).trim()
+def sharedSourceOverlays = targetProfile.getProperty('shared_source_overlays', '')
+        .split(',')
+        .collect { it.trim() }
+        .findAll { !it.isEmpty() }
+def recipeApiOverlay = targetProfile.getProperty('recipe_api_overlay', 'shared-modern').trim()
 def mixinConfig = targetProfile.getProperty('mixin_config', 'carpet-lir-addition.mixins.json').trim()
 def supportStatus = targetProfile.getProperty('support_status', 'verified').trim()
+def recipeSchema = targetProfile.getProperty('recipe_schema', 'modern-shorthand-result-id').trim()
+def recipeDirectory = targetProfile.getProperty('recipe_directory', 'recipe').trim()
+def runDirectoryName = providers.gradleProperty('runDirectoryName').orElse(targetVersion).get().trim()
 def excludedSources = targetProfile.getProperty('excluded_sources', '')
         .split(',')
         .collect { it.trim() }
@@ -59,6 +81,52 @@ def buildTargetNames = file('versions/targets')
         .findAll { it.name.endsWith('.properties') }
         .collect { it.name.replace('.properties', '') }
         .sort()
+def supportMatrix = new JsonSlurper().parse(file('versions/support-matrix.json'))
+def matchingCapabilityTiers = supportMatrix.capabilityTiers.findAll { it.id == capabilityTierId }
+if (matchingCapabilityTiers.size() != 1) {
+    throw new GradleException(
+            "Target '${targetVersion}' selects unknown or duplicate capability tier '${capabilityTierId}'."
+    )
+}
+def selectedCapabilityTier = matchingCapabilityTiers.first()
+def allRuleNames = supportMatrix.capabilityTiers
+        .collectMany { it.availableRules as List }
+        .collect { it.toString() }
+        .toSet()
+def availableRuleNames = (selectedCapabilityTier.availableRules as List)
+        .collect { it.toString() }
+        .toSet()
+def unavailableRuleTranslations = (allRuleNames - availableRuleNames).sort()
+
+if (!(recipeSchema in [
+        'modern-shorthand-result-id',
+        'ingredient-objects-result-id',
+        'ingredient-objects-legacy-result'
+])) {
+    throw new GradleException(
+            "Target '${targetVersion}' has unsupported recipe schema '${recipeSchema}'."
+    )
+}
+
+if (!(recipeDirectory in ['recipe', 'recipes'])) {
+    throw new GradleException(
+            "Target '${targetVersion}' has unsupported recipe directory '${recipeDirectory}'."
+    )
+}
+
+([source_overlay: sourceOverlay,
+  resource_overlay: resourceOverlay,
+  settings_source_overlay: settingsSourceOverlay,
+  fluid_tag_source_overlay: fluidTagSourceOverlay,
+  feature_bootstrap_overlay: featureBootstrapOverlay,
+  recipe_api_overlay: recipeApiOverlay] +
+        sharedSourceOverlays.withIndex().collectEntries { name, index ->
+            [("shared_source_overlays[${index}]".toString()): name]
+        }).each { label, name ->
+    if (!(name ==~ /[A-Za-z0-9][A-Za-z0-9._-]*/)) {
+        throw new GradleException("Target '${targetVersion}' has unsafe ${label} value '${name}'.")
+    }
+}
 
 if (!(targetFabricModId in ['fabric', 'fabric-api'])) {
     throw new GradleException(
@@ -68,6 +136,7 @@ if (!(targetFabricModId in ['fabric', 'fabric-api'])) {
 
 def resourceProperties = [
         version: version.toString(),
+        entrypoint_class: targetEntrypointClass,
         minecraft_dependency: minecraftDependency,
         loader_dependency: targetLoaderDependency,
         fabric_api_mod_id: targetFabricModId,
@@ -78,6 +147,18 @@ def resourceProperties = [
 ]
 def licenseArchiveName = archiveBaseName
 
+def normalizedRunRoot = file('run').toPath().toAbsolutePath().normalize()
+def normalizedRunDirectory = file("run/${runDirectoryName}").toPath().toAbsolutePath().normalize()
+if (!(runDirectoryName ==~ /[A-Za-z0-9][A-Za-z0-9._-]*/) ||
+        runDirectoryName.contains('..') ||
+        normalizedRunDirectory.parent != normalizedRunRoot) {
+    throw new GradleException("Unsafe run directory name '${runDirectoryName}'.")
+}
+if (!(targetEntrypointClass ==~ /[A-Za-z_$][A-Za-z0-9_$]*(\.[A-Za-z_$][A-Za-z0-9_$]*)+/)) {
+    throw new GradleException(
+            "Target '${targetVersion}' has unsafe entrypoint_class '${targetEntrypointClass}'."
+    )
+}
 if (sourceFamily == 'mojang-26') {
     apply plugin: 'net.fabricmc.fabric-loom'
 } else if (sourceFamily == 'legacy-yarn') {
@@ -107,7 +188,8 @@ dependencies {
         modImplementation "net.fabricmc:fabric-loader:${targetLoaderVersion}"
         modImplementation "net.fabricmc.fabric-api:fabric-api:${targetFabricVersion}"
         modImplementation "carpet:fabric-carpet:${targetCarpetVersion}"
-        testImplementation "net.fabricmc:fabric-loader-junit:${targetLoaderVersion}"
+        testImplementation "org.junit.jupiter:junit-jupiter:5.10.0"
+        testRuntimeOnly "org.junit.platform:junit-platform-launcher:1.10.0"
     } else if (mappingsMode == 'mojang') {
         implementation "net.fabricmc:fabric-loader:${targetLoaderVersion}"
         implementation "net.fabricmc.fabric-api:fabric-api:${targetFabricVersion}"
@@ -139,20 +221,31 @@ if (sourceFamily == 'mojang-26') {
                 setSrcDirs([
                         'src/legacy/main/java',
                         "src/legacy/versioned/${sourceOverlay}/java",
-                        'src/legacy/versioned/shared-modern/java'
-                ])
+                        "src/legacy/versioned/${settingsSourceOverlay}/java",
+                        "src/legacy/versioned/${fluidTagSourceOverlay}/java",
+                        "src/legacy/versioned/${featureBootstrapOverlay}/java"
+                ] + sharedSourceOverlays.collect {
+                    "src/legacy/versioned/${it}/java"
+                } + ["src/legacy/versioned/${recipeApiOverlay}/java"])
                 excludedSources.each { pattern -> exclude pattern }
             }
             resources {
                 setSrcDirs([
                         'src/main/resources',
-                        "src/legacy/versioned/${sourceOverlay}/resources"
+                        "src/legacy/versioned/${resourceOverlay}/resources"
                 ])
                 excludedResources.each { pattern -> exclude pattern }
             }
         }
         test {
-            java.setSrcDirs(['src/legacy/test/java'])
+            java {
+                setSrcDirs(['src/legacy/test/java'] + sharedSourceOverlays.collect {
+                    "src/legacy/versioned/${it}/test"
+                })
+                if (!availableRuleNames.contains('pistonHarvestableAmethysts')) {
+                    exclude '**/PistonHarvestableAmethystFeatureTest.java'
+                }
+            }
             resources.setSrcDirs([])
         }
     }
@@ -161,30 +254,116 @@ if (sourceFamily == 'mojang-26') {
 loom {
     runs {
         configureEach {
-            runDir("run/${targetVersion}")
+            runDir("run/${runDirectoryName}")
         }
     }
 }
 
 processResources {
     inputs.properties resourceProperties
+    inputs.property('recipe_schema', recipeSchema)
+    inputs.property('recipe_directory', recipeDirectory)
+    inputs.property('capability_tier', capabilityTierId)
+    inputs.property('unavailable_rule_translations', unavailableRuleTranslations.join(','))
+
+    eachFile { details ->
+        if (recipeDirectory == 'recipes' && details.path.startsWith('data/carpetlir/recipe/')) {
+            details.path = details.path.replaceFirst('^data/carpetlir/recipe/', 'data/carpetlir/recipes/')
+        }
+    }
 
     filesMatching('fabric.mod.json') {
         expand resourceProperties
     }
+
+    doLast {
+        if (recipeSchema in ['ingredient-objects-result-id', 'ingredient-objects-legacy-result']) {
+            Closure<Object> toIngredientObject
+            toIngredientObject = { Object ingredient ->
+                if (ingredient instanceof CharSequence) {
+                    String id = ingredient.toString()
+                    return id.startsWith('#') ? [tag: id.substring(1)] : [item: id]
+                }
+                if (ingredient instanceof List) {
+                    return ingredient.collect { toIngredientObject(it) }
+                }
+                return ingredient
+            }
+
+            fileTree(destinationDir) {
+                include "data/carpetlir/${recipeDirectory}/*.json"
+            }.each { File recipeFile ->
+                def recipe = new JsonSlurper().parse(recipeFile)
+                if (recipe.key instanceof Map) {
+                    recipe.key = recipe.key.collectEntries { key, ingredient ->
+                        [(key): toIngredientObject(ingredient)]
+                    }
+                }
+                if (recipe.ingredients instanceof List) {
+                    recipe.ingredients = recipe.ingredients.collect { toIngredientObject(it) }
+                }
+                if (recipe.containsKey('ingredient')) {
+                    recipe.ingredient = toIngredientObject(recipe.ingredient)
+                }
+                if (recipeSchema == 'ingredient-objects-legacy-result' &&
+                        recipe.result instanceof Map &&
+                        recipe.result.id instanceof CharSequence) {
+                    Set<String> cookingRecipeTypes = [
+                            'minecraft:smelting',
+                            'minecraft:blasting',
+                            'minecraft:smoking',
+                            'minecraft:campfire_cooking'
+                    ] as Set
+                    if (cookingRecipeTypes.contains(recipe.type)) {
+                        recipe.result = recipe.result.id.toString()
+                    } else {
+                        Map<String, Object> convertedResult = [item: recipe.result.id.toString()]
+                        if (recipe.result.containsKey('count')) {
+                            convertedResult.count = recipe.result.count
+                        }
+                        recipe.result = convertedResult
+                    }
+                }
+                recipeFile.setText(
+                        JsonOutput.prettyPrint(JsonOutput.toJson(recipe)) + System.lineSeparator(),
+                        'UTF-8'
+                )
+            }
+        }
+    }
+
+    doLast {
+        if (!unavailableRuleTranslations.isEmpty()) {
+            fileTree(destinationDir) {
+                include 'assets/carpetlir/lang/*.json'
+            }.files.each { File languageFile ->
+                def language = new JsonSlurper().parse(languageFile, 'UTF-8')
+                unavailableRuleTranslations.each { String ruleName ->
+                    String nameKey = "carpet.rule.${ruleName}.name"
+                    String descriptionKey = "carpet.rule.${ruleName}.desc"
+                    language.remove(nameKey)
+                    language.remove(descriptionKey)
+                }
+                languageFile.setText(
+                        JsonOutput.prettyPrint(JsonOutput.toJson(language)) + System.lineSeparator(),
+                        'UTF-8'
+                )
+            }
+        }
+    }
 }
 
 tasks.withType(JavaCompile).configureEach {
-    it.options.release = javaVersion
+    if (javaVersion >= 9) {
+        it.options.release = javaVersion
+    }
     it.options.encoding = 'UTF-8'
     it.options.compilerArgs.add('-Xlint:deprecation')
 }
 
 java {
-    if (sourceFamily == 'mojang-26') {
-        toolchain {
-            languageVersion = JavaLanguageVersion.of(javaVersion)
-        }
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(javaVersion)
     }
     withSourcesJar()
     sourceCompatibility = JavaVersion.toVersion(javaVersion)
@@ -195,19 +374,30 @@ test {
     useJUnitPlatform()
 }
 
+tasks.withType(JavaExec).configureEach {
+    javaLauncher = javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(javaVersion)
+    }
+}
+
 tasks.register('printBuildTarget') {
     group = 'help'
     description = 'Prints the selected build-ready Minecraft target.'
     doLast {
         println "Minecraft : ${minecraftVersion}"
         println "Sources   : ${sourceFamily}"
+        println "Resources : ${resourceOverlay}"
         println "Mappings  : ${mappingsMode}${yarnMappings ? " (${yarnMappings})" : ''}"
         println "Java      : ${javaVersion}"
+        println "Tier      : ${capabilityTierId}"
+        println "Rule keys : ${availableRuleNames.sort().join(', ')}"
+        println "Omit keys : ${unavailableRuleTranslations.join(', ')}"
         println "Status    : ${supportStatus}"
         println "Profile   : ${targetProfileFile}"
         println "Fabric API: ${targetFabricVersion}"
         println "Carpet    : ${targetCarpetVersion}"
         println "Carpet mod: ${targetCarpetModVersion}"
+        println "Entrypoint: ${targetEntrypointClass}"
         println "Requires  : ${targetCarpetDependency}"
         println "Artifact  : ${archiveBaseName}-${version}.jar"
     }

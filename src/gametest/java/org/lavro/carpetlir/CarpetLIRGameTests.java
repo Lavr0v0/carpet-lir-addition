@@ -3,6 +3,7 @@ package org.lavro.carpetlir;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
@@ -14,8 +15,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.SingleRecipeInput;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SnowyBlock;
 import net.minecraft.world.level.block.piston.PistonBaseBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gamerules.GameRules;
@@ -73,6 +77,26 @@ public final class CarpetLIRGameTests {
             helper.assertTrue(result == InteractionResult.SUCCESS_SERVER, "Expected server success result");
             helper.assertBlockPresent(Blocks.GRASS_BLOCK, TEST_POS);
             helper.assertTrue(player.getMainHandItem().getCount() == 1, "Expected one bone meal to be consumed");
+            helper.succeed();
+        } finally {
+            LIRSettings.boneMealGrassifyDirt = false;
+        }
+    }
+
+    @GameTest
+    public void boneMealPreservesSnowyGrassState(GameTestHelper helper) {
+        try {
+            LIRSettings.boneMealGrassifyDirt = true;
+            helper.setBlock(TEST_POS, Blocks.DIRT);
+            helper.setBlock(TEST_POS.above(), Blocks.SNOW);
+            Player player = boneMealPlayer(helper, 2);
+
+            InteractionResult result = useBoneMealCallback(helper, player);
+            BlockState grass = helper.getBlockState(TEST_POS);
+
+            helper.assertTrue(result == InteractionResult.SUCCESS_SERVER, "Expected server success result");
+            helper.assertTrue(grass.is(Blocks.GRASS_BLOCK), "Expected dirt to become grass");
+            helper.assertTrue(grass.getValue(SnowyBlock.SNOWY), "Expected grass under snow to use its snowy state");
             helper.succeed();
         } finally {
             LIRSettings.boneMealGrassifyDirt = false;
@@ -223,6 +247,48 @@ public final class CarpetLIRGameTests {
             helper.succeed();
         } finally {
             LIRSettings.obsidianHardnessReinforcedDeepslate = false;
+        }
+    }
+
+    @GameTest
+    public void reinforcedDeepslateSilkTouchDropFollowsRule(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos absolutePos = helper.absolutePos(TEST_POS);
+        BlockState reinforcedDeepslate = Blocks.REINFORCED_DEEPSLATE.defaultBlockState();
+        ItemStack silkTouchPickaxe = new ItemStack(Items.DIAMOND_PICKAXE);
+        silkTouchPickaxe.enchant(
+                level.registryAccess()
+                        .lookupOrThrow(Registries.ENCHANTMENT)
+                        .getOrThrow(Enchantments.SILK_TOUCH),
+                1
+        );
+        Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+
+        try {
+            LIRSettings.silkTouchableReinforcedDeepslate = false;
+            helper.assertTrue(
+                    Block.getDrops(reinforcedDeepslate, level, absolutePos, null, player, silkTouchPickaxe).isEmpty(),
+                    "Expected vanilla reinforced deepslate to drop nothing while disabled"
+            );
+
+            LIRSettings.silkTouchableReinforcedDeepslate = true;
+            var enabledDrops = Block.getDrops(
+                    reinforcedDeepslate,
+                    level,
+                    absolutePos,
+                    null,
+                    player,
+                    silkTouchPickaxe
+            );
+            helper.assertTrue(enabledDrops.size() == 1, "Expected one reinforced deepslate drop stack");
+            helper.assertTrue(
+                    enabledDrops.get(0).is(Items.REINFORCED_DEEPSLATE)
+                            && enabledDrops.get(0).getCount() == 1,
+                    "Expected exactly one reinforced deepslate from Silk Touch"
+            );
+            helper.succeed();
+        } finally {
+            LIRSettings.silkTouchableReinforcedDeepslate = false;
         }
     }
 

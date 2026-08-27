@@ -6,12 +6,12 @@
 
 The target list follows stable `carpet:fabric-carpet` Maven coordinates. Snapshot, experimental, pre-release, release-candidate, and beta builds are excluded. Minecraft 1.12 and 1.13 are also excluded because they predate the Fabric Carpet line covered by this project.
 
-Some stable Carpet coordinates cover adjacent Minecraft patch releases. In those rows, `target` remains the real Carpet coordinate while `minecraftVersions` enumerates every Minecraft release that coordinate covers. This keeps 1.20.1, 1.20.4, 1.21.1, 1.21.3, 1.21.8, 26.1.1, and 26.1.2 visible without inventing Carpet coordinates that do not exist.
+Some stable Carpet coordinates cover adjacent Minecraft patch releases. In those rows, `target` remains the real Carpet coordinate while `minecraftVersions` enumerates every Minecraft release that coordinate covers. This keeps 1.16.1, 1.20.1, 1.20.4, 1.21.1, 1.21.3, 1.21.8, 26.1.1, and 26.1.2 visible without inventing Carpet coordinates that do not exist.
 
 ## Status meanings
 
 - `verified`: built and exercised with the current audited implementation and a behavior regression suite. Minecraft 1.14.4 and the 26.1 line (including 26.1.1 and 26.1.2) plus 26.2 have this status today. The classic target uses real Java 8 server/fake-player checks because its generation has no modern Fabric GameTest framework.
-- `build-only`: current sources compile and pass focused unit, packaging, and server-startup checks, but behavior automation is not yet sufficient for a release claim. Minecraft 1.21.11 has this status today.
+- `build-only`: current sources compile and pass focused unit, packaging, and real-server checks, but behavior automation is not yet sufficient for a release claim. Thirty-eight exact targets—Minecraft 1.15 through 1.18.2, 1.19 through 1.19.4, 1.20 through 1.20.6, and 1.21 through 1.21.11—have this status today.
 - `released-legacy`: an artifact was published in v1.0.1, but it predates the current audit fixes and automated tests. It must be ported and revalidated before another release.
 - `planned`: a stable Fabric Carpet target with no currently accepted audited build. Local drafts do not count as releases or verification.
 
@@ -19,20 +19,22 @@ Some stable Carpet coordinates cover adjacent Minecraft patch releases. In those
 
 ## Capability tiers
 
-| Tier | First target | Rules added | Leaf recipe variants | Total recipes |
-| --- | --- | --- | --- | ---: |
-| `tier-1.14` | 1.14.4 | Leaves crafting and bone-meal grass conversion | Six original overworld tree families | 6 |
-| `tier-1.15` | 1.15 | Honeycomb reverse crafting | No change | 7 |
-| `tier-1.17` | 1.17 | Calcite, tuff, lapis ore, raw ores, and piston-harvestable amethyst | No change | 12 |
-| `tier-1.19` | 1.19 | Three reinforced-deepslate/Warden rules | Adds mangrove | 13 |
-| `tier-1.20` | 1.20 | No new rule | Adds cherry | 14 |
-| `tier-1.21.4` | 1.21.4 | No new rule | Adds pale oak | 15 |
+| Tier | First target | Rules added | Total rules | Leaf recipe variants | Total recipes |
+| --- | --- | --- | ---: | --- | ---: |
+| `tier-1.14` | 1.14.4 | Leaves crafting and bone-meal grass conversion | 2 | Six original overworld tree families | 6 |
+| `tier-1.15` | 1.15 | Honeycomb reverse crafting | 3 | No change | 7 |
+| `tier-1.17` | 1.17 | Calcite, tuff, lapis ore, raw ores, and piston-harvestable amethyst | 8 | No change | 12 |
+| `tier-1.19` | 1.19 | Three reinforced-deepslate/Warden rules | 11 | Adds mangrove | 13 |
+| `tier-1.20` | 1.20 | No new rule | 11 | Adds cherry | 14 |
+| `tier-1.21.4` | 1.21.4 | No new rule | 11 | Adds pale oak | 15 |
 
 Unsupported rules are meant to be absent from that version's settings class, feature sources, mixin configuration, recipes, and tests. They must not be registered as nonfunctional rules.
 
 ## Source families
 
 `sourceFamily` identifies the API/mapping adapter expected to supply a target. It is not a claim that the adapter already exists. Early targets remain separated by Yarn API generation, while 26.x uses Mojang mappings. A family may be split later if compilation or runtime testing proves that two targets are not safely compatible.
+
+The active 1.15–1.20.6 adapters use layered source layouts: stable mechanics live in shared layers, while divergent Java sources, Mixin resources, rule annotations, feature bootstraps, death callbacks, recipe lookup, fluid tags, and translations stay narrow. Minecraft 1.15–1.16.5 compile and run on Java 8, use the legacy `fabric` dependency id and `carpet.settings.Rule` annotation, and expose exactly the three `tier-1.15` rules and seven recipes. The 1.15 interaction overlay uses that generation's `playLevelEvent` and `ActionResult.SUCCESS`, while 1.16 keeps its newer interaction return helper. Their extension-owned `SettingsManager` registers `/carpetlir`, detaches on server close, converts modern asset translation keys for the old Carpet hook, and omits every 1.17+ feature class, Mixin, resource, and translation. They use plural `recipes/`, ingredient objects, legacy result fields, and an order-preserving direct three-parameter `RecipeManager` filter. A separate resource-overlay axis lets 1.17 reuse the compatible 1.18 mechanics while packaging its required Java 16 Mixin configuration. Minecraft 1.17–1.18.2 use the old Rule API with required descriptions and singular `category`, expose exactly the eight `tier-1.17` rules and twelve recipes, and use the older direct three-parameter recipe lookup. They also require the legacy `Identifier` constructor, legacy `FluidTags`, and `GameEvent.BLOCK_CHANGE`; their initializer reads its own classpath translations because those Carpet releases ignore an extension-supplied translation path. A capability-selected bootstrap registers bone-meal behavior without linking the unavailable reinforced-deepslate or Warden classes. Minecraft 1.17–1.18.1 use the old `fabric` dependency id, while 1.18.2 uses `fabric-api`. Minecraft 1.19 also uses the old Rule API; 1.19.1+ use `carpet.api.settings.Rule` and plural `categories`. Minecraft 1.19/1.19.1 use the old `fabric` dependency id and a server-only death Mixin because Fabric API 0.58.x lacks `ServerLivingEntityEvents`; 1.19.2+ use `fabric-api` and the event. Minecraft 1.19–1.20.1 use the pre-`RecipeEntry` Pair-cache API, while 1.20.2–1.20.4 use `RecipeEntry`. The 1.19 line retains `LootContext.Builder`; 1.17–1.19.2 use legacy `FluidTags`, while 1.19.3/1.19.4 use registry `FluidTags`.
 
 Exact targets remain independent matrix rows even when they initially share a source family. Range artifacts must not be recreated until every Minecraft version declared by the range has been smoke-tested.
 
@@ -71,6 +73,7 @@ The validator checks:
 - unique target and profile identifiers
 - known statuses, source families, rules, and leaf variants
 - Java version transitions
+- allowed recipe JSON schemas and resource directories across all four audited combinations: 1.15–1.20.4 plural/object/legacy-result, 1.20.5–1.20.6 plural/object/`result.id`, 1.21–1.21.1 singular/object/`result.id`, and 1.21.2+ singular/shorthand/`result.id`
 - version prerequisites for every feature and leaf recipe
 - monotonic capabilities, so later targets cannot silently lose an earlier feature
 - exact Minecraft-version coverage, including patch releases that share one Carpet coordinate
@@ -78,18 +81,61 @@ The validator checks:
 
 ## Current build-ready targets
 
-The root Gradle build supports `1.21.11`, `26.1`, `26.1.1`, `26.1.2`, and `26.2` as independent targets. The Java 8 `1.14.4` target is isolated under `classic/1.14.4` so its old Loom, Carpet rule API, Fabric API mod id, and source set cannot leak into modern artifacts. Each build pins Minecraft, Fabric Loader, Fabric API, Carpet's Maven artifact, Carpet's runtime mod version, mappings, Java bytecode, and exact packaged dependency metadata.
+The root Gradle build supports `1.15`, `1.15.1`, `1.15.2`, `1.16`, `1.16.1`, `1.16.2`, `1.16.3`, `1.16.4`, `1.16.5`, `1.17`, `1.17.1`, `1.18`, `1.18.1`, `1.18.2`, `1.19`, `1.19.1`, `1.19.2`, `1.19.3`, `1.19.4`, `1.20`, `1.20.1`, `1.20.2`, `1.20.3`, `1.20.4`, `1.20.5`, `1.20.6`, `1.21`, `1.21.1`, `1.21.2`, `1.21.3`, `1.21.4`, `1.21.5`, `1.21.6`, `1.21.7`, `1.21.8`, `1.21.9`, `1.21.10`, `1.21.11`, `26.1`, `26.1.1`, `26.1.2`, and `26.2` as 42 independent targets. The Java 8 `1.14.4` target is isolated under `classic/1.14.4` so its old Loom, Carpet rule API, Fabric API mod id, and source set cannot leak into root artifacts. Together these are all 43 exact stable releases in the catalog. Each build pins Minecraft, Fabric Loader, Fabric API, Carpet's Maven artifact, Carpet's runtime mod version, mappings, runtime Java toolchain, recipe schema, recipe resource directory, and exact packaged dependency metadata. Minecraft 1.15–1.16.5 compile and run on Java 8, 1.17–1.17.1 on Java 16, 1.18–1.20.4 on Java 17, 1.20.5–1.21.11 on Java 21, and 26.x on Java 25.
 
 Every root target also receives a separate `run/<target>` directory. Never reuse a generated world across source families: newer Minecraft data can make an otherwise valid older server fail before mod initialization.
+The disposable smoke harness only copies an EULA file whose `eula=true` acceptance already exists; provide that file with `-EulaSourcePath` on a fresh checkout.
 
 ```powershell
 .\gradlew.bat -p classic\1.14.4 clean build
+.\gradlew.bat build '-PtargetVersion=1.15'
+.\gradlew.bat build '-PtargetVersion=1.15.1'
+.\gradlew.bat build '-PtargetVersion=1.15.2'
+.\gradlew.bat build '-PtargetVersion=1.16'
+.\gradlew.bat build '-PtargetVersion=1.16.1'
+.\gradlew.bat build '-PtargetVersion=1.16.2'
+.\gradlew.bat build '-PtargetVersion=1.16.3'
+.\gradlew.bat build '-PtargetVersion=1.16.4'
+.\gradlew.bat build '-PtargetVersion=1.16.5'
+.\gradlew.bat build '-PtargetVersion=1.17'
+.\gradlew.bat build '-PtargetVersion=1.17.1'
+.\gradlew.bat build '-PtargetVersion=1.18'
+.\gradlew.bat build '-PtargetVersion=1.18.1'
+.\gradlew.bat build '-PtargetVersion=1.18.2'
+.\gradlew.bat build '-PtargetVersion=1.19'
+.\gradlew.bat build '-PtargetVersion=1.19.1'
+.\gradlew.bat build '-PtargetVersion=1.19.2'
+.\gradlew.bat build '-PtargetVersion=1.19.3'
+.\gradlew.bat build '-PtargetVersion=1.19.4'
+.\gradlew.bat build '-PtargetVersion=1.20'
+.\gradlew.bat build '-PtargetVersion=1.20.1'
+.\gradlew.bat build '-PtargetVersion=1.20.2'
+.\gradlew.bat build '-PtargetVersion=1.20.3'
+.\gradlew.bat build '-PtargetVersion=1.20.4'
+.\gradlew.bat build '-PtargetVersion=1.20.5'
+.\gradlew.bat build '-PtargetVersion=1.20.6'
+.\gradlew.bat build '-PtargetVersion=1.21'
+.\gradlew.bat build '-PtargetVersion=1.21.1'
+.\gradlew.bat build '-PtargetVersion=1.21.2'
+.\gradlew.bat build '-PtargetVersion=1.21.3'
+.\gradlew.bat build '-PtargetVersion=1.21.4'
+.\gradlew.bat build '-PtargetVersion=1.21.5'
+.\gradlew.bat build '-PtargetVersion=1.21.6'
+.\gradlew.bat build '-PtargetVersion=1.21.7'
+.\gradlew.bat build '-PtargetVersion=1.21.8'
+.\gradlew.bat build '-PtargetVersion=1.21.9'
+.\gradlew.bat build '-PtargetVersion=1.21.10'
 .\gradlew.bat build '-PtargetVersion=1.21.11'
 .\gradlew.bat build '-PtargetVersion=26.1.2'
 powershell -ExecutionPolicy Bypass -File .\scripts\build-audited-targets.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\build-audited-targets.ps1 -RequireCleanGit
+powershell -ExecutionPolicy Bypass -File .\scripts\validate-release-bundle.ps1 -RequireCompleteCatalog
 powershell -ExecutionPolicy Bypass -File .\scripts\build-26-targets.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\smoke-test-modern-server.ps1 -TargetVersion 1.21.9 -EulaSourcePath .\run\1.21.11\eula.txt -CleanRunDirectory
 ```
 
-The audited batch command runs every target's available checks, opens each final remapped JAR, and collects six exact artifacts under `build\multiversion`. For 26.x, the configured Gradle `build` lifecycle invokes the full unit and 14-test server GameTest suite. The 1.14.4 target runs its focused tests and capability-boundary audit; its release acceptance also includes a Java 8 server and fake-player check. The 1.21.11 target remains `build-only` because it currently has focused unit and server-startup checks rather than the 26.x gameplay GameTests. Other source families remain explicitly unverified until their audited adapters and tests land.
+The audited batch command runs every target's available checks, opens each final remapped JAR, and collects 43 exact artifacts under `build\multiversion`. It also emits `release-manifest.json` and `SHA256SUMS.txt`; the manifest records the source commit, clean/dirty state, exact dependency profile, capability tier, size, and hash for every JAR. `-RequireCleanGit` rejects release acceptance unless all tracked and untracked source changes have already been committed. For 26.x, the configured Gradle `build` lifecycle invokes the full unit and 16-test server GameTest suite, including dedicated Silk Touch loot-context and snowy-grass checks. The 1.14.4 target runs its focused tests and capability-boundary audit; its release acceptance also includes a Java 8 server and fake-player check. Minecraft 1.15–1.19.4, 1.20–1.20.6, and 1.21–1.21.11 additionally pass uniquely isolated real-server smokes covering the interactions available to their capability tier and clean shutdown. The smoke harness verifies the Java major version reported by Fabric before accepting a run.
 
-Every collected artifact is checked against its selected capability tier and build profile. `scripts/validate-built-jar.ps1` rejects wrong rule fields, rule translations, recipe resources, Mixin references, Java bytecode levels, test code, unresolved versions, wildcard or mismatched dependencies, wrong Fabric API generation ids, misnamed artifacts, and classes that do not exist in the target's Minecraft generation.
+Enhanced smokes have been run on all nine direct-lookup Minecraft 1.15–1.16.5 targets, all five direct-lookup Minecraft 1.17–1.18.2 targets, the exact pre-entry Pair-cache 1.19–1.20.1 targets, and the representative 1.20.2, 1.20.6, and 1.21.10 API boundaries. The Java 8 runs temporarily override the controlled honeycomb recipe ID with a cooking recipe, prove its enabled furnace and direct-query results, then disable the rule and prove same-furnace and direct fallback to cobblestone. Later runs perform the same assertions with the capability-appropriate controlled gravel-to-tuff recipe. The 1.15–1.18.2 runs exercise the older three-parameter `RecipeManager` method without a match cache, the 1.19–1.20.1 runs exercise `Pair<Identifier, Recipe>`, and the 1.20.2 boundary exercises the `Pair<Identifier, RecipeEntry>` API shared by 1.20.2–1.20.4. All five 1.19 runs additionally prove the mangrove recipe is server-visible, hardness switches from 55 to 50, Silk Touch is gated during real fake-player mining, Warden drops respect both the rule and `doMobLoot`, and the enabled Warden drop count is 1–4 without duplicate entities. Every run uses a GUID-isolated server directory, and `-CleanRunDirectory` removes that generated world together with the temporary data pack. The 38 Minecraft 1.15–1.19.4, 1.20–1.20.6, and 1.21–1.21.11 targets remain `build-only` until equivalent full gameplay automation is ported. No stable catalog target remains planned.
+
+Every collected artifact is checked against its selected capability tier and build profile. `scripts/validate-built-jar.ps1` rejects wrong rule fields, unpruned higher-tier rule translations, recipe resources, schemas or singular/plural directories, missing or undeclared Mixin configurations, capability-critical adapters not registered in a server-active configuration, a bootstrap that links unavailable feature classes, Java bytecode levels, test code, unresolved versions, wildcard or mismatched dependencies, wrong Fabric API generation ids, misnamed artifacts, and classes that do not exist in the target's Minecraft generation. The exact Minecraft 1.15–1.19 adapters receive additional recipe-API bytecode checks; the 1.15–1.16 lines also require their legacy entrypoint and custom settings manager, while the profile matrix requires the `carpetlir` command root and the disposable server smoke proves `/carpetlir` is actually registered. Recipe control maps register only resources actually bundled for that tier, so an omitted low-version variant cannot survive as a no-op mapping.

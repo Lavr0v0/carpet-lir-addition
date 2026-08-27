@@ -17,13 +17,16 @@ public final class PistonHarvestableAmethystFeature {
     }
 
     public static boolean shouldBreakWhenPushed(AbstractBlock.AbstractBlockState state) {
-        return LIRSettings.pistonHarvestableAmethysts && state.isOf(Blocks.BUDDING_AMETHYST);
+        return shouldHarvestBuddingAmethyst(state.isOf(Blocks.BUDDING_AMETHYST));
     }
 
     public static boolean shouldDropSelf(BlockState state) {
-        return LIRSettings.pistonHarvestableAmethysts
-                && PistonHarvestContext.isActive()
-                && state.isOf(Blocks.BUDDING_AMETHYST);
+        return shouldHarvestBuddingAmethyst(state.isOf(Blocks.BUDDING_AMETHYST))
+                && PistonHarvestContext.isActive();
+    }
+
+    static boolean shouldHarvestBuddingAmethyst(boolean buddingAmethyst) {
+        return LIRSettings.pistonHarvestableAmethysts && buddingAmethyst;
     }
 
     public static void dropSelf(WorldAccess world, BlockPos pos) {

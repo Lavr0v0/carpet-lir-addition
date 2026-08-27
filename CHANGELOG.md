@@ -1,5 +1,69 @@
 # Changelog
 
+## [1.1.0-beta.2] - 2026-08-26
+
+### Added
+- Added release-manifest and SHA-256 checksum generation plus an independent bundle revalidator to the audited 43-target build, with a clean-Git and full-test requirement for release acceptance.
+- Added exact Minecraft 1.15, 1.15.1, and 1.15.2 Java 8 profiles with official Carpet, Yarn, and exact mapping-bound Fabric API coordinates, producing one independently constrained JAR per release.
+- Added the 1.15 bone-meal interaction overlay and Java 8 RecipeManager Mixin resource while reusing the capability-pruned tier-1.15 settings, feature bootstrap, legacy entrypoint, and direct recipe filter.
+- Added a focused legacy translation-key test and disposable real-server coverage for all three 1.15 releases, including `/carpetlir`, bone-meal consumption and interaction gates, same-furnace/direct recipe fallback, clean shutdown, and automatic world cleanup.
+- Added six exact Minecraft 1.16–1.16.5 Java 8 profiles with version-specific Carpet, Yarn, Fabric API, dependency metadata, and one JAR per exact Minecraft release.
+- Added the first root-project `tier-1.15` source layer, exposing only `boneMealGrassifyDirt`, `renewableLeavesCrafting`, `renewableHoneycombCrafting`, and their seven valid recipes while physically omitting every 1.17+ rule, feature, Mixin, resource, and translation.
+- Added an extension-owned legacy `SettingsManager`, `carpet.settings.Rule` adapter, `/carpetlir` command root, 1.16 interaction implementation, and order-preserving recipe-stream filter for the Java 8 line.
+- Extended disposable Java 8 server coverage through all six exact Minecraft 1.16 releases, including command registration, bone-meal consumption and interaction states, enabled/direct and disabled same-furnace/direct recipe fallback, clean shutdown, and automatic test-world cleanup.
+- Added exact Minecraft 1.17 and 1.17.1 profiles with Java 16, version-correct Carpet/Yarn/Fabric API coordinates, the legacy `fabric` dependency id, pack format 7, and one audited JAR per release.
+- Added a resource-overlay axis so the 1.17 targets can reuse compatible tier-1.17 Java mechanics while packaging their own Java 16 Mixin configuration without duplicate source implementations.
+- Extended full disposable real-server coverage through both exact Minecraft 1.17 releases, including declared-Java verification, dirt and calcite gates, same-furnace/direct recipe fallback, piston no-drop/drop behavior, clean shutdown, and automatic world cleanup.
+- Added exact Minecraft 1.18, 1.18.1, and 1.18.2 profiles with Java 17 bytecode, exact Carpet/Yarn/Fabric API dependencies, version-correct `fabric` versus `fabric-api` ids, and one audited JAR per release.
+- Added narrow 1.18 adapters for the old Carpet Rule annotation, legacy `Identifier` and fluid tags, `GameEvent.BLOCK_CHANGE`, and the direct three-parameter `RecipeManager` API, plus a capability-selected feature bootstrap that omits 1.19-only classes.
+- Extended full disposable real-server coverage through all three exact Minecraft 1.18 releases, including dirt and snowy-state interaction gates, disabled/enabled calcite generation, same-furnace/direct recipe fallback, piston no-drop/drop behavior, clean shutdown, and automatic world cleanup.
+- Added exact Minecraft 1.19, 1.19.1, and 1.19.2 profiles with Java 17 bytecode, exact Carpet/Yarn/Fabric API dependencies, version-correct `fabric` versus `fabric-api` ids, and one audited JAR per release.
+- Added an old `carpet.settings.Rule` adapter with required descriptions for Minecraft 1.19, plus a server-only Warden death Mixin for Fabric API 0.58.x and a shared event adapter for 1.19.2–1.19.4.
+- Extended full tier-1.19 real-server coverage through all five exact Minecraft 1.19 releases, including cached/direct recipe fallback, real Silk Touch mining, `/kill` Warden loot gates and count, piston no-drop/drop behavior, and automatic world cleanup.
+- Added exact Minecraft 1.19.3 and 1.19.4 profiles with Java 17 bytecode, one JAR per release, the 11-rule/13-recipe `tier-1.19` capability set, and version-correct legacy loot-context, pre-`RecipeEntry`, and registry-fluid-tag adapters.
+- Added a server GameTest proving that reinforced deepslate drops exactly one block with Silk Touch only while its Carpet rule is enabled.
+- Added independent Minecraft 1.20 and 1.20.1 profiles using the shared stable Carpet coordinate but exact Yarn, Fabric API, Minecraft dependency metadata, Java 17 bytecode, and one JAR per release.
+- Added a pre-`RecipeEntry` source layer so old `Recipe` and cached `Pair<Identifier, Recipe>` lookups can coexist with later entry-based adapters without duplicate or unavailable classes.
+- Added exact Minecraft 1.20.2, 1.20.3, and 1.20.4 build profiles with Java 17 bytecode, exact dependency metadata, version-correct recipe resources, and one JAR per release.
+- Added shared 1.19–1.20 source layers for mechanics that remain API-compatible while keeping rule annotations, death hooks, loot context, recipe lookup, fluid tags, and Mixin configuration in narrow version adapters.
+- Added exact Minecraft 1.20.5 and 1.20.6 build profiles with their own Carpet, Fabric API, Yarn, metadata, and release JARs.
+- Added target-selected singular/plural recipe-directory packaging and audit coverage for the 1.20.5/1.20.6 data-pack layout.
+- Added exact, audited build profiles for Minecraft 1.21, 1.21.1, 1.21.2, and 1.21.3 using two API-accurate source families and one exact JAR per release.
+- Added target-selected recipe schema normalization and JAR-level schema validation so pre-1.21.2 releases receive ingredient objects instead of unsupported string shorthand.
+- Added snowy-grass state coverage to both the 26.x GameTest suite and disposable Yarn server smoke harness.
+- Added exact, audited build profiles and a dedicated API adapter for Minecraft 1.21.9 and 1.21.10.
+- Added exact, audited build profiles and a shared API adapter for Minecraft 1.21.6, 1.21.7, and 1.21.8 while keeping one exact JAR per release.
+- Added exact, audited Minecraft 1.21.4 and 1.21.5 profiles, reusing the compatible audited adapter without duplicating source code.
+- Added a uniquely isolated real-server smoke harness covering enabled dirt conversion, disabled behavior, spectator denial, live furnace-cache invalidation, clean shutdown, and optional test-world cleanup.
+- Extended basic real-server smoke coverage through Minecraft 1.19–1.20.6 and 1.21–1.21.11. The enhanced disposable-data-pack checks use an enabled direct-query baseline before asserting cached and direct recipe fallbacks on exact pre-entry 1.19–1.20.1 and representative 1.20.2, 1.20.6, and 1.21.10 API boundaries; acceptance runs use `-CleanRunDirectory` to remove their GUID worlds and temporary data packs.
+
+### Fixed
+- Declared and matrix-validated the classic 1.14.4 plural recipe directory and legacy result schema so the unified release audit checks its actual data-pack format.
+- Converted modern `carpet.rule.*` and `carpet.category.*` asset keys to the legacy `rule.*` and `category.*` names consumed by the Minecraft 1.15.2–1.16 Carpet translation hook.
+- Removed translation-hook `@Override` annotations that do not exist in the Minecraft 1.15/1.15.1 CarpetExtension interface while retaining the method for 1.15.2 and later legacy releases.
+- Pinned Minecraft 1.16 to Fabric API `0.14.1+build.372-1.16`; the next nominal 1.16 aggregate includes a tag module that links a class introduced only in Minecraft 1.16.2.
+- Parsed extension-owned settings before Carpet registers legacy commands, detached that manager on server close, and corrected the Java 8 smoke harness for Carpet's swapped numeric look arguments and the controlled recipe fixture's namespace.
+- Filtered disabled 1.16 recipes before vanilla's first-match selection, preserving data-pack iteration priority and avoiding a second sorted recipe scan on each furnace lookup.
+- Bound root build and server run tasks to each target's declared Java toolchain, so Java 16/17/21/25 compatibility is exercised rather than only inferred from generated bytecode.
+- Split disposable-server startup and gameplay deadlines so the expanded tier-1.19 regression suite cannot exhaust a startup-inclusive 240-second global timeout after otherwise passing checks.
+- Loaded legacy Carpet translations directly from this mod's classpath because the 1.18-era Carpet helper ignores an extension-supplied translation path, and pruned higher-tier translation keys together with unavailable rules and resources.
+- Kept legacy Yarn unit tests independent of a full Fabric registry bootstrap, avoiding the 1.18.2 named-Yarn cross-package access failure while real Fabric/Mixin behavior remains covered by disposable server smokes.
+- Made JAR validation require capability-critical fluid, reinforced-deepslate, recipe, and piston adapters to be registered in a server-active Mixin configuration, not merely present as unused classes.
+- Reworked the Yarn server smoke runner to drain output while pacing commands, preventing pipe backpressure from collapsing delayed interactions into one tick; added JAR guards and real piston no-drop/drop assertions for `pistonHarvestableAmethysts`.
+- Replaced the legacy 1.20–1.20.1 direct-only recipe filter with direct and cached fallbacks that return the valid fallback recipe identifier instead of preserving a disabled cache hint.
+- Added the Minecraft 1.20.2–1.20.4 `RecipeManager` Pair-cache adapter so disabling a Carpet LIR recipe rejects a stale cached tuff match and returns the identifier and entry of the valid fallback recipe.
+- Added legacy recipe-result normalization and JAR validation for the 1.20.2–1.20.4 split between crafting `result.item` objects and string cooking results.
+- Replaced the flawed legacy 1.20.5–1.20.6 range implementation with an API-accurate adapter that rejects spectators, preserves snowy grass, respects `mob_drops`, and filters both direct and cached recipe lookups.
+- Made old-schema ingredient normalization preserve `#tag` ingredients as tag objects instead of misclassifying them as item ids.
+- Added Minecraft 1.16.1 to the support catalog because Carpet's stable 1.16 artifact declares compatibility with the full 1.16.x line.
+- Fixed all Carpet LIR recipes failing to parse on Minecraft 1.21 and 1.21.1, while keeping pale oak absent from those JARs and their runtime recipe control maps.
+- Preserved the grass block's `snowy` state when bone meal converts dirt beneath a snow layer.
+- Removed redundant budding-amethyst piston-behavior overrides; vanilla already marks the block destroyable, while the thin piston hook remains responsible only for the rule-gated item drop.
+- Stabilized disposable server tests against fake-player water, spectator fall-through, and asynchronous login state without relaxing gameplay assertions.
+- Replaced the legacy 1.21.6–1.21.8 grass survival and recipe-cache paths so opaque/full-water blocks, spectators, and disabled cached furnace recipes are handled correctly.
+- Made the real-server smoke harness wait for its fake player to finish logging in before interaction commands, removing a load-dependent cross-version race.
+- Made the JAR audit reject undeclared extra mixin configurations so a stale version overlay cannot be packaged silently.
+
 ## [1.1.0-beta.1] - 2026-08-22
 
 ### Added

@@ -241,9 +241,9 @@
       "profile": "mc_1_15",
       "java": 8,
       "sourceFamily": "yarn-1.15",
-      "status": "planned",
+      "status": "build-only",
       "capabilityTier": "tier-1.15",
-      "notes": "First honeycomb-capable tier; no prior Carpet LIR release exists for this target."
+      "notes": "Audited exact Java 8 adapter for the first honeycomb-capable tier, using an extension-owned /carpetlir settings manager and physically omitting every 1.17+ capability; unit, JAR, and focused disposable-server checks passed."
     },
     {
       "target": "1.15.1",
@@ -252,9 +252,9 @@
       "profile": "mc_1_15_1",
       "java": 8,
       "sourceFamily": "yarn-1.15",
-      "status": "planned",
+      "status": "build-only",
       "capabilityTier": "tier-1.15",
-      "notes": "Stable Fabric Carpet target requiring a fresh compile and server smoke test."
+      "notes": "Audited exact Java 8 adapter for Carpet 1.3.4 with only the three tier-1.15 rules and seven recipes; unit, JAR, and focused disposable-server checks passed."
     },
     {
       "target": "1.15.2",
@@ -263,20 +263,24 @@
       "profile": "mc_1_15_2",
       "java": 8,
       "sourceFamily": "yarn-1.15",
-      "status": "planned",
+      "status": "build-only",
       "capabilityTier": "tier-1.15",
-      "notes": "Final 1.15 source-family target; no prior Carpet LIR release exists."
+      "notes": "Audited exact Java 8 adapter for the final 1.15 source-family release with its own dependency metadata and JAR; unit, legacy-translation, JAR, and focused disposable-server checks passed."
     },
     {
       "target": "1.16",
       "carpetArtifact": "1.16-1.4.0+v200623",
       "carpetModVersion": "1.4.0",
+      "minecraftVersions": [
+        "1.16",
+        "1.16.1"
+      ],
       "profile": "mc_1_16",
       "java": 8,
       "sourceFamily": "yarn-1.16",
-      "status": "planned",
+      "status": "build-only",
       "capabilityTier": "tier-1.15",
-      "notes": "Stable Fabric Carpet target; keeps the 1.15 capability tier."
+      "notes": "Audited exact Java 8 adapters for Minecraft 1.16 and 1.16.1 sharing Carpet 1.4.0 while retaining separate Minecraft, Yarn, Fabric API metadata, and JARs. Both expose only the three tier-1.15 rules and seven recipes through /carpetlir and pass unit, JAR, and focused disposable-server checks."
     },
     {
       "target": "1.16.2",
@@ -285,9 +289,9 @@
       "profile": "mc_1_16_2",
       "java": 8,
       "sourceFamily": "yarn-1.16",
-      "status": "planned",
+      "status": "build-only",
       "capabilityTier": "tier-1.15",
-      "notes": "Fabric Carpet has no stable 1.16.1 coordinate, so the catalog advances directly to 1.16.2."
+      "notes": "Audited exact Java 8 adapter for Carpet 1.4.9 with the legacy fabric dependency id, extension-owned /carpetlir settings, and only the three tier-1.15 rules and seven recipes; unit, JAR, and focused disposable-server checks passed."
     },
     {
       "target": "1.16.3",
@@ -296,9 +300,9 @@
       "profile": "mc_1_16_3",
       "java": 8,
       "sourceFamily": "yarn-1.16",
-      "status": "planned",
+      "status": "build-only",
       "capabilityTier": "tier-1.15",
-      "notes": "Stable Fabric Carpet target requiring a fresh compile and server smoke test."
+      "notes": "Audited exact Java 8 adapter for Carpet 1.4.12 with the legacy fabric dependency id, extension-owned /carpetlir settings, and only the three tier-1.15 rules and seven recipes; unit, JAR, and focused disposable-server checks passed."
     },
     {
       "target": "1.16.4",
@@ -307,9 +311,9 @@
       "profile": "mc_1_16_4",
       "java": 8,
       "sourceFamily": "yarn-1.16",
-      "status": "planned",
+      "status": "build-only",
       "capabilityTier": "tier-1.15",
-      "notes": "Stable Fabric Carpet target requiring a fresh compile and server smoke test."
+      "notes": "Audited exact Java 8 adapter for Carpet 1.4.22 with the legacy fabric dependency id, extension-owned /carpetlir settings, and only the three tier-1.15 rules and seven recipes; unit, JAR, and focused disposable-server checks passed."
     },
     {
       "target": "1.16.5",
@@ -318,9 +322,9 @@
       "profile": "mc_1_16_5",
       "java": 8,
       "sourceFamily": "yarn-1.16",
-      "status": "planned",
+      "status": "build-only",
       "capabilityTier": "tier-1.15",
-      "notes": "Final Java 8 target and long-lived 1.16 maintenance line."
+      "notes": "Audited exact Java 8 adapter for Carpet 1.4.44 with the legacy fabric dependency id, extension-owned /carpetlir settings, and only the three tier-1.15 rules and seven recipes; unit, JAR, and focused disposable-server checks passed."
     },
     {
       "target": "1.17",
@@ -329,9 +333,9 @@
       "profile": "mc_1_17",
       "java": 16,
       "sourceFamily": "yarn-1.17",
-      "status": "planned",
+      "status": "build-only",
       "capabilityTier": "tier-1.17",
-      "notes": "Adds calcite, tuff, lapis, raw-ore, and amethyst mechanics."
+      "notes": "Audited exact Java 16 adapter for Carpet 1.4.40 and the legacy fabric id; unit, JAR, and full Java 16 disposable dirt/calcite/recipe/piston server checks passed."
     },
     {
       "target": "1.17.1",
@@ -340,9 +344,9 @@
       "profile": "mc_1_17_1",
       "java": 16,
       "sourceFamily": "yarn-1.17",
-      "status": "planned",
+      "status": "build-only",
       "capabilityTier": "tier-1.17",
-      "notes": "Final Java 16 target; requires feature-level GameTest alternatives for this API generation."
+      "notes": "Audited exact final Java 16 adapter for Carpet 1.4.57 and the legacy fabric id; unit, JAR, and full Java 16 disposable dirt/calcite/recipe/piston server checks passed."
     },
     {
       "target": "1.18",
@@ -351,9 +355,9 @@
       "profile": "mc_1_18",
       "java": 17,
       "sourceFamily": "yarn-1.18",
-      "status": "planned",
+      "status": "build-only",
       "capabilityTier": "tier-1.17",
-      "notes": "First Java 17 target; retains the 1.17 capability tier."
+      "notes": "Audited exact Java 17 adapter retaining only eight tier-1.17 rules and twelve recipes, with the old Rule API, fabric id, and direct three-parameter RecipeManager; unit, JAR, and disposable dirt/calcite/recipe/piston server checks passed."
     },
     {
       "target": "1.18.1",
@@ -362,9 +366,9 @@
       "profile": "mc_1_18_1",
       "java": 17,
       "sourceFamily": "yarn-1.18",
-      "status": "planned",
+      "status": "build-only",
       "capabilityTier": "tier-1.17",
-      "notes": "Stable Fabric Carpet target requiring a fresh compile and server smoke test."
+      "notes": "Audited exact 1.18.1 adapter retaining only eight tier-1.17 rules and twelve recipes, with the old Rule API, fabric id, and direct three-parameter RecipeManager; unit, JAR, and disposable dirt/calcite/recipe/piston server checks passed."
     },
     {
       "target": "1.18.2",
@@ -373,9 +377,9 @@
       "profile": "mc_1_18_2",
       "java": 17,
       "sourceFamily": "yarn-1.18",
-      "status": "planned",
+      "status": "build-only",
       "capabilityTier": "tier-1.17",
-      "notes": "Final 1.18 source-family target."
+      "notes": "Audited exact final 1.18 source-family adapter retaining only eight tier-1.17 rules and twelve recipes, with the old Rule API, fabric-api id, and direct three-parameter RecipeManager; unit, JAR, and disposable dirt/calcite/recipe/piston server checks passed."
     },
     {
       "target": "1.19",
@@ -384,9 +388,9 @@
       "profile": "mc_1_19",
       "java": 17,
       "sourceFamily": "yarn-1.19",
-      "status": "planned",
+      "status": "build-only",
       "capabilityTier": "tier-1.19",
-      "notes": "Adds reinforced-deepslate rules, Warden drops, and mangrove leaf recipes."
+      "notes": "Audited exact 1.19 profile with the required legacy Rule description/category API, old Fabric mod id, and server-only death Mixin; real-server hardness, Silk Touch, Warden, recipe, and piston paths passed."
     },
     {
       "target": "1.19.1",
@@ -395,9 +399,9 @@
       "profile": "mc_1_19_1",
       "java": 17,
       "sourceFamily": "yarn-1.19",
-      "status": "planned",
+      "status": "build-only",
       "capabilityTier": "tier-1.19",
-      "notes": "Stable Fabric Carpet target requiring a fresh compile and server smoke test."
+      "notes": "Audited exact 1.19.1 profile with the new Rule categories API, old Fabric mod id, and server-only death Mixin; real-server hardness, Silk Touch, Warden, recipe, and piston paths passed."
     },
     {
       "target": "1.19.2",
@@ -406,9 +410,9 @@
       "profile": "mc_1_19_2",
       "java": 17,
       "sourceFamily": "yarn-1.19",
-      "status": "planned",
+      "status": "build-only",
       "capabilityTier": "tier-1.19",
-      "notes": "Stable Fabric Carpet target requiring a fresh compile and server smoke test."
+      "notes": "Audited exact 1.19.2 profile using Fabric API ServerLivingEntityEvents and the fabric-api mod id; real-server hardness, Silk Touch, Warden, recipe, and piston paths passed."
     },
     {
       "target": "1.19.3",
@@ -417,9 +421,9 @@
       "profile": "mc_1_19_3",
       "java": 17,
       "sourceFamily": "yarn-1.19",
-      "status": "planned",
+      "status": "build-only",
       "capabilityTier": "tier-1.19",
-      "notes": "Stable Fabric Carpet target requiring a fresh compile and server smoke test."
+      "notes": "Audited exact 1.19.3 profile with legacy LootContext.Builder, pre-RecipeEntry, and registry FluidTags adapters; real-server hardness, Silk Touch, Warden, recipe, and piston paths passed."
     },
     {
       "target": "1.19.4",
@@ -428,9 +432,9 @@
       "profile": "mc_1_19_4",
       "java": 17,
       "sourceFamily": "yarn-1.19",
-      "status": "planned",
+      "status": "build-only",
       "capabilityTier": "tier-1.19",
-      "notes": "Final 1.19 source-family target."
+      "notes": "Audited exact 1.19.4 profile with legacy LootContext.Builder, pre-RecipeEntry, and registry FluidTags adapters; real-server hardness, Silk Touch, Warden, recipe, and piston paths passed."
     },
     {
       "target": "1.20",
@@ -443,9 +447,9 @@
       "profile": "mc_1_20",
       "java": 17,
       "sourceFamily": "yarn-1.20.1",
-      "status": "released-legacy",
+      "status": "build-only",
       "capabilityTier": "tier-1.20",
-      "notes": "Published in the v1.0.1 1.20-1.20.1 range artifact; must be rebuilt from audited code before renewed release."
+      "notes": "Exact 1.20 and 1.20.1 profiles replace the legacy range artifact with a pre-RecipeEntry direct/cached fallback adapter and independent JAR metadata; pending final release verification."
     },
     {
       "target": "1.20.2",
@@ -454,9 +458,9 @@
       "profile": "mc_1_20_2",
       "java": 17,
       "sourceFamily": "yarn-1.20.2-plus",
-      "status": "released-legacy",
+      "status": "build-only",
       "capabilityTier": "tier-1.20",
-      "notes": "Published as a standalone v1.0.1 artifact; current regression suite has not yet been ported."
+      "notes": "Exact audited profile replacing the legacy artifact with corrected recipe schema, grass survival, loot, and direct/cached recipe filtering; pending final release verification."
     },
     {
       "target": "1.20.3",
@@ -469,9 +473,9 @@
       "profile": "mc_1_20_3",
       "java": 17,
       "sourceFamily": "yarn-1.20.2-plus",
-      "status": "released-legacy",
+      "status": "build-only",
       "capabilityTier": "tier-1.20",
-      "notes": "Carpet coordinate used by the published v1.0.1 1.20.3-1.20.4 range artifact."
+      "notes": "Exact 1.20.3 and 1.20.4 profiles share the stable Carpet coordinate but build independent JARs with corrected legacy recipe and runtime behavior; pending final release verification."
     },
     {
       "target": "1.20.5",
@@ -480,9 +484,9 @@
       "profile": "mc_1_20_5",
       "java": 21,
       "sourceFamily": "yarn-1.20.2-plus",
-      "status": "planned",
+      "status": "build-only",
       "capabilityTier": "tier-1.20",
-      "notes": "Stable Java 21 Carpet coordinate; the legacy range artifact was compiled against 1.20.6 instead."
+      "notes": "Exact Java 21 profile with a dedicated Carpet coordinate and audited 1.20.5/1.20.6 API adapter; pending final cross-version release verification."
     },
     {
       "target": "1.20.6",
@@ -491,9 +495,9 @@
       "profile": "mc_1_20_6",
       "java": 21,
       "sourceFamily": "yarn-1.20.2-plus",
-      "status": "released-legacy",
+      "status": "build-only",
       "capabilityTier": "tier-1.20",
-      "notes": "Compile target for the published v1.0.1 1.20.5-1.20.6 range artifact."
+      "notes": "Exact Java 21 profile replacing the flawed legacy range artifact with corrected recipe resources and rule filtering; pending final cross-version release verification."
     },
     {
       "target": "1.21",
@@ -506,9 +510,9 @@
       "profile": "mc_1_21",
       "java": 21,
       "sourceFamily": "yarn-1.21.1",
-      "status": "released-legacy",
+      "status": "build-only",
       "capabilityTier": "tier-1.20",
-      "notes": "Carpet coordinate used by the published v1.0.1 1.21-1.21.1 range artifact."
+      "notes": "Exact 1.21 and 1.21.1 profiles pass compilation, unit tests, packaging, tier-aware JAR and recipe-schema audits, and isolated real-server rule-on/rule-off/snowy/spectator/furnace-cache smokes; pale oak remains excluded."
     },
     {
       "target": "1.21.2",
@@ -521,9 +525,9 @@
       "profile": "mc_1_21_2",
       "java": 21,
       "sourceFamily": "yarn-1.21.2-plus",
-      "status": "released-legacy",
+      "status": "build-only",
       "capabilityTier": "tier-1.20",
-      "notes": "Carpet coordinate used by the published v1.0.1 1.21.2-1.21.3 range artifact; pale oak must remain excluded."
+      "notes": "Exact 1.21.2 and 1.21.3 profiles pass compilation, unit tests, packaging, tier-aware JAR and recipe-schema audits, and isolated real-server rule-on/rule-off/snowy/spectator/furnace-cache smokes; pale oak remains excluded."
     },
     {
       "target": "1.21.4",
@@ -532,9 +536,9 @@
       "profile": "mc_1_21_4",
       "java": 21,
       "sourceFamily": "yarn-1.21.2-plus",
-      "status": "released-legacy",
+      "status": "build-only",
       "capabilityTier": "tier-1.21.4",
-      "notes": "Published as a standalone v1.0.1 artifact and first target with pale oak leaf recipes."
+      "notes": "First pale-oak target; its exact current adapter passes compilation, unit tests, packaging, JAR capability audit, and an isolated real-server rule-on/rule-off/spectator/furnace-cache smoke."
     },
     {
       "target": "1.21.5",
@@ -543,9 +547,9 @@
       "profile": "mc_1_21_5",
       "java": 21,
       "sourceFamily": "yarn-1.21.2-plus",
-      "status": "released-legacy",
+      "status": "build-only",
       "capabilityTier": "tier-1.21.4",
-      "notes": "Published as a standalone v1.0.1 artifact; requires fresh audited validation."
+      "notes": "Exact current adapter passes compilation, unit tests, packaging, JAR capability audit, and an isolated real-server rule-on/rule-off/spectator/furnace-cache smoke; full gameplay automation is still pending."
     },
     {
       "target": "1.21.6",
@@ -554,9 +558,9 @@
       "profile": "mc_1_21_6",
       "java": 21,
       "sourceFamily": "yarn-1.21.8",
-      "status": "planned",
+      "status": "build-only",
       "capabilityTier": "tier-1.21.4",
-      "notes": "Stable Carpet coordinate; the legacy grouped artifact was compiled with the later 1.21.7 Carpet release."
+      "notes": "Exact current adapter passes compilation, unit tests, packaging, JAR audit, and an isolated real-server rule-on/rule-off/spectator/furnace-cache smoke; full gameplay automation is still pending."
     },
     {
       "target": "1.21.7",
@@ -569,9 +573,9 @@
       "profile": "mc_1_21_7",
       "java": 21,
       "sourceFamily": "yarn-1.21.8",
-      "status": "released-legacy",
+      "status": "build-only",
       "capabilityTier": "tier-1.21.4",
-      "notes": "Carpet coordinate used by the published v1.0.1 1.21.6-1.21.8 range artifact."
+      "notes": "Exact 1.21.7 and 1.21.8 adapters pass compilation, unit tests, packaging, JAR audit, and isolated real-server rule-on/rule-off/spectator/furnace-cache smokes; full gameplay automation is still pending."
     },
     {
       "target": "1.21.9",
@@ -579,10 +583,10 @@
       "carpetModVersion": "1.4.185+v250930",
       "profile": "mc_1_21_9",
       "java": 21,
-      "sourceFamily": "yarn-1.21.11",
-      "status": "planned",
+      "sourceFamily": "yarn-1.21.9-1.21.10",
+      "status": "build-only",
       "capabilityTier": "tier-1.21.4",
-      "notes": "Stable Carpet coordinate; the legacy grouped artifact was compiled with 1.21.10."
+      "notes": "Exact current adapter passes compilation, unit tests, packaging, JAR audit, and an isolated real-server rule-on/rule-off/spectator/furnace-cache smoke; full gameplay automation is still pending."
     },
     {
       "target": "1.21.10",
@@ -590,10 +594,10 @@
       "carpetModVersion": "1.4.188+v251016",
       "profile": "mc_1_21_10",
       "java": 21,
-      "sourceFamily": "yarn-1.21.11",
-      "status": "released-legacy",
+      "sourceFamily": "yarn-1.21.9-1.21.10",
+      "status": "build-only",
       "capabilityTier": "tier-1.21.4",
-      "notes": "Compile target for the published v1.0.1 1.21.9-1.21.10 range artifact."
+      "notes": "Exact current adapter passes compilation, unit tests, packaging, JAR audit, and an isolated real-server rule-on/rule-off/spectator/furnace-cache smoke; full gameplay automation is still pending."
     },
     {
       "target": "1.21.11",
@@ -620,7 +624,7 @@
       "sourceFamily": "mojang-26",
       "status": "verified",
       "capabilityTier": "tier-1.21.4",
-      "notes": "Minecraft 26.1, 26.1.1, and 26.1.2 now have independent artifacts; every target passed the current unit suite and 14/14 server GameTests."
+      "notes": "Minecraft 26.1, 26.1.1, and 26.1.2 now have independent artifacts; every target passed the current unit suite and 15/15 server GameTests, including Silk Touch loot-context coverage."
     },
     {
       "target": "26.2",

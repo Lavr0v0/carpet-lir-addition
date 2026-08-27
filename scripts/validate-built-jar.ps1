@@ -7,7 +7,9 @@ param(
 
     [string]$MatrixPath,
 
-    [string]$ProfilePath
+    [string]$ProfilePath,
+
+    [string]$ExpectedModVersion
 )
 
 $ErrorActionPreference = 'Stop'
@@ -63,6 +65,48 @@ function Get-ZipEntryBytes {
     } finally {
         $memory.Dispose()
         $stream.Dispose()
+    }
+}
+
+function Assert-RecipeIngredientSchema {
+    param(
+        [AllowNull()]
+        [object]$Ingredient,
+        [string]$RecipeSchema,
+        [string]$RecipePath
+    )
+
+    if ($Ingredient -is [System.Collections.IList]) {
+        if ($Ingredient.Count -eq 0) {
+            throw "Recipe '$RecipePath' must not use an empty ingredient alternative list."
+        }
+        foreach ($alternative in $Ingredient) {
+            Assert-RecipeIngredientSchema `
+                    -Ingredient $alternative `
+                    -RecipeSchema $RecipeSchema `
+                    -RecipePath $RecipePath
+        }
+        return
+    }
+
+    $isStringIngredient = $Ingredient -is [string]
+    if ($RecipeSchema -eq 'modern-shorthand-result-id' -and
+            (-not $isStringIngredient -or [string]::IsNullOrWhiteSpace([string]$Ingredient))) {
+        throw "Recipe '$RecipePath' must use modern string ingredient shorthand."
+    }
+    if ($RecipeSchema -in @('ingredient-objects-result-id', 'ingredient-objects-legacy-result')) {
+        $propertyNames = if ($null -eq $Ingredient) {
+            @()
+        } else {
+            @($Ingredient.PSObject.Properties.Name)
+        }
+        $hasItem = $propertyNames -contains 'item' -and
+                -not [string]::IsNullOrWhiteSpace([string]$Ingredient.item)
+        $hasTag = $propertyNames -contains 'tag' -and
+                -not [string]::IsNullOrWhiteSpace([string]$Ingredient.tag)
+        if ($isStringIngredient -or $hasItem -eq $hasTag) {
+            throw "Recipe '$RecipePath' must use an ingredient object with exactly one non-empty item or tag id."
+        }
     }
 }
 
@@ -150,11 +194,32 @@ $allRules = @($tiers[-1].availableRules | ForEach-Object { [string]$_ })
 $expectedRules = @($tier.availableRules | ForEach-Object { [string]$_ })
 $expectedRecipes = @($tier.availableRecipes | ForEach-Object { [string]$_ } | Sort-Object)
 $targetVersion = Convert-ToTargetVersion $MinecraftVersion
+$recipeSchema = if ($null -ne $profile -and $profile.ContainsKey('recipe_schema')) {
+    [string]$profile.recipe_schema
+} else {
+    'modern-shorthand-result-id'
+}
+if ($recipeSchema -notin @(
+        'modern-shorthand-result-id',
+        'ingredient-objects-result-id',
+        'ingredient-objects-legacy-result'
+)) {
+    throw "Unsupported recipe schema '$recipeSchema' in profile '$resolvedProfile'."
+}
+$recipeDirectory = if ($null -ne $profile -and $profile.ContainsKey('recipe_directory')) {
+    [string]$profile.recipe_directory
+} else {
+    'recipe'
+}
+if ($recipeDirectory -notin @('recipe', 'recipes')) {
+    throw "Unsupported recipe directory '$recipeDirectory' in profile '$resolvedProfile'."
+}
 
 $forbiddenBefore = @{
     'org/lavro/carpetlir/features/renewable/CalciteGeneratorFeature.class' = '1.17'
     'org/lavro/carpetlir/features/renewable/PistonHarvestableAmethystFeature.class' = '1.17'
     'org/lavro/carpetlir/helpers/PistonHarvestContext.class' = '1.17'
+    'org/lavro/carpetlir/helpers/FluidTagCompatibility.class' = '1.17'
     'org/lavro/carpetlir/mixins/BlockMixin.class' = '1.17'
     'org/lavro/carpetlir/mixins/FluidBlockMixin.class' = '1.17'
     'org/lavro/carpetlir/mixins/PistonBlockMixin.class' = '1.17'
@@ -176,6 +241,10 @@ try {
     }
     if ([string]::IsNullOrWhiteSpace([string]$metadata.version) -or [string]$metadata.version -match '\$\{') {
         throw "Release JAR has unresolved or empty mod version '$($metadata.version)'."
+    }
+    if (-not [string]::IsNullOrWhiteSpace($ExpectedModVersion) -and
+            [string]$metadata.version -ne $ExpectedModVersion) {
+        throw "Release JAR mod version '$($metadata.version)' does not match expected release version '$ExpectedModVersion'."
     }
     $minecraftDependencies = @($metadata.depends.minecraft | ForEach-Object { [string]$_ })
     $boundedMinecraftDependencies = @($minecraftDependencies | Where-Object {
@@ -291,13 +360,115 @@ try {
         throw 'Release JAR has no LIRSettings.class.'
     }
     $settingsText = [System.Text.Encoding]::UTF8.GetString((Get-ZipEntryBytes $settingsEntry))
-    $initializerEntry = $zip.GetEntry('org/lavro/carpetlir/CarpetLIRAddition.class')
+    $isLegacyYarnProfile = $null -ne $profile -and [string]$profile.source_family -eq 'legacy-yarn'
+    if ($isLegacyYarnProfile) {
+        $settingsSourceOverlay = if ($profile.ContainsKey('settings_source_overlay')) {
+            [string]$profile.settings_source_overlay
+        } else {
+            'rule-categories'
+        }
+        $expectedRuleAnnotation = switch ($settingsSourceOverlay) {
+            'rule-category' { 'carpet/settings/Rule' }
+            'rule-category-tier-1.15' { 'carpet/settings/Rule' }
+            'rule-category-tier-1.17' { 'carpet/settings/Rule' }
+            'rule-categories' { 'carpet/api/settings/Rule' }
+            default { throw "Unsupported settings source overlay '$settingsSourceOverlay'." }
+        }
+        $unexpectedRuleAnnotation = if ($expectedRuleAnnotation -eq 'carpet/settings/Rule') {
+            'carpet/api/settings/Rule'
+        } else {
+            'carpet/settings/Rule'
+        }
+        if (-not $settingsText.Contains($expectedRuleAnnotation) -or
+                $settingsText.Contains($unexpectedRuleAnnotation)) {
+            throw "LIRSettings does not use only the rule annotation selected by '$settingsSourceOverlay'."
+        }
+
+        if ($expectedRules -contains 'renewableCalcite') {
+            $fluidBlockMixinEntry = $zip.GetEntry('org/lavro/carpetlir/mixins/FluidBlockMixin.class')
+            $fluidTagCompatibilityEntry = $zip.GetEntry('org/lavro/carpetlir/helpers/FluidTagCompatibility.class')
+            if ($null -eq $fluidBlockMixinEntry -or $null -eq $fluidTagCompatibilityEntry -or
+                    -not [System.Text.Encoding]::UTF8.GetString(
+                            (Get-ZipEntryBytes $fluidBlockMixinEntry)
+                    ).Contains('FluidTagCompatibility')) {
+                throw 'Legacy Yarn JAR with renewableCalcite does not retain the selected FluidTags compatibility adapter.'
+            }
+        }
+    }
+    $mainEntrypoints = @($metadata.entrypoints.main)
+    if ($mainEntrypoints.Count -ne 1) {
+        throw 'Release JAR must declare exactly one main entrypoint.'
+    }
+    $actualEntrypointClass = if ($mainEntrypoints[0] -is [string]) {
+        [string]$mainEntrypoints[0]
+    } else {
+        [string]$mainEntrypoints[0].value
+    }
+    $expectedEntrypointClass = if ($null -ne $profile -and $profile.ContainsKey('entrypoint_class')) {
+        [string]$profile.entrypoint_class
+    } else {
+        'org.lavro.carpetlir.CarpetLIRAddition'
+    }
+    if ($actualEntrypointClass -ne $expectedEntrypointClass) {
+        throw "Release JAR entrypoint '$actualEntrypointClass' does not match profile '$expectedEntrypointClass'."
+    }
+    $initializerClassPath = $actualEntrypointClass.Replace('.', '/') + '.class'
+    $initializerEntry = $zip.GetEntry($initializerClassPath)
     if ($null -eq $initializerEntry) {
-        throw 'Release JAR has no CarpetLIRAddition.class.'
+        throw "Release JAR has no declared entrypoint class '$initializerClassPath'."
     }
     $initializerText = [System.Text.Encoding]::UTF8.GetString((Get-ZipEntryBytes $initializerEntry))
     if ($initializerText.Contains('${version}')) {
         throw 'Release JAR initializer contains an unresolved version placeholder.'
+    }
+    if ($isLegacyYarnProfile) {
+        if (-not $initializerText.Contains('LegacyFeatureBootstrap') -or
+                $initializerText.Contains('ReinforcedDeepslateFeature')) {
+            throw 'Legacy initializer must delegate feature registration without directly linking optional features.'
+        }
+        if ($initializerText.Contains('carpet/utils/Translations')) {
+            throw 'Legacy initializer still relies on Carpet translation loading that ignores extension resource paths.'
+        }
+        if ([string]$profile.capability_tier -eq 'tier-1.15' -and
+                (-not $initializerText.Contains('carpet/settings/SettingsManager') -or
+                -not $initializerText.Contains('customSettingsManager'))) {
+            throw 'Tier-1.15 entrypoint does not expose its required extension-owned SettingsManager.'
+        }
+        $featureBootstrapEntry = $zip.GetEntry('org/lavro/carpetlir/LegacyFeatureBootstrap.class')
+        if ($null -eq $featureBootstrapEntry) {
+            throw 'Legacy Yarn JAR has no target-selected feature bootstrap.'
+        }
+        $featureBootstrapText = [System.Text.Encoding]::UTF8.GetString(
+                (Get-ZipEntryBytes $featureBootstrapEntry)
+        )
+        $featureBootstrapOverlay = if ($profile.ContainsKey('feature_bootstrap_overlay')) {
+            [string]$profile.feature_bootstrap_overlay
+        } else {
+            'feature-bootstrap-reinforced'
+        }
+        if (-not $featureBootstrapText.Contains('BoneMealGrassifyDirtFeature')) {
+            throw 'Target-selected feature bootstrap does not register bone-meal grass conversion.'
+        }
+        switch ($featureBootstrapOverlay) {
+            'feature-bootstrap-tier-1.15' {
+                if ($featureBootstrapText.Contains('ReinforcedDeepslateFeature')) {
+                    throw 'Tier-1.15 feature bootstrap links an unavailable reinforced-deepslate feature.'
+                }
+            }
+            'feature-bootstrap-tier-1.17' {
+                if ($featureBootstrapText.Contains('ReinforcedDeepslateFeature')) {
+                    throw 'Tier-1.17 feature bootstrap links an unavailable reinforced-deepslate feature.'
+                }
+            }
+            'feature-bootstrap-reinforced' {
+                if (-not $featureBootstrapText.Contains('ReinforcedDeepslateFeature')) {
+                    throw 'Modern legacy feature bootstrap does not register reinforced-deepslate behavior.'
+                }
+            }
+            default {
+                throw "Unsupported feature bootstrap overlay '$featureBootstrapOverlay'."
+            }
+        }
     }
     foreach ($rule in $allRules) {
         $isPresent = $settingsText.Contains($rule)
@@ -311,6 +482,13 @@ try {
     $recipeEntries = @($zip.Entries | Where-Object {
         $_.FullName -match '^data/carpetlir/recipes?/[^/]+\.json$'
     })
+    $expectedRecipePrefix = "data/carpetlir/$recipeDirectory/"
+    $wrongDirectoryEntries = @($recipeEntries | Where-Object {
+        -not $_.FullName.StartsWith($expectedRecipePrefix, [System.StringComparison]::Ordinal)
+    })
+    if ($wrongDirectoryEntries.Count -ne 0) {
+        throw "Recipe resources must use '$expectedRecipePrefix'; found: $($wrongDirectoryEntries.FullName -join ', ')."
+    }
     $actualRecipes = @($recipeEntries | ForEach-Object {
         [System.IO.Path]::GetFileNameWithoutExtension($_.Name)
     } | Sort-Object)
@@ -319,6 +497,56 @@ try {
         $missingRecipes = @($expectedRecipes | Where-Object { $actualRecipes -notcontains $_ })
         $unexpectedRecipes = @($actualRecipes | Where-Object { $expectedRecipes -notcontains $_ })
         throw "Recipe capability mismatch. Missing: [$($missingRecipes -join ', ')]. Unexpected: [$($unexpectedRecipes -join ', ')]."
+    }
+    foreach ($recipeEntry in $recipeEntries) {
+        $recipe = Get-ZipEntryText $recipeEntry | ConvertFrom-Json
+        $ingredientValues = [System.Collections.Generic.List[object]]::new()
+        if ($recipe.PSObject.Properties.Name -contains 'ingredient') {
+            $ingredientValues.Add($recipe.ingredient)
+        }
+        if ($recipe.PSObject.Properties.Name -contains 'ingredients') {
+            foreach ($ingredient in @($recipe.ingredients)) {
+                $ingredientValues.Add($ingredient)
+            }
+        }
+        if ($recipe.PSObject.Properties.Name -contains 'key') {
+            foreach ($property in $recipe.key.PSObject.Properties) {
+                $ingredientValues.Add($property.Value)
+            }
+        }
+        if ($ingredientValues.Count -eq 0) {
+            throw "Recipe '$($recipeEntry.FullName)' has no ingredient, ingredients, or key entries."
+        }
+        foreach ($ingredient in $ingredientValues) {
+            Assert-RecipeIngredientSchema `
+                    -Ingredient $ingredient `
+                    -RecipeSchema $recipeSchema `
+                    -RecipePath $recipeEntry.FullName
+        }
+        if ($recipe.PSObject.Properties.Name -notcontains 'result') {
+            throw "Recipe '$($recipeEntry.FullName)' has no result."
+        }
+        if ($recipeSchema -eq 'ingredient-objects-legacy-result') {
+            $cookingRecipeTypes = @(
+                'minecraft:smelting',
+                'minecraft:blasting',
+                'minecraft:smoking',
+                'minecraft:campfire_cooking'
+            )
+            if ($cookingRecipeTypes -contains [string]$recipe.type) {
+                if ($recipe.result -isnot [string] -or [string]::IsNullOrWhiteSpace([string]$recipe.result)) {
+                    throw "Cooking recipe '$($recipeEntry.FullName)' must use a legacy string result."
+                }
+            } elseif ($recipe.result -is [string] -or
+                    $recipe.result.PSObject.Properties.Name -notcontains 'item' -or
+                    [string]::IsNullOrWhiteSpace([string]$recipe.result.item)) {
+                throw "Crafting recipe '$($recipeEntry.FullName)' must use a legacy object result with an item id."
+            }
+        } elseif ($recipe.result -is [string] -or
+                $recipe.result.PSObject.Properties.Name -notcontains 'id' -or
+                [string]::IsNullOrWhiteSpace([string]$recipe.result.id)) {
+            throw "Recipe '$($recipeEntry.FullName)' must use an object result with an id."
+        }
     }
 
     $languageEntries = @($zip.Entries | Where-Object {
@@ -352,9 +580,160 @@ try {
         }
     }
 
+    if ($isLegacyYarnProfile -and
+            $targetVersion -ge (Convert-ToTargetVersion '1.15') -and
+            $targetVersion -lt (Convert-ToTargetVersion '1.19')) {
+        $recipeMixinEntry = $zip.GetEntry('org/lavro/carpetlir/mixins/RecipeManagerMixin.class')
+        if ($null -eq $recipeMixinEntry) {
+            throw 'Minecraft 1.15-1.18 JAR is missing RecipeManagerMixin.'
+        }
+        $recipeMixinText = [System.Text.Encoding]::UTF8.GetString((Get-ZipEntryBytes $recipeMixinEntry))
+        if ($recipeMixinText.Contains('com/mojang/datafixers/util/Pair')) {
+            throw 'Minecraft 1.15-1.18 RecipeManagerMixin incorrectly links the later cached Pair overload.'
+        }
+    }
+
+    $requiresLegacyDeathMixin = $false
+    if ($isLegacyYarnProfile -and
+            $targetVersion -ge (Convert-ToTargetVersion '1.19') -and
+            $targetVersion -lt (Convert-ToTargetVersion '1.20')) {
+        $legacyLootClassPaths = @(
+            'org/lavro/carpetlir/features/renewable/ReinforcedDeepslateFeature.class',
+            'org/lavro/carpetlir/mixins/AbstractBlockStateMixin.class'
+        )
+        foreach ($legacyLootClassPath in $legacyLootClassPaths) {
+            $legacyLootEntry = $zip.GetEntry($legacyLootClassPath)
+            if ($null -eq $legacyLootEntry) {
+                throw "Minecraft 1.19 JAR is missing '$legacyLootClassPath'."
+            }
+            $legacyLootText = [System.Text.Encoding]::UTF8.GetString((Get-ZipEntryBytes $legacyLootEntry))
+            if (-not $legacyLootText.Contains('net/minecraft/class_47$class_48') -or
+                    $legacyLootText.Contains('net/minecraft/class_8567$class_8568')) {
+                throw "Minecraft 1.19 class '$legacyLootClassPath' does not use the legacy loot-context builder."
+            }
+        }
+
+        $legacyRecipeMixinEntry = $zip.GetEntry('org/lavro/carpetlir/mixins/RecipeManagerMixin.class')
+        if ($null -eq $legacyRecipeMixinEntry) {
+            throw 'Minecraft 1.19 JAR is missing RecipeManagerMixin.'
+        }
+        $legacyRecipeMixinText = [System.Text.Encoding]::UTF8.GetString(
+                (Get-ZipEntryBytes $legacyRecipeMixinEntry)
+        )
+        if (-not $legacyRecipeMixinText.Contains('net/minecraft/class_1860') -or
+                -not $legacyRecipeMixinText.Contains('com/mojang/datafixers/util/Pair') -or
+                $legacyRecipeMixinText.Contains('net/minecraft/class_8786')) {
+            throw 'Minecraft 1.19 RecipeManagerMixin does not use the pre-RecipeEntry Pair API.'
+        }
+
+        $wardenDeathCompatibilityEntry = $zip.GetEntry(
+                'org/lavro/carpetlir/features/renewable/WardenDeathCompatibility.class'
+        )
+        if ($null -eq $wardenDeathCompatibilityEntry) {
+            throw 'Minecraft 1.19 JAR is missing WardenDeathCompatibility.'
+        }
+        $wardenDeathCompatibilityText = [System.Text.Encoding]::UTF8.GetString(
+                (Get-ZipEntryBytes $wardenDeathCompatibilityEntry)
+        )
+        $selectedSourceOverlay = [string]$profile.source_overlay
+        if ($selectedSourceOverlay -eq '1.19-legacy-death') {
+            $requiresLegacyDeathMixin = $true
+            if ($wardenDeathCompatibilityText.Contains('ServerLivingEntityEvents')) {
+                throw 'Legacy Fabric API death adapter must not reference unavailable ServerLivingEntityEvents.'
+            }
+            $legacyDeathMixinEntry = $zip.GetEntry(
+                    'org/lavro/carpetlir/mixins/LivingEntityDeathMixin.class'
+            )
+            if ($null -eq $legacyDeathMixinEntry) {
+                throw 'Legacy Fabric API death adapter is missing LivingEntityDeathMixin.'
+            }
+            $legacyDeathMixinText = [System.Text.Encoding]::UTF8.GetString(
+                    (Get-ZipEntryBytes $legacyDeathMixinEntry)
+            )
+            if (-not $legacyDeathMixinText.Contains('ReinforcedDeepslateFeature') -or
+                    -not $legacyDeathMixinText.Contains('net/minecraft/class_1937') -or
+                    -not $legacyDeathMixinText.Contains('method_8421')) {
+                throw 'LivingEntityDeathMixin does not mirror the server death-event injection.'
+            }
+        } elseif ($selectedSourceOverlay -eq '1.19') {
+            if (-not $wardenDeathCompatibilityText.Contains('ServerLivingEntityEvents')) {
+                throw 'Modern Minecraft 1.19 death adapter does not register ServerLivingEntityEvents.'
+            }
+            if ($null -ne $zip.GetEntry('org/lavro/carpetlir/mixins/LivingEntityDeathMixin.class')) {
+                throw 'Modern Minecraft 1.19 JAR contains the legacy death Mixin and could double-drop.'
+            }
+        } else {
+            throw "Minecraft 1.19 profile selects unsupported source overlay '$selectedSourceOverlay'."
+        }
+    }
+
+    $requiredServerMixinClassPaths = @()
+    if ($isLegacyYarnProfile) {
+        if ($expectedRules -contains 'renewableCalcite') {
+            $requiredServerMixinClassPaths += 'org/lavro/carpetlir/mixins/FluidBlockMixin.class'
+        }
+        if (@($expectedRules | Where-Object {
+            $_ -in @('obsidianHardnessReinforcedDeepslate', 'silkTouchableReinforcedDeepslate')
+        }).Count -gt 0) {
+            $requiredServerMixinClassPaths += 'org/lavro/carpetlir/mixins/AbstractBlockStateMixin.class'
+        }
+        if ($expectedRecipes.Count -gt 0) {
+            $requiredServerMixinClassPaths += 'org/lavro/carpetlir/mixins/RecipeManagerMixin.class'
+        }
+        if ($requiresLegacyDeathMixin) {
+            $requiredServerMixinClassPaths += 'org/lavro/carpetlir/mixins/LivingEntityDeathMixin.class'
+        }
+    }
+
+    $requiredPistonMixinClassPaths = @()
+    if ($isLegacyYarnProfile -and $expectedRules -contains 'pistonHarvestableAmethysts') {
+        if ($targetVersion -ge (Convert-ToTargetVersion '1.21.11')) {
+            $requiredPistonMixinClassPaths = @('org/lavro/carpetlir/mixins/PistonMoveMixin.class')
+            $pistonMoveMixinEntry = $zip.GetEntry('org/lavro/carpetlir/mixins/PistonMoveMixin.class')
+            if ($null -eq $pistonMoveMixinEntry -or
+                    -not [System.Text.Encoding]::UTF8.GetString(
+                            (Get-ZipEntryBytes $pistonMoveMixinEntry)
+                    ).Contains('PistonHarvestableAmethystFeature')) {
+                throw 'PistonMoveMixin does not retain the budding-amethyst drop hook.'
+            }
+        } else {
+            $requiredPistonMixinClassPaths = @(
+                'org/lavro/carpetlir/mixins/BlockMixin.class',
+                'org/lavro/carpetlir/mixins/PistonBlockMixin.class'
+            )
+            $blockMixinEntry = $zip.GetEntry('org/lavro/carpetlir/mixins/BlockMixin.class')
+            $pistonBlockMixinEntry = $zip.GetEntry('org/lavro/carpetlir/mixins/PistonBlockMixin.class')
+            $pistonHarvestContextEntry = $zip.GetEntry('org/lavro/carpetlir/helpers/PistonHarvestContext.class')
+            if ($null -eq $blockMixinEntry -or
+                    -not [System.Text.Encoding]::UTF8.GetString(
+                            (Get-ZipEntryBytes $blockMixinEntry)
+                    ).Contains('PistonHarvestableAmethystFeature')) {
+                throw 'BlockMixin does not retain the budding-amethyst drop hook.'
+            }
+            if ($null -eq $pistonBlockMixinEntry -or
+                    -not [System.Text.Encoding]::UTF8.GetString(
+                            (Get-ZipEntryBytes $pistonBlockMixinEntry)
+                    ).Contains('PistonHarvestContext')) {
+                throw 'PistonBlockMixin does not retain the piston-only harvest context.'
+            }
+            if ($null -eq $pistonHarvestContextEntry) {
+                throw 'PistonHarvestContext is absent from the release JAR.'
+            }
+        }
+    }
+    $requiredServerMixinClassPaths += $requiredPistonMixinClassPaths
+
     $mixinConfigs = @($metadata.mixins | ForEach-Object {
         if ($_ -is [string]) { $_ } else { $_.config }
     })
+    $packagedMixinConfigs = @($zip.Entries | Where-Object {
+        $_.FullName -match '(^|/)[^/]+\.mixins\.json$'
+    } | ForEach-Object FullName)
+    $unexpectedMixinConfigs = @($packagedMixinConfigs | Where-Object { $mixinConfigs -notcontains $_ })
+    if ($unexpectedMixinConfigs.Count -ne 0) {
+        throw "Release JAR contains undeclared mixin config(s): $($unexpectedMixinConfigs -join ', ')."
+    }
+    $serverActiveMixinClassPaths = @()
     foreach ($mixinConfigPath in $mixinConfigs) {
         $mixinConfigEntry = $zip.GetEntry([string]$mixinConfigPath)
         if ($null -eq $mixinConfigEntry) {
@@ -363,6 +742,24 @@ try {
         $mixinConfig = Get-ZipEntryText $mixinConfigEntry | ConvertFrom-Json
         $mixinPackage = ([string]$mixinConfig.package).Replace('.', '/')
         $mixinNames = @($mixinConfig.mixins) + @($mixinConfig.server) + @($mixinConfig.client)
+        $mixinDeclaration = @($metadata.mixins | Where-Object {
+            $declaredPath = if ($_ -is [string]) { [string]$_ } else { [string]$_.config }
+            $declaredPath -eq [string]$mixinConfigPath
+        }) | Select-Object -First 1
+        $mixinEnvironment = if ($mixinDeclaration -is [string]) {
+            '*'
+        } elseif ($null -ne $mixinDeclaration -and
+                $mixinDeclaration.PSObject.Properties.Name -contains 'environment') {
+            [string]$mixinDeclaration.environment
+        } else {
+            '*'
+        }
+        if ($mixinEnvironment -ne 'client') {
+            $serverMixinNames = @($mixinConfig.mixins) + @($mixinConfig.server)
+            $serverActiveMixinClassPaths += @($serverMixinNames | Where-Object {
+                -not [string]::IsNullOrWhiteSpace([string]$_)
+            } | ForEach-Object { "$mixinPackage/$_.class" })
+        }
         foreach ($mixinName in $mixinNames) {
             if ([string]::IsNullOrWhiteSpace([string]$mixinName)) {
                 continue
@@ -371,6 +768,11 @@ try {
             if ($null -eq $zip.GetEntry($mixinClassPath)) {
                 throw "Mixin config '$mixinConfigPath' references absent class '$mixinClassPath'."
             }
+        }
+    }
+    foreach ($requiredServerMixinClassPath in @($requiredServerMixinClassPaths | Sort-Object -Unique)) {
+        if ($serverActiveMixinClassPaths -notcontains $requiredServerMixinClassPath) {
+            throw "Required server adapter '$requiredServerMixinClassPath' is not registered in a server-active mixin config."
         }
     }
 
