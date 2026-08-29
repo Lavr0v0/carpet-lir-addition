@@ -5,9 +5,14 @@
 ### Added
 - Added the Minecraft 26.2-only `renewableCinnabar` Carpet rule. Lava touching water now forms cinnabar when potent sulfur is directly below it and netherrack is horizontally adjacent; both catalyst blocks remain in place.
 - Added GameTests for the complete cinnabar structure, disabled-rule vanilla fallback, incomplete structures, and catalyst preservation.
+- Extended the disposable server smoke to run reinforced-deepslate hardness, real Silk Touch mining, and Warden loot gates on every target that exposes those rules, including Minecraft 1.21.11.
+- Added a calcite edge-case assertion proving that lava remains lava when the rule is enabled but the required amethyst catalyst is absent.
 
 ### Changed
 - Added a `tier-26.2` capability and a Mojang-mapped version source overlay so Minecraft 26.1–26.1.2 continue to omit the rule, feature class, and unavailable vanilla block references.
+
+### Fixed
+- Adapted smoke commands to the component-era item-count format and the Minecraft 1.21.9+ `mob_drops` game-rule name, preventing newer targets from silently skipping or misreporting reinforced-deepslate coverage.
 
 ## [1.1.0-beta.2] - 2026-08-26
 
