@@ -364,6 +364,7 @@ if ($hasCalcite) {
     "$ruleCommandRoot renewableCalcite true",
     'setblock 3 101 0 minecraft:lava',
     'execute if block 3 101 0 minecraft:calcite run say CARPETLIR_CALCITE_ENABLED_PASS',
+    'execute if block 3 101 0 minecraft:calcite unless block 3 102 0 minecraft:water unless block 3 100 0 minecraft:water unless block 2 101 0 minecraft:water unless block 4 101 0 minecraft:water unless block 3 101 -1 minecraft:water unless block 3 101 1 minecraft:water run say CARPETLIR_CALCITE_WITHOUT_WATER_PASS',
     'setblock 3 101 0 minecraft:air',
     'setblock 4 101 0 minecraft:air',
     'setblock 3 101 0 minecraft:lava',
@@ -496,6 +497,7 @@ if ($hasCalcite) {
     $requiredMarkers += @(
         'CARPETLIR_CALCITE_DISABLED_PASS',
         'CARPETLIR_CALCITE_ENABLED_PASS',
+        'CARPETLIR_CALCITE_WITHOUT_WATER_PASS',
         'CARPETLIR_CALCITE_NO_AMETHYST_PASS'
     )
 }
@@ -897,7 +899,7 @@ if ($usesLegacyReplaceItem) {
     $coverageParts += 'survival bone-meal consumption'
 }
 if ($hasCalcite) {
-    $coverageParts += 'calcite disabled/enabled/missing-amethyst states'
+    $coverageParts += 'calcite disabled/enabled/no-water/missing-amethyst states'
 }
 if ($hasPiston) {
     $coverageParts += 'piston negative/positive paths'

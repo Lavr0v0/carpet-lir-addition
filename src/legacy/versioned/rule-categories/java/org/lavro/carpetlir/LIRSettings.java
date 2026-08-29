@@ -27,15 +27,15 @@ public class LIRSettings {
     @Rule(categories = {"LIR", "FEATURE", "RENEWABLE"})
     public static boolean boneMealGrassifyDirt = false;
 
-    @Rule(categories = {"LIR", "FEATURE", "RENEWABLE"})
+    @Rule(categories = {"LIR", "FEATURE"})
     public static boolean obsidianHardnessReinforcedDeepslate = false;
 
-    @Rule(categories = {"LIR", "FEATURE", "RENEWABLE"})
+    @Rule(categories = {"LIR", "FEATURE"})
     public static boolean silkTouchableReinforcedDeepslate = false;
 
     @Rule(categories = {"LIR", "FEATURE", "RENEWABLE"})
     public static boolean wardensDropReinforcedDeepslate = false;
 
-    @Rule(categories = {"LIR", "FEATURE", "RENEWABLE"})
+    @Rule(categories = {"LIR", "FEATURE"})
     public static boolean pistonHarvestableAmethysts = false;
 }

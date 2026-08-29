@@ -12,17 +12,30 @@ Put the Carpet LIR Addition JAR matching the server's exact Minecraft version in
 
 ## Rules
 
-On current Carpet generations, rules are managed through Carpet's normal `/carpet` command. For example:
+On current Carpet generations, rules are managed through Carpet's normal `/carpet` command. Querying a rule shows its current value and description:
+
+```text
+/carpet renewableCalcite
+```
+
+A direct assignment changes only the current server session:
 
 ```text
 /carpet renewableCalcite true
 ```
 
-The Java 8 adapters for Minecraft 1.14.4 and 1.15–1.16.5 use the older extension-owned settings API and expose their available rules through `/carpetlir <rule> true|false`; see the [classic target guide](classic/1.14.4/README.md) for the separately built 1.14.4 target. Other current root-profile adapters use `/carpet`.
+Persist a value across restarts with `setDefault`; this also applies the value immediately. Remove the saved override to return the rule to its code default (`false`):
+
+```text
+/carpet setDefault renewableCalcite true
+/carpet removeDefault renewableCalcite
+```
+
+The Java 8 adapters for Minecraft 1.14.4 and 1.15–1.16.5 use the older extension-owned settings API. Replace `/carpet` with `/carpetlir` for queries, temporary assignments, `setDefault`, and `removeDefault`; see the [classic target guide](classic/1.14.4/README.md) for the separately built 1.14.4 target. Other current root-profile adapters use `/carpet`.
 
 | Rule | First target | Effect |
 | --- | --- | --- |
-| `renewableCalcite` | 1.17 | Lava above a bone block generates calcite when an amethyst block is beside or above it. Non-matching lava interactions remain vanilla. |
+| `renewableCalcite` | 1.17 | After the rule is enabled, placing or updating lava converts it to calcite when a bone block is directly below and a regular amethyst block is horizontally adjacent or directly above. Water is not required. |
 | `renewableCinnabar` | 26.2 | Lava touching water generates cinnabar when potent sulfur is directly below it and netherrack is horizontally adjacent. The two catalyst blocks are not consumed. |
 | `renewableTuff` | 1.17 | Enables smelting one gravel into one tuff. |
 | `renewableLapisOre` | 1.17 | Enables crafting eight calcite around one amethyst shard into one lapis ore. |
@@ -30,12 +43,17 @@ The Java 8 adapters for Minecraft 1.14.4 and 1.15–1.16.5 use the older extensi
 | `renewableRawOresCrafting` | 1.17 | Enables eight cobblestone plus an ingot to produce the matching raw iron, copper, or gold. |
 | `renewableHoneycombCrafting` | 1.15 | Enables converting one honeycomb block back into four honeycombs. |
 | `boneMealGrassifyDirt` | 1.14.4 | Bone meal converts dirt into grass only where grass can actually survive, with vanilla feedback and item consumption. |
-| `obsidianHardnessReinforcedDeepslate` | 1.19 | Gives reinforced deepslate obsidian's actual hardness and mining progress. |
-| `silkTouchableReinforcedDeepslate` | 1.19 | Makes reinforced deepslate drop itself when mined with Silk Touch. |
-| `wardensDropReinforcedDeepslate` | 1.19 | Wardens drop 1–4 reinforced deepslate on death when `mob_drops` is enabled. |
-| `pistonHarvestableAmethysts` | 1.17 | Adds a budding-amethyst item drop when a piston destroys budding amethyst. |
+| `obsidianHardnessReinforcedDeepslate` | 1.19 | Changes only reinforced deepslate's mining speed and progress to match obsidian; it does not add a drop or renewable source. |
+| `silkTouchableReinforcedDeepslate` | 1.19 | Recovers an existing reinforced deepslate block when it is mined with Silk Touch; it does not create a new block. |
+| `wardensDropReinforcedDeepslate` | 1.19 | Provides the renewable source: Wardens drop 1–4 reinforced deepslate on death when mob loot is enabled. |
+| `pistonHarvestableAmethysts` | 1.17 | Lets a piston harvest an existing budding amethyst; it does not make budding amethyst renewable. |
 
-All rules use the `LIR`, `FEATURE`, and `RENEWABLE` categories and default to `false`. A rule introduced after the selected Minecraft version is absent from that JAR rather than shown as a setting that cannot work.
+### Avoiding common rule misunderstandings
+
+- `renewableCalcite` does not use water. Build the minimum test with bone directly below the target lava position and a regular `minecraft:amethyst_block` on a horizontal side or directly above. Enable the rule first, then place or update the lava; toggling the rule does not retroactively scan and replace existing lava, obsidian, cobblestone, or basalt.
+- There is no single "renewable deepslate" rule. The three reinforced-deepslate rules are independent: the hardness rule changes mining only, the Silk Touch rule recovers a finite existing block, and only the Warden-drop rule creates a repeatable source of new reinforced deepslate.
+
+All rules use the `LIR` and `FEATURE` categories and default to `false`. Rules that create a repeatable resource source also use `RENEWABLE`; the reinforced-deepslate hardness, Silk Touch recovery, and budding-amethyst piston recovery rules deliberately do not. A rule introduced after the selected Minecraft version is absent from that JAR rather than shown as a setting that cannot work.
 
 ## Development and verification
 

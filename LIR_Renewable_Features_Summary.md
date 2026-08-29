@@ -1,16 +1,24 @@
 # Carpet LIR Addition 技术摘要
 
+## 规则命令
+
+- 查询当前值与说明：`/carpet <规则名>`
+- 仅在当前服务器运行中修改：`/carpet <规则名> true|false`
+- 立即修改并跨重启保存：`/carpet setDefault <规则名> true|false`
+- 删除保存值并恢复代码默认值：`/carpet removeDefault <规则名>`
+- Minecraft 1.14.4–1.16.5 使用 `/carpetlir` 前缀，后续子命令相同。
+
 ## 1. 方解石生成器
 
-- 输入：熔岩、骨块、紫水晶块，以及用于触发熔岩转化的水流结构
-- 条件：`renewableCalcite = true`，且熔岩方块下方是 `bone_block`，相邻检查位存在 `amethyst_block`
+- 输入：熔岩、骨块与普通紫水晶块；不需要水
+- 条件：`renewableCalcite = true`，目标熔岩正下方是 `bone_block`，并且水平四邻或正上方存在普通 `amethyst_block`
 - 输出：目标熔岩方块转化为 `calcite`
-- 玩家可见行为：搭法与原版玄武岩机平行，只是把 `soul_soil` 换成骨块、把 `blue_ice` 换成紫水晶块
-- 失败条件：规则关闭，或骨块/紫水晶块任一条件不满足
+- 玩家可见行为：先开启规则并搭好催化结构，再放置熔岩或更新其邻居，目标熔岩才会转化
+- 失败条件：规则关闭、骨块位置错误、使用紫水晶母岩/晶芽/晶簇/碎片，或普通紫水晶块不在有效位置
 - 验证：
-  - Happy path：开启规则后，按玄武岩机思路搭建，熔岩应产出方解石
-  - Negative path：关闭规则后，同结构不应产出方解石
-  - Edge note：原版 `soul_soil + blue_ice -> basalt` 保持不变
+  - Happy path：使用“骨块正下方、普通紫水晶块在侧面、无水”的最小结构，开启规则后最后放置熔岩，应产出方解石
+  - Negative path：关闭规则后，同结构中的熔岩保持原版行为
+  - Edge note：仅切换规则不会追溯扫描并替换已有的熔岩、黑曜石、圆石或玄武岩；原版 `soul_soil + blue_ice -> basalt` 保持不变
 
 ## 2. 沙砾烧制凝灰岩
 
@@ -74,32 +82,37 @@
 - 条件：`pistonHarvestableAmethysts = true`，且活塞发生“尝试推动”事件
 - 输出：原方块消失，并掉落 `budding_amethyst x1`
 - 玩家可见行为：母岩不会被完整推走，而是被机械破坏并掉落自身
+- 资源边界：该规则只回收世界中已有的紫水晶母岩，不会生成新的母岩，因此不属于 `RENEWABLE` 分类
 - 失败条件：规则关闭时保持原版结果——母岩仍会被活塞机械破坏，但不会掉落母岩物品
 - 验证：
   - Happy path：开启规则后，活塞正推母岩应掉落 1 个母岩物品
   - Negative path：关闭规则后，同样装置不应采集成功
   - Edge note：黏性活塞回拉不会重复掉落
 
+以下三条强化深板岩规则彼此独立；项目中不存在一条统一的“深板岩再生”规则。硬度规则只改变挖掘，精准采集规则只回收已有方块，只有监守者掉落规则会持续产生新的强化深板岩。
+
 ## 11. 强化深板岩硬度调整
 
 - 输入：`reinforced_deepslate`
 - 条件：`obsidianHardnessReinforcedDeepslate = true`
 - 输出：强化深板岩的挖掘速度改为按黑曜石处理
-- 玩家可见行为：开启规则后，强化深板岩的挖掘手感会接近黑曜石
+- 玩家可见行为：开启规则后，强化深板岩的挖掘手感会接近黑曜石；不会增加任何掉落
+- 分类：只属于 `LIR` 与 `FEATURE`，不属于 `RENEWABLE`
 
 ## 12. 强化深板岩精准采集掉落
 
 - 输入：`reinforced_deepslate` 与带有 `Silk Touch` 的工具
 - 条件：`silkTouchableReinforcedDeepslate = true`
 - 输出：掉落 `reinforced_deepslate x1`
-- 玩家可见行为：开启规则后，可用精准采集直接取得强化深板岩
+- 玩家可见行为：开启规则后，可用精准采集回收已有的强化深板岩；不会凭空创建新方块
+- 分类：只属于 `LIR` 与 `FEATURE`，不属于 `RENEWABLE`
 
-## 13. 坚守者掉落强化深板岩
+## 13. 监守者掉落强化深板岩
 
 - 输入：`warden`
-- 条件：`wardensDropReinforcedDeepslate = true`
+- 条件：`wardensDropReinforcedDeepslate = true`，且生物掉落游戏规则开启
 - 输出：`reinforced_deepslate x1-4`
-- 玩家可见行为：开启规则后，击杀坚守者会额外掉落 1 到 4 个强化深板岩
+- 玩家可见行为：开启规则后，击杀监守者会额外掉落 1 到 4 个强化深板岩，这是三条规则中唯一的可再生来源
 
 ## 14. 朱砂生成器（Minecraft 26.2+）
 

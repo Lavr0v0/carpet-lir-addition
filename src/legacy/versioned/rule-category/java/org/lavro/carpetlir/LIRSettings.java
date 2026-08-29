@@ -7,7 +7,7 @@ public final class LIRSettings {
     }
 
     @Rule(
-            desc = "Lava flowing over bone blocks generates calcite when it finds an adjacent amethyst block in the same positions used by vanilla basalt generation.",
+            desc = "After enabling, place or update lava. It becomes calcite when a bone block is directly below and a regular amethyst block is horizontally adjacent or directly above; water is not required.",
             category = {"LIR", "FEATURE", "RENEWABLE"}
     )
     public static boolean renewableCalcite = false;
@@ -49,26 +49,26 @@ public final class LIRSettings {
     public static boolean boneMealGrassifyDirt = false;
 
     @Rule(
-            desc = "Makes reinforced deepslate break at an obsidian-like mining speed instead of its normal slower break time.",
-            category = {"LIR", "FEATURE", "RENEWABLE"}
+            desc = "Changes only reinforced deepslate's mining speed and progress to match obsidian; it does not add a block drop or renewable source.",
+            category = {"LIR", "FEATURE"}
     )
     public static boolean obsidianHardnessReinforcedDeepslate = false;
 
     @Rule(
-            desc = "Allows reinforced deepslate to drop itself when mined with Silk Touch.",
-            category = {"LIR", "FEATURE", "RENEWABLE"}
+            desc = "Lets existing reinforced deepslate drop itself when mined with Silk Touch; it recovers a block but does not create a new one.",
+            category = {"LIR", "FEATURE"}
     )
     public static boolean silkTouchableReinforcedDeepslate = false;
 
     @Rule(
-            desc = "Makes wardens drop 1 to 4 reinforced deepslate when they die.",
+            desc = "Provides the renewable source: Wardens drop 1 to 4 reinforced deepslate on death while mob loot is enabled.",
             category = {"LIR", "FEATURE", "RENEWABLE"}
     )
     public static boolean wardensDropReinforcedDeepslate = false;
 
     @Rule(
-            desc = "Budding amethyst breaks and drops itself when a piston tries to push it.",
-            category = {"LIR", "FEATURE", "RENEWABLE"}
+            desc = "Lets a piston harvest an existing budding amethyst by breaking and dropping it; this does not make budding amethyst renewable.",
+            category = {"LIR", "FEATURE"}
     )
     public static boolean pistonHarvestableAmethysts = false;
 }

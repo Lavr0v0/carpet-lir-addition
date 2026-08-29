@@ -1,15 +1,15 @@
 # Rule validation guide
 
-Run these checks in a disposable world matching the exact target JAR. Begin each check with the named rule set to `false`, and reset it after the check so rule state cannot leak into later results. Only test rules present in that target's capability tier. Minecraft 1.14.4 intentionally exposes just `boneMealGrassifyDirt` and `renewableLeavesCrafting`; Minecraft 1.15–1.16.5 expose those two rules plus `renewableHoneycombCrafting` and exactly seven recipes; Minecraft 1.17–1.18.2 expose the eight `tier-1.17` rules and twelve recipes but none of the 1.19 reinforced-deepslate, Warden, or mangrove capabilities. Use `/carpetlir` for the Java 8 1.14.4 and 1.15–1.16.5 adapters, and `/carpet` for the other current root-profile targets.
+Run these checks in a disposable world matching the exact target JAR. Begin each check with the named rule set to `false`, and reset it after the check so rule state cannot leak into later results. A direct `/carpet <rule> true|false` assignment is intentionally session-only; use `/carpet setDefault <rule> true|false` only when validating persistence across a restart, then clean up with `/carpet removeDefault <rule>`. Only test rules present in that target's capability tier. Minecraft 1.14.4 intentionally exposes just `boneMealGrassifyDirt` and `renewableLeavesCrafting`; Minecraft 1.15–1.16.5 expose those two rules plus `renewableHoneycombCrafting` and exactly seven recipes; Minecraft 1.17–1.18.2 expose the eight `tier-1.17` rules and twelve recipes but none of the 1.19 reinforced-deepslate, Warden, or mangrove capabilities. Use `/carpetlir` (including its `setDefault` and `removeDefault` subcommands) for the Java 8 1.14.4 and 1.15–1.16.5 adapters, and `/carpet` for the other current root-profile targets.
 
 ## Renewable blocks and recipes
 
 ### `renewableCalcite`
 
-- **Trigger:** Place lava above a bone block, with an amethyst block horizontally adjacent to or directly above the lava.
-- **Happy path:** Enable the rule and update or place the lava. The lava position becomes calcite and plays the block-form event.
+- **Trigger:** After enabling the rule, place or update lava above a bone block, with a regular `minecraft:amethyst_block` horizontally adjacent to or directly above the lava. Water is not part of this structure.
+- **Happy path:** Use the minimum no-water structure and place or update the lava last. The lava position becomes calcite and plays the block-form event.
 - **Negative path:** Disable the rule and repeat the structure. The custom conversion does not run; vanilla lava behavior continues.
-- **Edge case:** With the rule enabled but without bone below or amethyst in a valid position, calcite must not form. Vanilla water and basalt generators must still work.
+- **Edge case:** With the rule enabled but without bone below or regular amethyst in a valid position, calcite must not form. Budding amethyst, buds, clusters, and shards are not catalysts. Toggling the rule alone must not retroactively replace existing lava, obsidian, cobblestone, or basalt; vanilla water and basalt generators must still work.
 
 ### `renewableCinnabar` (Minecraft 26.2+)
 
@@ -55,6 +55,8 @@ Run these checks in a disposable world matching the exact target JAR. Begin each
 
 ## World interactions
 
+The three reinforced-deepslate rules below are independent. There is no single "renewable deepslate" switch: the hardness rule changes mining only, the Silk Touch rule recovers an existing finite block, and only the Warden-drop rule creates a repeatable source of new reinforced deepslate.
+
 ### `boneMealGrassifyDirt`
 
 - **Trigger:** Use bone meal on a dirt block where a grass block can survive.
@@ -88,7 +90,7 @@ Run these checks in a disposable world matching the exact target JAR. Begin each
 - **Trigger:** Power a piston facing budding amethyst.
 - **Happy path:** Enable the rule; vanilla destroys the budding amethyst and Carpet LIR drops one budding-amethyst item.
 - **Negative path:** Disable the rule; vanilla piston behavior still destroys the budding amethyst but produces no item.
-- **Edge case:** The replacement is scoped to the piston destruction call only. Normal mining and unrelated piston-destroyed blocks keep vanilla loot behavior.
+- **Edge case:** The replacement is scoped to the piston destruction call only. Normal mining and unrelated piston-destroyed blocks keep vanilla loot behavior. The rule recovers an existing budding amethyst but does not create a renewable source.
 
 ## Automated coverage
 

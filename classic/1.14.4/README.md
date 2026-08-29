@@ -38,6 +38,8 @@ four sticks plus the matching log produce four leaves. An unrelated shaped
 recipe is never intercepted, which is the overlap edge case.
 
 The `build` task runs focused tests and inspects the packaged JAR for forbidden
-higher-tier rule names/classes/resources and for an exact six-recipe set. A
-manual server check should exercise `/carpetlir <rule> true|false`, because this
+higher-tier rule names/classes/resources and for an exact six-recipe set. This
 Carpet generation exposes extension rules through its custom settings command.
+`/carpetlir <rule> true|false` changes the current server session only;
+`/carpetlir setDefault <rule> true|false` applies and saves a value across
+restarts, while `/carpetlir removeDefault <rule>` removes that saved override.

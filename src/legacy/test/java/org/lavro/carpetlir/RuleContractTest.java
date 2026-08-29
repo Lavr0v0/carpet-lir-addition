@@ -22,10 +22,14 @@ class RuleContractTest {
             "carpet.api.settings.Rule",
             "carpet.settings.Rule"
     )));
-    private static final Set<String> EXPECTED_CATEGORIES = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
+    private static final Set<String> BASE_CATEGORIES = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
             "LIR",
-            "FEATURE",
-            "RENEWABLE"
+            "FEATURE"
+    )));
+    private static final Set<String> NON_RENEWABLE_RECOVERY_RULES = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
+            "obsidianHardnessReinforcedDeepslate",
+            "silkTouchableReinforcedDeepslate",
+            "pistonHarvestableAmethysts"
     )));
 
     @Test
@@ -55,10 +59,14 @@ class RuleContractTest {
             assertTrue(categoryValue instanceof String[],
                     field.getName() + " @Rule categories must be a String array");
             String[] categories = (String[]) categoryValue;
-            assertEquals(EXPECTED_CATEGORIES.size(), categories.length,
+            Set<String> expectedCategories = new HashSet<>(BASE_CATEGORIES);
+            if (!NON_RENEWABLE_RECOVERY_RULES.contains(field.getName())) {
+                expectedCategories.add("RENEWABLE");
+            }
+            assertEquals(expectedCategories.size(), categories.length,
                     field.getName() + " must not repeat or add rule categories");
-            assertEquals(EXPECTED_CATEGORIES, new HashSet<>(Arrays.asList(categories)),
-                    field.getName() + " must use exactly the LIR, FEATURE, and RENEWABLE categories");
+            assertEquals(expectedCategories, new HashSet<>(Arrays.asList(categories)),
+                    field.getName() + " must use categories that match its resource semantics");
 
             if (usesLegacyRule) {
                 String description = (String) ruleAnnotation.annotationType()
