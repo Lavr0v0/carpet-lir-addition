@@ -226,6 +226,7 @@ $forbiddenBefore = @{
     'org/lavro/carpetlir/mixins/PistonMoveMixin.class' = '1.17'
     'org/lavro/carpetlir/features/renewable/ReinforcedDeepslateFeature.class' = '1.19'
     'org/lavro/carpetlir/mixins/AbstractBlockStateMixin.class' = '1.19'
+    'org/lavro/carpetlir/features/renewable/CinnabarGeneratorFeature.class' = '26.2'
 }
 
 Add-Type -AssemblyName System.IO.Compression.FileSystem
@@ -476,6 +477,30 @@ try {
         if ($isPresent -ne $isExpected) {
             $expectation = if ($isExpected) { 'present' } else { 'absent' }
             throw "Rule field '$rule' must be $expectation for Minecraft $MinecraftVersion."
+        }
+    }
+
+    if ($expectedRules -contains 'renewableCinnabar') {
+        $cinnabarFeatureEntry = $zip.GetEntry(
+            'org/lavro/carpetlir/features/renewable/CinnabarGeneratorFeature.class'
+        )
+        $fluidBlockMixinEntry = $zip.GetEntry('org/lavro/carpetlir/mixins/FluidBlockMixin.class')
+        if ($null -eq $cinnabarFeatureEntry -or $null -eq $fluidBlockMixinEntry) {
+            throw 'JAR with renewableCinnabar is missing its feature class or LiquidBlock hook.'
+        }
+        $cinnabarFeatureText = [System.Text.Encoding]::UTF8.GetString(
+            (Get-ZipEntryBytes $cinnabarFeatureEntry)
+        )
+        $fluidBlockMixinText = [System.Text.Encoding]::UTF8.GetString(
+            (Get-ZipEntryBytes $fluidBlockMixinEntry)
+        )
+        foreach ($requiredSymbol in @('POTENT_SULFUR', 'NETHERRACK', 'CINNABAR')) {
+            if (-not $cinnabarFeatureText.Contains($requiredSymbol)) {
+                throw "Cinnabar generator does not reference required block '$requiredSymbol'."
+            }
+        }
+        if (-not $fluidBlockMixinText.Contains('CinnabarGeneratorFeature')) {
+            throw 'LiquidBlock hook does not delegate to CinnabarGeneratorFeature.'
         }
     }
 

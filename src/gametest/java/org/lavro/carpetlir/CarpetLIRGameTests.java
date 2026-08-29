@@ -3,8 +3,10 @@ package org.lavro.carpetlir;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -62,6 +64,63 @@ public final class CarpetLIRGameTests {
             helper.succeed();
         } finally {
             LIRSettings.renewableCalcite = false;
+        }
+    }
+
+    @GameTest
+    public void cinnabarGeneratesFromCompleteCatalystStructure(GameTestHelper helper) {
+        if (!cinnabarBlocksAvailable()) {
+            helper.succeed();
+            return;
+        }
+
+        try {
+            setRenewableCinnabar(true);
+            placeCinnabarGenerator(helper, true, true);
+
+            helper.assertBlockPresent(minecraftBlock("cinnabar"), TEST_POS);
+            helper.assertBlockPresent(minecraftBlock("potent_sulfur"), TEST_POS.below());
+            helper.assertBlockPresent(Blocks.NETHERRACK, TEST_POS.east());
+            helper.succeed();
+        } finally {
+            setRenewableCinnabar(false);
+        }
+    }
+
+    @GameTest
+    public void cinnabarRuleOffUsesVanillaLavaWaterResult(GameTestHelper helper) {
+        if (!cinnabarBlocksAvailable()) {
+            helper.succeed();
+            return;
+        }
+
+        setRenewableCinnabar(false);
+        placeCinnabarGenerator(helper, true, true);
+
+        helper.assertBlockPresent(Blocks.OBSIDIAN, TEST_POS);
+        helper.assertBlockPresent(minecraftBlock("potent_sulfur"), TEST_POS.below());
+        helper.assertBlockPresent(Blocks.NETHERRACK, TEST_POS.east());
+        helper.succeed();
+    }
+
+    @GameTest
+    public void cinnabarRequiresBothWaterAndNetherrack(GameTestHelper helper) {
+        if (!cinnabarBlocksAvailable()) {
+            helper.succeed();
+            return;
+        }
+
+        try {
+            setRenewableCinnabar(true);
+            placeCinnabarGenerator(helper, false, true);
+            helper.assertBlockPresent(Blocks.LAVA, TEST_POS);
+
+            helper.setBlock(TEST_POS, Blocks.AIR);
+            placeCinnabarGenerator(helper, true, false);
+            helper.assertBlockPresent(Blocks.OBSIDIAN, TEST_POS);
+            helper.succeed();
+        } finally {
+            setRenewableCinnabar(false);
         }
     }
 
@@ -325,6 +384,29 @@ public final class CarpetLIRGameTests {
             helper.setBlock(TEST_POS.east(), Blocks.AMETHYST_BLOCK);
         }
         helper.setBlock(TEST_POS, Blocks.LAVA);
+    }
+
+    private static void placeCinnabarGenerator(GameTestHelper helper, boolean includeWater, boolean includeNetherrack) {
+        helper.setBlock(TEST_POS.below(), minecraftBlock("potent_sulfur"));
+        helper.setBlock(TEST_POS.west(), includeWater ? Blocks.WATER : Blocks.AIR);
+        helper.setBlock(TEST_POS.east(), includeNetherrack ? Blocks.NETHERRACK : Blocks.AIR);
+        helper.setBlock(TEST_POS, Blocks.LAVA);
+    }
+
+    private static boolean cinnabarBlocksAvailable() {
+        return minecraftBlock("cinnabar") != Blocks.AIR && minecraftBlock("potent_sulfur") != Blocks.AIR;
+    }
+
+    private static Block minecraftBlock(String path) {
+        return BuiltInRegistries.BLOCK.getValue(Identifier.withDefaultNamespace(path));
+    }
+
+    private static void setRenewableCinnabar(boolean enabled) {
+        try {
+            LIRSettings.class.getField("renewableCinnabar").setBoolean(null, enabled);
+        } catch (ReflectiveOperationException exception) {
+            throw new AssertionError("Minecraft exposes cinnabar blocks without the renewableCinnabar rule", exception);
+        }
     }
 
     private static Player boneMealPlayer(GameTestHelper helper, int count) {

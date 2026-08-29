@@ -4,7 +4,7 @@
   "carpet.category.FEATURE": "Función",
   "carpet.category.RENEWABLE": "Renovable",
   "carpet.rule.renewableCalcite.name": "renewableCalcite",
-  "carpet.rule.renewableCalcite.desc": "La lava que fluye sobre bloques de hueso genera calcita cuando encuentra un bloque de amatista adyacente en las mismas posiciones usadas por el basalto vanilla.",
+  "carpet.rule.renewableCalcite.desc": "Después de activar la regla, coloca o actualiza la lava: se convierte en calcita si hay un bloque de huesos justo debajo y un bloque de amatista normal a un lado o justo encima. No requiere agua.",
   "carpet.rule.renewableTuff.name": "renewableTuff",
   "carpet.rule.renewableTuff.desc": "Activa la receta de horno que funde grava en toba.",
   "carpet.rule.renewableLapisOre.name": "renewableLapisOre",
@@ -18,11 +18,13 @@
   "carpet.rule.boneMealGrassifyDirt.name": "boneMealGrassifyDirt",
   "carpet.rule.boneMealGrassifyDirt.desc": "Permite que el hueso molido convierta tierra en bloque de pasto cuando el pasto puede sobrevivir allí.",
   "carpet.rule.obsidianHardnessReinforcedDeepslate.name": "obsidianHardnessReinforcedDeepslate",
-  "carpet.rule.obsidianHardnessReinforcedDeepslate.desc": "Hace que la pizarra profunda reforzada se rompa a una velocidad de minería similar a la obsidiana.",
+  "carpet.rule.obsidianHardnessReinforcedDeepslate.desc": "Solo cambia la velocidad y el progreso de minado de la pizarra profunda reforzada para igualarlos a la obsidiana; no añade obtención ni una fuente renovable.",
   "carpet.rule.silkTouchableReinforcedDeepslate.name": "silkTouchableReinforcedDeepslate",
-  "carpet.rule.silkTouchableReinforcedDeepslate.desc": "Permite que la pizarra profunda reforzada se obtenga a sí misma con Toque de Seda.",
+  "carpet.rule.silkTouchableReinforcedDeepslate.desc": "Permite recuperar la pizarra profunda reforzada existente al minarla con Toque de Seda; no crea un bloque nuevo.",
   "carpet.rule.wardensDropReinforcedDeepslate.name": "wardensDropReinforcedDeepslate",
-  "carpet.rule.wardensDropReinforcedDeepslate.desc": "Hace que el Warden suelte de 1 a 4 bloques de pizarra profunda reforzada al morir.",
+  "carpet.rule.wardensDropReinforcedDeepslate.desc": "Proporciona la fuente renovable: los Wardens sueltan de 1 a 4 bloques de pizarra profunda reforzada al morir si el botín de criaturas está activado.",
   "carpet.rule.pistonHarvestableAmethysts.name": "pistonHarvestableAmethysts",
-  "carpet.rule.pistonHarvestableAmethysts.desc": "El brotador de amatista se rompe y se suelta a sí mismo cuando un pistón intenta empujarlo."
+  "carpet.rule.pistonHarvestableAmethysts.desc": "Permite que un pistón recoja un brotador de amatista existente al romperlo y soltarlo; no lo vuelve renovable.",
+  "carpet.rule.renewableCinnabar.name": "renewableCinnabar",
+  "carpet.rule.renewableCinnabar.desc": "La lava que toca agua genera cinabrio cuando hay azufre potente justo debajo y netherrack adyacente en horizontal."
 }

@@ -14,6 +14,7 @@ $KnownRules = @(
     'renewableLeavesCrafting',
     'renewableHoneycombCrafting',
     'renewableCalcite',
+    'renewableCinnabar',
     'renewableTuff',
     'renewableLapisOre',
     'renewableRawOresCrafting',
@@ -55,6 +56,7 @@ $RuleMinimumTargets = @{
     renewableLeavesCrafting = '1.14.4'
     renewableHoneycombCrafting = '1.15'
     renewableCalcite = '1.17'
+    renewableCinnabar = '26.2'
     renewableTuff = '1.17'
     renewableLapisOre = '1.17'
     renewableRawOresCrafting = '1.17'

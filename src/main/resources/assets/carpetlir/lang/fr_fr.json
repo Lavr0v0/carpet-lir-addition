@@ -4,7 +4,7 @@
   "carpet.category.FEATURE": "Fonctionnalité",
   "carpet.category.RENEWABLE": "Renouvelable",
   "carpet.rule.renewableCalcite.name": "renewableCalcite",
-  "carpet.rule.renewableCalcite.desc": "La lave qui s'écoule sur des blocs d'os produit de la calcite lorsqu'elle trouve un bloc d'améthyste adjacent aux mêmes emplacements que le basalte vanilla.",
+  "carpet.rule.renewableCalcite.desc": "Après activation, placez ou mettez à jour la lave : elle devient de la calcite si un bloc d'os est juste en dessous et un bloc d'améthyste normal sur un côté horizontal ou juste au-dessus. Aucune eau n'est requise.",
   "carpet.rule.renewableTuff.name": "renewableTuff",
   "carpet.rule.renewableTuff.desc": "Active la recette de four qui transforme le gravier en tuf.",
   "carpet.rule.renewableLapisOre.name": "renewableLapisOre",
@@ -18,11 +18,13 @@
   "carpet.rule.boneMealGrassifyDirt.name": "boneMealGrassifyDirt",
   "carpet.rule.boneMealGrassifyDirt.desc": "Permet à la poudre d'os de transformer la terre en bloc d'herbe lorsque l'herbe peut y survivre.",
   "carpet.rule.obsidianHardnessReinforcedDeepslate.name": "obsidianHardnessReinforcedDeepslate",
-  "carpet.rule.obsidianHardnessReinforcedDeepslate.desc": "Fait casser l'ardoise des abîmes renforcée à une vitesse de minage proche de l'obsidienne.",
+  "carpet.rule.obsidianHardnessReinforcedDeepslate.desc": "Modifie uniquement la vitesse et la progression de minage de l'ardoise des abîmes renforcée pour correspondre à l'obsidienne ; n'ajoute ni butin ni source renouvelable.",
   "carpet.rule.silkTouchableReinforcedDeepslate.name": "silkTouchableReinforcedDeepslate",
-  "carpet.rule.silkTouchableReinforcedDeepslate.desc": "Permet à l'ardoise des abîmes renforcée de se drop elle-même avec Toucher de soie.",
+  "carpet.rule.silkTouchableReinforcedDeepslate.desc": "Permet de récupérer une ardoise des abîmes renforcée existante avec Toucher de soie ; ne crée aucun nouveau bloc.",
   "carpet.rule.wardensDropReinforcedDeepslate.name": "wardensDropReinforcedDeepslate",
-  "carpet.rule.wardensDropReinforcedDeepslate.desc": "Fait drop au Warden de 1 à 4 ardoises des abîmes renforcées à sa mort.",
+  "carpet.rule.wardensDropReinforcedDeepslate.desc": "Fournit la source renouvelable : les Wardens lâchent de 1 à 4 ardoises des abîmes renforcées à leur mort lorsque le butin des créatures est activé.",
   "carpet.rule.pistonHarvestableAmethysts.name": "pistonHarvestableAmethysts",
-  "carpet.rule.pistonHarvestableAmethysts.desc": "La druse d'améthyste se casse et se drop elle-même lorsqu'un piston tente de la pousser."
+  "carpet.rule.pistonHarvestableAmethysts.desc": "Permet à un piston de récolter une druse d'améthyste existante en la brisant et en la faisant tomber ; ne la rend pas renouvelable.",
+  "carpet.rule.renewableCinnabar.name": "renewableCinnabar",
+  "carpet.rule.renewableCinnabar.desc": "La lave au contact de l'eau génère du cinabre si du soufre puissant se trouve juste dessous et de la netherrack est adjacente horizontalement."
 }

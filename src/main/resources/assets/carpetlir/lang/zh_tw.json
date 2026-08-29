@@ -4,7 +4,7 @@
   "carpet.category.FEATURE": "功能",
   "carpet.category.RENEWABLE": "可再生",
   "carpet.rule.renewableCalcite.name": "renewableCalcite",
-  "carpet.rule.renewableCalcite.desc": "當熔岩流經骨塊，且在原版玄武岩生成對應位置偵測到紫水晶方塊時，會生成方解石。",
+  "carpet.rule.renewableCalcite.desc": "開啟後放置或更新熔岩：若其正下方是骨塊，且水平相鄰或正上方有普通紫水晶方塊，熔岩會轉化為方解石；不需要水。",
   "carpet.rule.renewableTuff.name": "renewableTuff",
   "carpet.rule.renewableTuff.desc": "啟用將砂礫燒製為凝灰岩的普通熔爐配方。",
   "carpet.rule.renewableLapisOre.name": "renewableLapisOre",
@@ -18,11 +18,13 @@
   "carpet.rule.boneMealGrassifyDirt.name": "boneMealGrassifyDirt",
   "carpet.rule.boneMealGrassifyDirt.desc": "啟用使用骨粉點擊泥土，將其轉化為草地。",
   "carpet.rule.obsidianHardnessReinforcedDeepslate.name": "obsidianHardnessReinforcedDeepslate",
-  "carpet.rule.obsidianHardnessReinforcedDeepslate.desc": "使強化深板岩的挖掘速度調整到與黑曜石相近的水平。",
+  "carpet.rule.obsidianHardnessReinforcedDeepslate.desc": "僅將強化深板岩的挖掘速度與進度調整為黑曜石水平；不會增加掉落，也不會提供可再生來源。",
   "carpet.rule.silkTouchableReinforcedDeepslate.name": "silkTouchableReinforcedDeepslate",
-  "carpet.rule.silkTouchableReinforcedDeepslate.desc": "允許強化深板岩在使用絲綢之觸挖掘時掉落自身。",
+  "carpet.rule.silkTouchableReinforcedDeepslate.desc": "僅允許用絲綢之觸回收已有的強化深板岩；不會生成新的方塊。",
   "carpet.rule.wardensDropReinforcedDeepslate.name": "wardensDropReinforcedDeepslate",
-  "carpet.rule.wardensDropReinforcedDeepslate.desc": "使伏守者死亡時額外掉落 1 到 4 個強化深板岩。",
+  "carpet.rule.wardensDropReinforcedDeepslate.desc": "提供強化深板岩的可再生來源：開啟生物掉落後，伏守者死亡時額外掉落 1 到 4 個。",
   "carpet.rule.pistonHarvestableAmethysts.name": "pistonHarvestableAmethysts",
-  "carpet.rule.pistonHarvestableAmethysts.desc": "當活塞嘗試推動紫水晶芽床時，芽床會被破壞並掉落自身。"
+  "carpet.rule.pistonHarvestableAmethysts.desc": "允許活塞破壞並掉落已有的紫水晶芽床；只用於回收，不會使紫水晶芽床可再生。",
+  "carpet.rule.renewableCinnabar.name": "renewableCinnabar",
+  "carpet.rule.renewableCinnabar.desc": "當熔岩接觸水，且熔岩正下方為強效硫磺、水平相鄰有地獄石時，會生成朱砂。"
 }

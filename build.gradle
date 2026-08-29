@@ -205,6 +205,12 @@ if (sourceFamily == 'mojang-26') {
         splitEnvironmentSourceSets()
     }
 
+    sourceSets {
+        main {
+            java.srcDir("src/versioned/${sourceOverlay}/java")
+        }
+    }
+
     fabricApi {
         configureTests {
             createSourceSet = true

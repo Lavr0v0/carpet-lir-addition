@@ -4,7 +4,7 @@
   "carpet.category.FEATURE": "Função",
   "carpet.category.RENEWABLE": "Renovável",
   "carpet.rule.renewableCalcite.name": "renewableCalcite",
-  "carpet.rule.renewableCalcite.desc": "Lava fluindo sobre blocos de osso gera calcita quando encontra um bloco de ametista adjacente nas mesmas posições usadas pelo basalto vanilla.",
+  "carpet.rule.renewableCalcite.desc": "Após ativar a regra, coloque ou atualize a lava: ela vira calcita se houver um bloco de ossos logo abaixo e um bloco de ametista comum ao lado ou logo acima. Não requer água.",
   "carpet.rule.renewableTuff.name": "renewableTuff",
   "carpet.rule.renewableTuff.desc": "Ativa a receita de fornalha que transforma cascalho em tufo.",
   "carpet.rule.renewableLapisOre.name": "renewableLapisOre",
@@ -18,11 +18,13 @@
   "carpet.rule.boneMealGrassifyDirt.name": "boneMealGrassifyDirt",
   "carpet.rule.boneMealGrassifyDirt.desc": "Permite que farinha de osso transforme terra em Bloco de Grama quando a grama pode sobreviver ali.",
   "carpet.rule.obsidianHardnessReinforcedDeepslate.name": "obsidianHardnessReinforcedDeepslate",
-  "carpet.rule.obsidianHardnessReinforcedDeepslate.desc": "Faz a Ardosiabissal Reforçada quebrar com velocidade de mineração parecida com a Obsidiana.",
+  "carpet.rule.obsidianHardnessReinforcedDeepslate.desc": "Altera somente a velocidade e o progresso de mineração da Ardosiabissal Reforçada para os da Obsidiana; não adiciona drop nem fonte renovável.",
   "carpet.rule.silkTouchableReinforcedDeepslate.name": "silkTouchableReinforcedDeepslate",
-  "carpet.rule.silkTouchableReinforcedDeepslate.desc": "Permite que a Ardosiabissal Reforçada solte a si mesma com Toque Suave.",
+  "carpet.rule.silkTouchableReinforcedDeepslate.desc": "Permite recuperar uma Ardosiabissal Reforçada existente ao minerá-la com Toque Suave; não cria um bloco novo.",
   "carpet.rule.wardensDropReinforcedDeepslate.name": "wardensDropReinforcedDeepslate",
-  "carpet.rule.wardensDropReinforcedDeepslate.desc": "Faz o Defensor dropar de 1 a 4 blocos de Ardosiabissal Reforçada ao morrer.",
+  "carpet.rule.wardensDropReinforcedDeepslate.desc": "Fornece a fonte renovável: Defensores soltam de 1 a 4 blocos de Ardosiabissal Reforçada ao morrer quando o saque de criaturas está ativado.",
   "carpet.rule.pistonHarvestableAmethysts.name": "pistonHarvestableAmethysts",
-  "carpet.rule.pistonHarvestableAmethysts.desc": "A Drusa de Ametista quebra e dropa a si mesma quando um pistão tenta empurrá-la."
+  "carpet.rule.pistonHarvestableAmethysts.desc": "Permite que um pistão colete uma Drusa de Ametista existente ao quebrá-la e soltá-la; não a torna renovável.",
+  "carpet.rule.renewableCinnabar.name": "renewableCinnabar",
+  "carpet.rule.renewableCinnabar.desc": "Lava em contato com água gera cinábrio quando há enxofre potente logo abaixo e netherrack adjacente na horizontal."
 }

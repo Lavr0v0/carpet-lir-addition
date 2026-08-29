@@ -7,7 +7,7 @@ public final class LIRSettings {
     }
 
     @Rule(
-            desc = "Lava flowing over bone blocks generates calcite when it finds an adjacent amethyst block in the same positions used by vanilla basalt generation.",
+            desc = "After enabling, place or update lava. It becomes calcite when a bone block is directly below and a regular amethyst block is horizontally adjacent or directly above; water is not required.",
             category = {"LIR", "FEATURE", "RENEWABLE"}
     )
     public static boolean renewableCalcite = false;
@@ -49,8 +49,8 @@ public final class LIRSettings {
     public static boolean boneMealGrassifyDirt = false;
 
     @Rule(
-            desc = "Budding amethyst breaks and drops itself when a piston tries to push it.",
-            category = {"LIR", "FEATURE", "RENEWABLE"}
+            desc = "Lets a piston harvest an existing budding amethyst by breaking and dropping it; this does not make budding amethyst renewable.",
+            category = {"LIR", "FEATURE"}
     )
     public static boolean pistonHarvestableAmethysts = false;
 }

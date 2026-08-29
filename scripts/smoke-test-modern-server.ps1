@@ -67,12 +67,16 @@ $reinforcedRules = @(
     'wardensDropReinforcedDeepslate'
 )
 $hasReinforced = @($reinforcedRules | Where-Object { $availableRules -contains $_ }).Count -eq 3
-$runReinforcedChecks = $hasReinforced -and [string]$profile.capability_tier -eq 'tier-1.19'
+$runReinforcedChecks = $hasReinforced
 if (-not $hasTuffRecipe -and -not $hasHoneycombRecipe) {
     throw "Target '$TargetVersion' has no audited controlled recipe for the fallback smoke."
 }
 $targetSemanticVersion = [version]$TargetVersion
 $usesLegacyReplaceItem = $targetSemanticVersion -lt [version]'1.17'
+$usesComponentItemStacks = $targetSemanticVersion -ge [version]'1.20.5'
+$itemCountNbt = if ($usesComponentItemStacks) { 'count:1' } else { 'Count:1b' }
+$itemCountPath = if ($usesComponentItemStacks) { 'Item.count' } else { 'Item.Count' }
+$mobDropsGameRule = if ($targetSemanticVersion -ge [version]'1.21.9') { 'mob_drops' } else { 'doMobLoot' }
 $hasRecipeMatchCache = $targetSemanticVersion -ge [version]'1.19'
 $recipeFallbackMarker = if ($hasRecipeMatchCache) {
     'CARPETLIR_RECIPE_CACHED_FALLBACK_PASS'
@@ -166,7 +170,7 @@ New-Item -ItemType Directory -Path $EvidenceRoot -Force | Out-Null
 
 $hardnessDisabledCommand = "script run if(hardness(10,101,6)==55 && hardness(11,101,6)==50,run('say CARPETLIR_HARDNESS_DISABLED_PASS'))"
 $hardnessEnabledCommand = "script run if(hardness(10,101,6)==50 && hardness(11,101,6)==50,run('say CARPETLIR_HARDNESS_ENABLED_PASS'))"
-$silkEnabledDropProbeCommand = 'execute if block 10 101 6 minecraft:air if entity @e[type=minecraft:item,x=10.5,y=101.5,z=6.5,distance=..2,nbt={Item:{id:"minecraft:reinforced_deepslate",Count:1b}}] run say CARPETLIR_SILK_ENABLED_PASS'
+$silkEnabledDropProbeCommand = "execute if block 10 101 6 minecraft:air if entity @e[type=minecraft:item,x=10.5,y=101.5,z=6.5,distance=..2,nbt={Item:{id:`"minecraft:reinforced_deepslate`",$itemCountNbt}}] run say CARPETLIR_SILK_ENABLED_PASS"
 $wardenDropPresentProbeCommand = 'execute if entity @e[type=minecraft:item,x=12.5,y=101,z=12.5,distance=..4,nbt={Item:{id:"minecraft:reinforced_deepslate"}}] run say CARPETLIR_WARDEN_DROP_PRESENT'
 $mangroveRecipeGiveCommand = 'recipe give Notch carpetlir:mangrove_leaves_from_mangrove_log_and_sticks'
 
@@ -243,7 +247,7 @@ if ($runReinforcedChecks) {
         'gamemode spectator Notch',
         'tp Notch 0.5 101 0.5',
         'execute as @e[type=minecraft:item] run kill @s',
-        'gamerule doMobLoot true',
+        "gamerule $mobDropsGameRule true",
         "$ruleCommandRoot wardensDropReinforcedDeepslate false",
         'summon minecraft:warden 12.5 101 12.5 {Tags:["clrWardenOff"],NoAI:1b,Silent:1b,PersistenceRequired:1b}',
         'execute if entity @e[type=minecraft:warden,tag=clrWardenOff,x=12.5,y=101,z=12.5,distance=..2] run say CARPETLIR_WARDEN_OFF_SPAWNED',
@@ -251,7 +255,7 @@ if ($runReinforcedChecks) {
         $WaitForEntitySettleCommand,
         'execute unless entity @e[type=minecraft:warden,tag=clrWardenOff] unless entity @e[type=minecraft:item,nbt={Item:{id:"minecraft:reinforced_deepslate"}}] run say CARPETLIR_WARDEN_DISABLED_PASS',
         'execute as @e[type=minecraft:item] run kill @s',
-        'gamerule doMobLoot false',
+        "gamerule $mobDropsGameRule false",
         "$ruleCommandRoot wardensDropReinforcedDeepslate true",
         'summon minecraft:warden 12.5 101 12.5 {Tags:["clrWardenNoLoot"],NoAI:1b,Silent:1b,PersistenceRequired:1b}',
         'execute if entity @e[type=minecraft:warden,tag=clrWardenNoLoot,x=12.5,y=101,z=12.5,distance=..2] run say CARPETLIR_WARDEN_NOLOOT_SPAWNED',
@@ -259,7 +263,7 @@ if ($runReinforcedChecks) {
         $WaitForEntitySettleCommand,
         'execute unless entity @e[type=minecraft:warden,tag=clrWardenNoLoot] unless entity @e[type=minecraft:item,nbt={Item:{id:"minecraft:reinforced_deepslate"}}] run say CARPETLIR_WARDEN_NOLOOT_PASS',
         'execute as @e[type=minecraft:item] run kill @s',
-        'gamerule doMobLoot true',
+        "gamerule $mobDropsGameRule true",
         "$ruleCommandRoot wardensDropReinforcedDeepslate true",
         'summon minecraft:warden 12.5 101 12.5 {Tags:["clrWardenOn"],NoAI:1b,Silent:1b,PersistenceRequired:1b}',
         'execute if entity @e[type=minecraft:warden,tag=clrWardenOn,x=12.5,y=101,z=12.5,distance=..2] run say CARPETLIR_WARDEN_ON_SPAWNED',
@@ -269,11 +273,11 @@ if ($runReinforcedChecks) {
         'scoreboard players set #warden_entities clrSmoke 0',
         'execute as @e[type=minecraft:item,x=12.5,y=101,z=12.5,distance=..4,nbt={Item:{id:"minecraft:reinforced_deepslate"}}] run scoreboard players add #warden_entities clrSmoke 1',
         'scoreboard players set #warden_count clrSmoke -1',
-        'execute store result score #warden_count clrSmoke run data get entity @e[type=minecraft:item,x=12.5,y=101,z=12.5,distance=..4,limit=1,nbt={Item:{id:"minecraft:reinforced_deepslate"}}] Item.Count 1',
+        "execute store result score #warden_count clrSmoke run data get entity @e[type=minecraft:item,x=12.5,y=101,z=12.5,distance=..4,limit=1,nbt={Item:{id:`"minecraft:reinforced_deepslate`"}}] $itemCountPath 1",
         'execute if score #warden_entities clrSmoke matches 1 if score #warden_count clrSmoke matches 1..4 run say CARPETLIR_WARDEN_ENABLED_PASS',
         'execute as @e[type=minecraft:item] run kill @s',
         "$ruleCommandRoot wardensDropReinforcedDeepslate false",
-        'gamerule doMobLoot true'
+        "gamerule $mobDropsGameRule true"
     )
 }
 $boneMealHandCommand = if ($usesLegacyReplaceItem) {
@@ -360,6 +364,11 @@ if ($hasCalcite) {
     "$ruleCommandRoot renewableCalcite true",
     'setblock 3 101 0 minecraft:lava',
     'execute if block 3 101 0 minecraft:calcite run say CARPETLIR_CALCITE_ENABLED_PASS',
+    'execute if block 3 101 0 minecraft:calcite unless block 3 102 0 minecraft:water unless block 3 100 0 minecraft:water unless block 2 101 0 minecraft:water unless block 4 101 0 minecraft:water unless block 3 101 -1 minecraft:water unless block 3 101 1 minecraft:water run say CARPETLIR_CALCITE_WITHOUT_WATER_PASS',
+    'setblock 3 101 0 minecraft:air',
+    'setblock 4 101 0 minecraft:air',
+    'setblock 3 101 0 minecraft:lava',
+    'execute if block 3 101 0 minecraft:lava run say CARPETLIR_CALCITE_NO_AMETHYST_PASS',
     "$ruleCommandRoot renewableCalcite false",
     'setblock 3 101 0 minecraft:air',
     'setblock 4 101 0 minecraft:air',
@@ -467,7 +476,7 @@ if ($runReinforcedChecks) {
 }
 $commandOutputMarkers = @{}
 if ($runReinforcedChecks) {
-    $commandOutputMarkers[$mangroveRecipeGiveCommand] = 'Unlocked 1 recipes for Notch'
+    $commandOutputMarkers[$mangroveRecipeGiveCommand] = 'Unlocked 1 recipe'
 }
 $requiredMarkers = @(
     'CARPETLIR_BONEMEAL_ENABLED_PASS',
@@ -487,7 +496,9 @@ if ($usesLegacyReplaceItem) {
 if ($hasCalcite) {
     $requiredMarkers += @(
         'CARPETLIR_CALCITE_DISABLED_PASS',
-        'CARPETLIR_CALCITE_ENABLED_PASS'
+        'CARPETLIR_CALCITE_ENABLED_PASS',
+        'CARPETLIR_CALCITE_WITHOUT_WATER_PASS',
+        'CARPETLIR_CALCITE_NO_AMETHYST_PASS'
     )
 }
 if ($hasPiston) {
@@ -888,7 +899,7 @@ if ($usesLegacyReplaceItem) {
     $coverageParts += 'survival bone-meal consumption'
 }
 if ($hasCalcite) {
-    $coverageParts += 'calcite disabled/enabled states'
+    $coverageParts += 'calcite disabled/enabled/no-water/missing-amethyst states'
 }
 if ($hasPiston) {
     $coverageParts += 'piston negative/positive paths'
