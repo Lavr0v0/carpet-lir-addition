@@ -24,5 +24,7 @@
   "carpet.rule.wardensDropReinforcedDeepslate.name": "wardensDropReinforcedDeepslate",
   "carpet.rule.wardensDropReinforcedDeepslate.desc": "Makes wardens drop 1 to 4 reinforced deepslate when they die.",
   "carpet.rule.pistonHarvestableAmethysts.name": "pistonHarvestableAmethysts",
-  "carpet.rule.pistonHarvestableAmethysts.desc": "Budding amethyst breaks and drops itself when a piston tries to push it."
+  "carpet.rule.pistonHarvestableAmethysts.desc": "Budding amethyst breaks and drops itself when a piston tries to push it.",
+  "carpet.rule.renewableCinnabar.name": "renewableCinnabar",
+  "carpet.rule.renewableCinnabar.desc": "Lava touching water generates cinnabar when potent sulfur is directly below the lava and netherrack is horizontally adjacent."
 }

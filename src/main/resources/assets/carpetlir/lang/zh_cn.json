@@ -24,5 +24,7 @@
   "carpet.rule.wardensDropReinforcedDeepslate.name": "wardensDropReinforcedDeepslate",
   "carpet.rule.wardensDropReinforcedDeepslate.desc": "使监守者死亡时额外掉落 1 到 4 个强化深板岩。",
   "carpet.rule.pistonHarvestableAmethysts.name": "pistonHarvestableAmethysts",
-  "carpet.rule.pistonHarvestableAmethysts.desc": "当活塞尝试推动紫水晶母岩时，母岩会被破坏并掉落自身。"
+  "carpet.rule.pistonHarvestableAmethysts.desc": "当活塞尝试推动紫水晶母岩时，母岩会被破坏并掉落自身。",
+  "carpet.rule.renewableCinnabar.name": "renewableCinnabar",
+  "carpet.rule.renewableCinnabar.desc": "当熔岩接触水，且熔岩正下方为强效硫磺、水平相邻有下界岩时，会生成朱砂。"
 }

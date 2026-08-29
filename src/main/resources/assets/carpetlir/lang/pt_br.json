@@ -24,5 +24,7 @@
   "carpet.rule.wardensDropReinforcedDeepslate.name": "wardensDropReinforcedDeepslate",
   "carpet.rule.wardensDropReinforcedDeepslate.desc": "Faz o Defensor dropar de 1 a 4 blocos de Ardosiabissal Reforçada ao morrer.",
   "carpet.rule.pistonHarvestableAmethysts.name": "pistonHarvestableAmethysts",
-  "carpet.rule.pistonHarvestableAmethysts.desc": "A Drusa de Ametista quebra e dropa a si mesma quando um pistão tenta empurrá-la."
+  "carpet.rule.pistonHarvestableAmethysts.desc": "A Drusa de Ametista quebra e dropa a si mesma quando um pistão tenta empurrá-la.",
+  "carpet.rule.renewableCinnabar.name": "renewableCinnabar",
+  "carpet.rule.renewableCinnabar.desc": "Lava em contato com água gera cinábrio quando há enxofre potente logo abaixo e netherrack adjacente na horizontal."
 }

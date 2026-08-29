@@ -220,6 +220,52 @@
         "cherry",
         "pale_oak"
       ]
+    },
+    {
+      "id": "tier-26.2",
+      "minimumTarget": "26.2",
+      "availableRecipes": [
+        "acacia_leaves_from_acacia_log_and_sticks",
+        "birch_leaves_from_birch_log_and_sticks",
+        "cherry_leaves_from_cherry_log_and_sticks",
+        "dark_oak_leaves_from_dark_oak_log_and_sticks",
+        "gravel_to_tuff_smelting",
+        "honeycomb_from_honeycomb_block",
+        "jungle_leaves_from_jungle_log_and_sticks",
+        "lapis_ore_from_calcite_and_amethyst_shard",
+        "mangrove_leaves_from_mangrove_log_and_sticks",
+        "oak_leaves_from_oak_log_and_sticks",
+        "pale_oak_leaves_from_pale_oak_log_and_sticks",
+        "raw_copper_from_cobblestone_and_copper_ingot",
+        "raw_gold_from_cobblestone_and_gold_ingot",
+        "raw_iron_from_cobblestone_and_iron_ingot",
+        "spruce_leaves_from_spruce_log_and_sticks"
+      ],
+      "availableRules": [
+        "boneMealGrassifyDirt",
+        "renewableLeavesCrafting",
+        "renewableHoneycombCrafting",
+        "renewableCalcite",
+        "renewableCinnabar",
+        "renewableTuff",
+        "renewableLapisOre",
+        "renewableRawOresCrafting",
+        "pistonHarvestableAmethysts",
+        "obsidianHardnessReinforcedDeepslate",
+        "silkTouchableReinforcedDeepslate",
+        "wardensDropReinforcedDeepslate"
+      ],
+      "leafRecipeVariants": [
+        "oak",
+        "spruce",
+        "birch",
+        "jungle",
+        "acacia",
+        "dark_oak",
+        "mangrove",
+        "cherry",
+        "pale_oak"
+      ]
     }
   ],
   "targets": [
@@ -624,7 +670,7 @@
       "sourceFamily": "mojang-26",
       "status": "verified",
       "capabilityTier": "tier-1.21.4",
-      "notes": "Minecraft 26.1, 26.1.1, and 26.1.2 now have independent artifacts; every target passed the current unit suite and 15/15 server GameTests, including Silk Touch loot-context coverage."
+      "notes": "Minecraft 26.1, 26.1.1, and 26.1.2 have independent artifacts and retain exactly 11 rules; the current unit suite and all 19 registered server GameTests pass, with the three 26.2-only cinnabar cases exiting before unavailable-block access."
     },
     {
       "target": "26.2",
@@ -634,8 +680,8 @@
       "java": 25,
       "sourceFamily": "mojang-26",
       "status": "verified",
-      "capabilityTier": "tier-1.21.4",
-      "notes": "Current audited source line with unit tests, GameTests, clean build, and server startup validation."
+      "capabilityTier": "tier-26.2",
+      "notes": "Current audited source line with unit tests, 19/19 GameTests, clean build, server startup validation, and the 26.2-only renewable cinnabar generator."
     }
   ]
 }

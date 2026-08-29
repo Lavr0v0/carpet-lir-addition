@@ -24,5 +24,7 @@
   "carpet.rule.wardensDropReinforcedDeepslate.name": "wardensDropReinforcedDeepslate",
   "carpet.rule.wardensDropReinforcedDeepslate.desc": "使伏守者死亡時額外掉落 1 到 4 個強化深板岩。",
   "carpet.rule.pistonHarvestableAmethysts.name": "pistonHarvestableAmethysts",
-  "carpet.rule.pistonHarvestableAmethysts.desc": "當活塞嘗試推動紫水晶芽床時，芽床會被破壞並掉落自身。"
+  "carpet.rule.pistonHarvestableAmethysts.desc": "當活塞嘗試推動紫水晶芽床時，芽床會被破壞並掉落自身。",
+  "carpet.rule.renewableCinnabar.name": "renewableCinnabar",
+  "carpet.rule.renewableCinnabar.desc": "當熔岩接觸水，且熔岩正下方為強效硫磺、水平相鄰有地獄石時，會生成朱砂。"
 }

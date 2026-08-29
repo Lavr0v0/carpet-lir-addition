@@ -24,5 +24,7 @@
   "carpet.rule.wardensDropReinforcedDeepslate.name": "wardensDropReinforcedDeepslate",
   "carpet.rule.wardensDropReinforcedDeepslate.desc": "Hace que el Warden suelte de 1 a 4 bloques de pizarra profunda reforzada al morir.",
   "carpet.rule.pistonHarvestableAmethysts.name": "pistonHarvestableAmethysts",
-  "carpet.rule.pistonHarvestableAmethysts.desc": "El brotador de amatista se rompe y se suelta a sí mismo cuando un pistón intenta empujarlo."
+  "carpet.rule.pistonHarvestableAmethysts.desc": "El brotador de amatista se rompe y se suelta a sí mismo cuando un pistón intenta empujarlo.",
+  "carpet.rule.renewableCinnabar.name": "renewableCinnabar",
+  "carpet.rule.renewableCinnabar.desc": "La lava que toca agua genera cinabrio cuando hay azufre potente justo debajo y netherrack adyacente en horizontal."
 }

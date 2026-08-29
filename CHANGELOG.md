@@ -1,5 +1,14 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- Added the Minecraft 26.2-only `renewableCinnabar` Carpet rule. Lava touching water now forms cinnabar when potent sulfur is directly below it and netherrack is horizontally adjacent; both catalyst blocks remain in place.
+- Added GameTests for the complete cinnabar structure, disabled-rule vanilla fallback, incomplete structures, and catalyst preservation.
+
+### Changed
+- Added a `tier-26.2` capability and a Mojang-mapped version source overlay so Minecraft 26.1–26.1.2 continue to omit the rule, feature class, and unavailable vanilla block references.
+
 ## [1.1.0-beta.2] - 2026-08-26
 
 ### Added

@@ -24,5 +24,7 @@
   "carpet.rule.wardensDropReinforcedDeepslate.name": "wardensDropReinforcedDeepslate",
   "carpet.rule.wardensDropReinforcedDeepslate.desc": "Fait drop au Warden de 1 à 4 ardoises des abîmes renforcées à sa mort.",
   "carpet.rule.pistonHarvestableAmethysts.name": "pistonHarvestableAmethysts",
-  "carpet.rule.pistonHarvestableAmethysts.desc": "La druse d'améthyste se casse et se drop elle-même lorsqu'un piston tente de la pousser."
+  "carpet.rule.pistonHarvestableAmethysts.desc": "La druse d'améthyste se casse et se drop elle-même lorsqu'un piston tente de la pousser.",
+  "carpet.rule.renewableCinnabar.name": "renewableCinnabar",
+  "carpet.rule.renewableCinnabar.desc": "La lave au contact de l'eau génère du cinabre si du soufre puissant se trouve juste dessous et de la netherrack est adjacente horizontalement."
 }
